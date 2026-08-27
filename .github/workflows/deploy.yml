@@ -1,0 +1,65 @@
+name: Deploy production to Vercel
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate deployment credentials
+        shell: bash
+        run: |
+          : "${VERCEL_TOKEN:?Add VERCEL_TOKEN as a GitHub Actions secret}"
+          : "${VERCEL_ORG_ID:?Add VERCEL_ORG_ID as a GitHub Actions secret}"
+          : "${VERCEL_PROJECT_ID:?Add VERCEL_PROJECT_ID as a GitHub Actions secret}"
+
+      - name: Pull Vercel production settings
+        run: pnpm exec vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build Vercel production artifacts
+        run: pnpm exec vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy production artifacts
+        id: deploy
+        shell: bash
+        run: |
+          deployment_url="$(pnpm exec vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
+          echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "### Vercel production deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "$deployment_url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify deployed home page
+        run: curl --fail --show-error --silent --retry 5 --retry-delay 5 "${{ steps.deploy.outputs.url }}/" > /dev/null

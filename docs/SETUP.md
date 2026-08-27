@@ -7,7 +7,7 @@
 - Dataset: `production`
 - The dataset exists, allows public reads, and was empty when checked on 2026-08-27.
 - The embedded Studio is mounted at `/studio`.
-- The requested GitHub repository URL is `https://github.com/HighlightsChicago111/Service-Pags.git`.
+- GitHub repository: `https://github.com/HighlightsChicago111/Service-Pages.git`.
 
 ## 1. Fill `.env.local`
 
@@ -123,11 +123,31 @@ The hidden `website` honeypot is discarded. No lead data is stored in Sanity.
 The supplied repository must exist under `HighlightsChicago111` and the GitHub account authenticated in `gh` must have write access. Then:
 
 ```powershell
-git remote add origin https://github.com/HighlightsChicago111/Service-Pags.git
+git remote add origin https://github.com/HighlightsChicago111/Service-Pages.git
 git push -u origin main
 ```
 
 In Vercel, import the GitHub repository, select the Next.js preset, keep the default build command, add the environment variables above, and deploy. No custom output directory is required.
+
+### GitHub Actions deployment
+
+`.github/workflows/deploy.yml` provides an authenticated production deployment using the pinned Vercel CLI. Add these repository secrets under **GitHub → Settings → Secrets and variables → Actions**:
+
+- `VERCEL_TOKEN`: a Vercel access token created by the owner of the destination Vercel project.
+- `VERCEL_ORG_ID`: the `orgId` from `.vercel/project.json` after the owner runs `vercel link` against the existing project.
+- `VERCEL_PROJECT_ID`: the `projectId` from that same file.
+
+After the secrets are configured, run **Deploy production to Vercel** from the repository's **Actions** tab. The workflow is intentionally manual because Vercel's Git integration already deploys pushes to `main`; this prevents duplicate production deployments. It pulls the Production environment, performs a Vercel production build, deploys the prebuilt output, and verifies the deployed home page.
+
+For a local authenticated deployment to the already linked project:
+
+```powershell
+pnpm exec vercel pull --yes --environment=production --token=YOUR_TOKEN
+pnpm exec vercel build --prod --token=YOUR_TOKEN
+pnpm exec vercel deploy --prebuilt --prod --token=YOUR_TOKEN
+```
+
+Do not commit `.vercel/` or a Vercel token. The directory and local environment files are ignored by Git.
 
 ## Official references
 

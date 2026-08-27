@@ -14,7 +14,10 @@
     "studio:deploy": "sanity deploy",
     "source:extract": "node scripts/extract-source.mjs",
     "source:validate": "tsx scripts/validate-source.ts",
-    "content:import": "tsx scripts/import-content.ts"
+    "content:import": "tsx scripts/import-content.ts",
+    "vercel:pull": "vercel pull --yes --environment=production",
+    "vercel:build": "vercel build --prod",
+    "vercel:deploy": "vercel deploy --prebuilt --prod"
   },
   "dependencies": {
     "@portabletext/react": "8.0.1",
@@ -34,6 +37,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.3",
     "tsx": "4.23.12",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vercel": "59.7.0"
   }
 }
