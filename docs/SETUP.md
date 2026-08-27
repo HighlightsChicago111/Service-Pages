@@ -14,11 +14,11 @@
 The repository contains an ignored `.env.local` with placeholders and a committed `.env.example`. Paste token values directly into `.env.local`; never paste secrets into chat or commit that file.
 
 ```dotenv
-NEXT_PUBLIC_SANITY_PROJECT_ID=5w5623jq
-NEXT_PUBLIC_SANITY_DATASET=production
-NEXT_PUBLIC_SANITY_API_VERSION=2026-03-01
-NEXT_PUBLIC_SANITY_STUDIO_URL=/studio
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_SANITY_PROJECT_ID=5w5623jq
+NEXT_SANITY_DATASET=production
+NEXT_SANITY_API_VERSION=2026-03-01
+NEXT_SANITY_STUDIO_URL=/studio
+NEXT_SITE_URL=http://localhost:3000
 SANITY_ORGANIZATION_ID=onvqoim97
 SANITY_API_READ_TOKEN=PASTE_SANITY_VIEWER_TOKEN_HERE
 SANITY_API_WRITE_TOKEN=PASTE_SANITY_EDITOR_TOKEN_HERE
@@ -68,18 +68,21 @@ After Vercel is deployed, add a Sanity webhook:
 - Trigger on: create, update, delete
 - HTTP method: POST
 - Secret: exactly the Vercel `SANITY_REVALIDATE_SECRET`
+- Filter:
+
+```groq
+_type in ["servicePage", "serviceDefinition", "serviceArea", "siteSettings", "servicePageTemplate"]
+```
+
 - Projection:
 
 ```groq
 {
-  "path": select(
-    _type == "servicePage" => "/services/" + service->slug.current + "/" + area->slug.current,
-    "/"
-  )
+  "documentType": _type
 }
 ```
 
-The endpoint verifies Sanity's signed webhook body before revalidating the supplied path.
+The endpoint verifies Sanity's signed webhook body and revalidates the service route tree. This broad invalidation is intentional because a service definition, area, template, or site setting may affect multiple generated pages.
 
 ## 5. Vercel environment variables
 
@@ -87,11 +90,11 @@ Configure variables separately for Development, Preview, and Production. Redeplo
 
 | Variable | Dev | Preview | Prod | Secret? | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `NEXT_PUBLIC_SANITY_PROJECT_ID` | Yes | Yes | Yes | No | `5w5623jq` |
-| `NEXT_PUBLIC_SANITY_DATASET` | Yes | Yes | Yes | No | `production` |
-| `NEXT_PUBLIC_SANITY_API_VERSION` | Yes | Yes | Yes | No | `2026-03-01` |
-| `NEXT_PUBLIC_SANITY_STUDIO_URL` | Yes | Yes | Yes | No | `/studio` |
-| `NEXT_PUBLIC_SITE_URL` | Yes | Yes | Yes | No | Use the matching deployed origin; production should use the final canonical domain |
+| `NEXT_SANITY_PROJECT_ID` | Yes | Yes | Yes | No | `5w5623jq` |
+| `NEXT_SANITY_DATASET` | Yes | Yes | Yes | No | `production` |
+| `NEXT_SANITY_API_VERSION` | Yes | Yes | Yes | No | `2026-03-01` |
+| `NEXT_SANITY_STUDIO_URL` | Yes | Yes | Yes | No | `/studio` |
+| `NEXT_SITE_URL` | Yes | Yes | Yes | No | Use the matching deployed origin; production should use the final canonical domain |
 | `SANITY_API_READ_TOKEN` | Yes | Yes | Yes | Yes | Viewer token; required for drafts/Visual Editing. It remains server-side. |
 | `SANITY_REVALIDATE_SECRET` | Optional | Yes | Yes | Yes | Random 32+ characters; match the webhook secret for that environment |
 | `LEAD_WEBHOOK_URL` | If testing | If testing | If form is live | Yes | Destination for sanitized lead payloads |
@@ -104,6 +107,8 @@ Do **not** add these to Vercel unless a future server-only feature explicitly ne
 - `SANITY_ORGANIZATION_ID`
 
 The write token is for local import/CLI work. The application does not write website content to Sanity at runtime.
+
+The five `NEXT_*` values above are public application configuration even though their Vercel names do not include `NEXT_PUBLIC_`. `next.config.ts` exposes only this explicit allowlist to the embedded browser Studio. Tokens and secrets are never included in that allowlist.
 
 ## 6. Lead destination
 
