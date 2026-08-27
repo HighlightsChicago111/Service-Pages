@@ -108,6 +108,7 @@ This separation is the merge model: a page resolves `servicePage → serviceDefi
 - Local FAQs are included both visually and in generated FAQ structured data, correcting an omission in the old skeleton.
 - Ratings, review counts, quotes, source links, and claimed keyword volumes should be reverified before production launch.
 - The old skeleton hardcodes an empty Maps API key and map-center assumptions. The new renderer uses the area's `map_query` with the standard Maps embed URL and does not require a browser-exposed Maps key.
+- Spreadsheet meta titles and descriptions exceed the Sanity limits on most rows. The importer generates a concise `Service in Area | Company` title and shortens descriptions at a word boundary to 170 characters, while preserving the original spreadsheet values in `data/source-content.json`.
 
 ## Generated artifacts
 

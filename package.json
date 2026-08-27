@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "studio": "sanity dev",
+    "studio:build": "sanity build dist/studio --yes --minify",
     "studio:deploy": "sanity deploy",
     "source:extract": "node scripts/extract-source.mjs",
     "source:validate": "tsx scripts/validate-source.ts",

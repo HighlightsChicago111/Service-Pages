@@ -37,6 +37,24 @@ const objects = (raw: string, fields: string[], prefix: string): Array<{_key: st
 })
 const imageList = (raw: string, prefix: string, altPrefix: string) => strings(raw).map((externalUrl, index) => ({_key: key(prefix, index), _type: 'externalImage', externalUrl, alt: `${altPrefix} ${index + 1}`}))
 const decode = (value: string) => value.replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
+const truncateMeta = (value: string, maxLength: number) => {
+  const normalized = value.replace(/\s+/g, ' ').trim()
+  if (normalized.length <= maxLength) return normalized
+  const candidate = normalized.slice(0, maxLength - 1)
+  const lastSpace = candidate.lastIndexOf(' ')
+  const cutAt = lastSpace >= Math.floor(maxLength * 0.7) ? lastSpace : candidate.length
+  return `${candidate.slice(0, cutAt).replace(/[\s,;:.!?'"—–-]+$/g, '')}…`
+}
+const titleFromSlug = (slug: string) => slug
+  .split('-')
+  .map((part) => part.toLowerCase() === 'gfci' ? 'GFCI' : `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+  .join(' ')
+const buildMetaDescription = (value: string, phone: string) => {
+  const sourceSummary = value.split(/…\s*Registered Chicago/i)[0].trim()
+  const callToAction = phone ? ` Call ${phone}.` : ''
+  const summary = truncateMeta(sourceSummary, 169 - callToAction.length).replace(/[.…]+$/g, '')
+  return `${summary}…${callToAction}`
+}
 const blocksFromHtml = (html: string, prefix: string) => decode(html)
   .replace(/<\/(p|h[1-6]|li|div)>/gi, '\n')
   .replace(/<br\s*\/?>/gi, '\n')
@@ -47,6 +65,7 @@ const blocksFromHtml = (html: string, prefix: string) => decode(html)
   .map((text, index) => ({_key: key(`${prefix}-block`, index), _type: 'block', style: 'normal', markDefs: [], children: [{_key: key(`${prefix}-span`, index), _type: 'span', text, marks: []}]}))
 
 const firstPage = source.page[0]
+const areaNameBySlug = new Map(source.area.map((row) => [row.slug, row.name]))
 const siteSettings = {
   _id: 'siteSettings', _type: 'siteSettings',
   companyName: firstPage.company_name,
@@ -102,7 +121,11 @@ const areas = source.area.map((row) => ({
 const pages = source.page.map((row) => ({
   _id: `servicePage-${row.service_id}-${row.area_slug}`, _type: 'servicePage', title: `${row.equipment_slug} — ${row.area_slug}`, serviceId: Number(row.service_id),
   service: {_type: 'reference', _ref: `service-${row.service_id}`}, area: {_type: 'reference', _ref: `area-${row.area_slug}`}, template: {_type: 'reference', _ref: template._id},
-  seo: {title: row.meta_title, description: row.meta_description, canonicalUrl: row.canonical_url},
+  seo: {
+    title: truncateMeta(`${titleFromSlug(row.equipment_slug)} in ${areaNameBySlug.get(row.area_slug) || row.area_slug} | ${firstPage.company_name}`, 65),
+    description: buildMetaDescription(row.meta_description, firstPage.phone_display),
+    canonicalUrl: row.canonical_url,
+  },
   reviews: objects(row.reviews, ['quote', 'author', 'location', 'sourceUrl', 'sourceId'], `review-${row.service_id}`).map((item) => ({...item, _type: 'review', verifiedAt: '2026-08-27'})),
   gallery: imageList(row.gallery, `gallery-${row.service_id}`, `${row.equipment_slug} project`),
   workingPhotos: imageList(row.working_photos, `working-${row.service_id}`, `${row.equipment_slug} work in ${row.area_slug}`),
@@ -111,7 +134,15 @@ const pages = source.page.map((row) => ({
 }))
 
 const documents: ImportDocument[] = [siteSettings, template, ...services, ...areas, ...pages]
-let transaction = client.transaction()
-for (const document of documents) transaction = transaction.createOrReplace(document)
-const result = await transaction.commit()
-console.log(`Imported ${documents.length} documents in transaction ${result.transactionId}`)
+
+async function importDocuments() {
+  let transaction = client.transaction()
+  for (const document of documents) transaction = transaction.createOrReplace(document)
+  const result = await transaction.commit()
+  console.log(`Imported ${documents.length} documents in transaction ${result.transactionId}`)
+}
+
+importDocuments().catch((error: unknown) => {
+  console.error(error)
+  process.exit(1)
+})

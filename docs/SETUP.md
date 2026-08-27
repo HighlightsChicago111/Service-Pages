@@ -45,7 +45,7 @@ pnpm content:import
 pnpm dev
 ```
 
-The import is deterministic and currently creates/replaces 22 documents: one site settings singleton, one standard template, ten service definitions, one service area, and ten service pages.
+The import is deterministic and currently creates/replaces 23 documents: one site settings singleton, one standard template, ten service definitions, one service area, and ten service pages.
 
 Do not run `content:import` until the Editor token is present. The script refuses placeholder tokens.
 

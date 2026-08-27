@@ -4,6 +4,8 @@ import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
 
 type IndexItem = {_id: string; title: string; serviceSlug: string; areaSlug: string; serviceName: string; areaName: string; monthlySearchVolume?: number; metaDescription?: string}
 
+export const revalidate = 60
+
 export default async function HomePage() {
   const {data} = await sanityFetch({query: SERVICE_INDEX_QUERY, stega: false})
   const pages = (data || []) as IndexItem[]
