@@ -69,6 +69,21 @@ async function run() {
     'mailto:info@highlightschicago.com',
   ]) expect(anchorHrefs(collection).includes(href), `Collection page is missing live destination ${href}`)
   expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
+  const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1])
+  expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
+  expect(new Set(cardImages).size === source.page.length, 'Collection cards must use unique cover images')
+  for (const image of cardImages) {
+    expect(image.startsWith('/images/services/'), `Collection image is not local: ${image}`)
+    const imagePath = path.resolve('public', image.slice(1))
+    expect(fs.existsSync(imagePath), `Collection image file is missing: ${image}`)
+    const imageBytes = fs.readFileSync(imagePath)
+    expect(imageBytes.length > 10_000, `Collection image is unexpectedly small: ${image}`)
+    expect(imageBytes[0] === 0xff && imageBytes[1] === 0xd8 && imageBytes[2] === 0xff, `Collection image is not a valid JPEG: ${image}`)
+    const imageResponse = await fetch(`${baseUrl}${image}`)
+    expect(imageResponse.status === 200, `Collection image returned ${imageResponse.status}: ${image}`)
+    expect(imageResponse.headers.get('content-type')?.startsWith('image/jpeg'), `Collection image has an invalid content type: ${image}`)
+    expect((await imageResponse.arrayBuffer()).byteLength === imageBytes.length, `Collection image response is incomplete: ${image}`)
+  }
   await testDocument('/studio', [])
 
   for (const row of source.page) {
@@ -77,12 +92,14 @@ async function run() {
     const area = areaBySlug.get(row.area_slug)
     const heading = `${service?.h1_prefix} in ${area?.name}`
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
-    expect(!text.includes('collection-header'), `${pathname} unexpectedly includes the collection header`)
+    expect((text.match(/class="collection-header"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
+    expect((text.match(/class="collection-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
     const renderedText = visibleText(text)
     for (const href of anchorHrefs(text)) {
       expect(Boolean(href), `${pathname} contains an empty link`)
       if (href.startsWith('#')) expect(text.includes(`id="${href.slice(1)}"`), `${pathname} has a broken ${href} anchor`)
-      else if (href.startsWith('tel:')) expect(/^tel:\+\d{11,15}$/.test(href), `${pathname} has an invalid phone link ${href}`)
+      else if (href.startsWith('tel:')) expect(/^tel:(?:\+\d{11,15}|\d{10})$/.test(href), `${pathname} has an invalid phone link ${href}`)
+      else if (href.startsWith('mailto:')) expect(/^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/.test(href), `${pathname} has an invalid email link ${href}`)
       else if (/^https?:/.test(href)) expect(Boolean(new URL(href)), `${pathname} has an invalid external URL ${href}`)
       else expect(validServicePaths.has(href), `${pathname} has an invalid internal URL ${href}`)
     }

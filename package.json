@@ -15,6 +15,7 @@
     "source:extract": "node scripts/extract-source.mjs",
     "source:validate": "tsx scripts/validate-source.ts",
     "test:smoke": "tsx scripts/smoke-test.ts",
+    "test:collection-data": "tsx scripts/test-collection-data.ts",
     "test:lead": "tsx scripts/test-lead-delivery.ts",
     "content:import": "tsx scripts/import-content.ts",
     "vercel:pull": "vercel pull --yes --environment=production",

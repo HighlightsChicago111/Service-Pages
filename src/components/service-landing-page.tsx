@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type {ExternalImage, Faq, Guide, ServicePageData} from '@/types/content'
 import {GuideTabs} from './guide-tabs'
 import {LeadForm} from './lead-form'
+import {CollectionFooter, CollectionHeader} from './collection-chrome'
 
 type Props = {data: ServicePageData}
 
@@ -145,7 +146,9 @@ export function ServiceLandingPage({data}: Props) {
   const serviceRoutes = data.serviceRoutes || []
 
   return (
-    <main className="service-landing" style={brandStyle}>
+    <div className="site-chrome">
+      <CollectionHeader />
+      <main className="service-landing" style={brandStyle}>
       <nav className="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href={settings.siteUrl}>Home</a></li><li><Link href="/services">Services</Link></li>{service.parentUrl && <li><a href={serviceHref(service.parentUrl, serviceRoutes, area.slug)}>{service.parentName}</a></li>}{service.hubUrl && <li><a href={serviceHref(service.hubUrl, serviceRoutes, area.slug)}>{service.name}</a></li>}<li aria-current="page">{area.name}</li></ol></nav>
 
       <header className="hero"><div className="wrap hero-grid"><div>
@@ -181,6 +184,8 @@ export function ServiceLandingPage({data}: Props) {
 
       <div className="callbar"><a className="c-call" href={`tel:${settings.phoneE164}`}>Call {settings.phoneDisplay}</a><a className="c-form" href="#quote">Book service</a></div>
       <JsonLd data={data} />
-    </main>
+      </main>
+      <CollectionFooter />
+    </div>
   )
 }

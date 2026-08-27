@@ -1,7 +1,7 @@
 import {defineQuery} from 'next-sanity'
 
 export const SERVICE_INDEX_QUERY = defineQuery(`
-  *[_type == "servicePage"] | order(service->monthlySearchVolume desc) {
+  *[_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)] | order(service->monthlySearchVolume desc) {
     _id,
     title,
     "serviceSlug": service->slug.current,
