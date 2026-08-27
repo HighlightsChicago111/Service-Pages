@@ -104,7 +104,7 @@ This separation is the merge model: a page resolves `servicePage → serviceDefi
 - The ten new services replace, rather than merge with, the three old rows. The old service records are not imported automatically.
 - Google-hosted and Wikimedia image URLs remain external migration references. They should ultimately be uploaded to Sanity assets with explicit rights/credits and meaningful alt text.
 - Imported SVG icon markup and guide HTML are retained only as hidden migration references. The frontend renders a safe icon and plaintext Portable Text blocks.
-- The supplied `form_action` currently points to `https://www.highlightschicago.com/submit`. It is not used. Leads go through `/api/lead` to a separately configured `LEAD_WEBHOOK_URL`.
+- The supplied `form_action` currently points to `https://www.highlightschicago.com/submit`. It is not used. Leads go through `/api/lead` directly to Resend using server-only Vercel environment variables; this does not consume a Sanity webhook.
 - Local FAQs are included both visually and in generated FAQ structured data, correcting an omission in the old skeleton.
 - Ratings, review counts, quotes, source links, and claimed keyword volumes should be reverified before production launch.
 - The old skeleton hardcodes an empty Maps API key and map-center assumptions. The new renderer uses the area's `map_query` with the standard Maps embed URL and does not require a browser-exposed Maps key.

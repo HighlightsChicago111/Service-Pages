@@ -24,8 +24,9 @@ SANITY_API_READ_TOKEN=PASTE_SANITY_VIEWER_TOKEN_HERE
 SANITY_API_WRITE_TOKEN=PASTE_SANITY_EDITOR_TOKEN_HERE
 SANITY_AUTH_TOKEN=PASTE_SANITY_EDITOR_TOKEN_HERE
 SANITY_REVALIDATE_SECRET=PASTE_RANDOM_REVALIDATION_SECRET_HERE
-LEAD_WEBHOOK_URL=
-LEAD_WEBHOOK_BEARER_TOKEN=
+RESEND_API_KEY=PASTE_RESEND_SENDING_API_KEY_HERE
+LEAD_FROM_EMAIL=Highlights Chicago <leads@updates.highlightschicago.com>
+LEAD_NOTIFICATION_EMAIL=YOUR_LEAD_INBOX@example.com
 ```
 
 Create two Sanity project tokens in **manage.sanity.io → project 5w5623jq → API → Tokens**:
@@ -97,8 +98,9 @@ Configure variables separately for Development, Preview, and Production. Redeplo
 | `NEXT_SITE_URL` | Yes | Yes | Yes | No | Use the matching deployed origin; production should use the final canonical domain |
 | `SANITY_API_READ_TOKEN` | Yes | Yes | Yes | Yes | Viewer token; required for drafts/Visual Editing. It remains server-side. |
 | `SANITY_REVALIDATE_SECRET` | Optional | Yes | Yes | Yes | Random 32+ characters; match the webhook secret for that environment |
-| `LEAD_WEBHOOK_URL` | If testing | If testing | If form is live | Yes | Destination for sanitized lead payloads |
-| `LEAD_WEBHOOK_BEARER_TOKEN` | If required | If required | If required | Yes | Only if the destination authenticates with a bearer token |
+| `RESEND_API_KEY` | If testing | If testing | If form is live | Yes | Resend API key restricted to sending email |
+| `LEAD_FROM_EMAIL` | If testing | If testing | If form is live | No | Sender on the exact domain or subdomain verified in Resend |
+| `LEAD_NOTIFICATION_EMAIL` | If testing | If testing | If form is live | Yes | Recipient inbox; comma-separate up to 50 addresses |
 
 Do **not** add these to Vercel unless a future server-only feature explicitly needs write access:
 
@@ -110,13 +112,22 @@ The write token is for local import/CLI work. The application does not write web
 
 The five `NEXT_*` values above are public application configuration even though their Vercel names do not include `NEXT_PUBLIC_`. `next.config.ts` exposes only this explicit allowlist to the embedded browser Studio. Tokens and secrets are never included in that allowlist.
 
-## 6. Lead destination
+## 6. Resend lead delivery
 
-The old source's `form_action` is deliberately ignored. Configure `LEAD_WEBHOOK_URL` to an endpoint you control (CRM, automation platform, or server function). `/api/lead` accepts only these fields and truncates each to 1,000 characters:
+The old source's `form_action` is deliberately ignored. `/api/lead` sends a plain-text notification directly through Resend and does not create or consume a Sanity webhook. It accepts only these fields and truncates each to 1,000 characters:
 
 `name`, `phone`, `address`, `buildingType`, `issue`, `service`, `area`.
 
-The hidden `website` honeypot is discarded. No lead data is stored in Sanity.
+The hidden `website` honeypot is discarded. No lead data is stored in Sanity. The API request uses a unique Resend idempotency key and has a ten-second timeout.
+
+Before enabling the form:
+
+1. Create a Resend account and add a sending subdomain such as `updates.highlightschicago.com`.
+2. Add Resend's SPF and DKIM records to DNS and wait for the domain to show as verified.
+3. Create a Resend API key with sending access and add it to Vercel as `RESEND_API_KEY`.
+4. Set `LEAD_FROM_EMAIL` to a sender on that exact verified domain, for example `Highlights Chicago <leads@updates.highlightschicago.com>`.
+5. Set `LEAD_NOTIFICATION_EMAIL` to the inbox that should receive leads. Multiple recipients may be comma-separated.
+6. Redeploy, then submit one clearly labelled test request from the deployed page.
 
 ## 7. GitHub and Vercel connection
 
@@ -155,3 +166,5 @@ Do not commit `.vercel/` or a Vercel token. The directory and local environment 
 - [Sanity CORS origins](https://www.sanity.io/docs/content-lake/cors)
 - [Sanity webhook revalidation with Next.js](https://www.sanity.io/docs/visual-editing/vercel-visual-editing)
 - [Vercel environment variables](https://vercel.com/docs/environment-variables)
+- [Resend send-email API](https://resend.com/docs/api-reference/emails/send-email)
+- [Resend domain verification](https://resend.com/docs/dashboard/domains/introduction)

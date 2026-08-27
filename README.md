@@ -29,5 +29,6 @@ The original spreadsheet package is preserved locally but ignored by Git. The no
 - `SANITY_API_READ_TOKEN` should have Viewer permissions.
 - `SANITY_API_WRITE_TOKEN` and `SANITY_AUTH_TOKEN` are local migration/CLI credentials and should normally not be added to Vercel.
 - `SANITY_REVALIDATE_SECRET` must match the Sanity webhook secret.
+- `RESEND_API_KEY`, `LEAD_FROM_EMAIL`, and `LEAD_NOTIFICATION_EMAIL` deliver form submissions directly through Resend without another Sanity webhook.
 
 See `docs/SETUP.md` and `docs/SOURCE_ANALYSIS.md` for deployment and source-audit details.

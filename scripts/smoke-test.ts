@@ -53,8 +53,22 @@ async function testDocument(pathname: string, requiredText: string[]) {
 }
 
 async function run() {
-  await testDocument('/', ['Highlights Chicago Service Pages'])
-  await testDocument('/services', ['Chicago electrical service pages'])
+  const collection = await testDocument('/', ['Electrical services built around Chicago', 'Find the right electrical service'])
+  await testDocument('/services', ['Electrical services built around Chicago', 'Find the right electrical service'])
+  for (const href of [
+    'https://www.highlightschicago.com/',
+    'https://www.highlightschicago.com/about-us',
+    'https://www.highlightschicago.com/services',
+    'https://www.highlightschicago.com/blog',
+    'https://www.highlightschicago.com/learning-center',
+    'https://www.highlightschicago.com/contact-us',
+    'https://www.highlightschicago.com/our-team',
+    'https://www.highlightschicago.com/testimonials',
+    'https://www.highlightschicago.com/faq',
+    'tel:7732623333',
+    'mailto:info@highlightschicago.com',
+  ]) expect(anchorHrefs(collection).includes(href), `Collection page is missing live destination ${href}`)
+  expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
   await testDocument('/studio', [])
 
   for (const row of source.page) {
@@ -63,6 +77,7 @@ async function run() {
     const area = areaBySlug.get(row.area_slug)
     const heading = `${service?.h1_prefix} in ${area?.name}`
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
+    expect(!text.includes('collection-header'), `${pathname} unexpectedly includes the collection header`)
     const renderedText = visibleText(text)
     for (const href of anchorHrefs(text)) {
       expect(Boolean(href), `${pathname} contains an empty link`)

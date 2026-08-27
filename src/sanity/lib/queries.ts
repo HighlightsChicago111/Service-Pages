@@ -9,7 +9,13 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
     "serviceName": service->name,
     "areaName": area->name,
     "monthlySearchVolume": service->monthlySearchVolume,
-    "metaDescription": seo.description
+    "metaDescription": seo.description,
+    "cardImage": coalesce(
+      gallery[0].image.asset->url,
+      gallery[0].externalUrl,
+      workingPhotos[0].image.asset->url,
+      workingPhotos[0].externalUrl
+    )
   }
 `)
 
