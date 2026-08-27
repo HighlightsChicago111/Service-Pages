@@ -26,7 +26,11 @@ const dataset = process.env.NEXT_SANITY_DATASET || process.env.NEXT_PUBLIC_SANIT
 const token = process.env.SANITY_API_WRITE_TOKEN || process.env.SANITY_AUTH_TOKEN
 if (!token || /^(PASTE_|your_)/i.test(token)) throw new Error('Add a Sanity Editor token to SANITY_API_WRITE_TOKEN in .env.local')
 
-const source = JSON.parse(fs.readFileSync(path.resolve('data/source-content.json'), 'utf8')) as Source
+const decode = (value: string) => value.replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
+const rawSource = JSON.parse(fs.readFileSync(path.resolve('data/source-content.json'), 'utf8')) as Source
+const decodeRows = (rows: Row[]) => rows.map((row) => Object.fromEntries(Object.entries(row).map(([field, value]) => [field, typeof value === 'string' ? decode(value) : value])) as Row)
+const source: Source = {equip: decodeRows(rawSource.equip), area: decodeRows(rawSource.area), page: decodeRows(rawSource.page)}
+const fullReviews = JSON.parse(fs.readFileSync(path.resolve('data/full-reviews.json'), 'utf8')) as Record<string, string>
 const client = createClient({projectId, dataset, apiVersion: '2026-03-01', token, useCdn: false})
 const key = (prefix: string, index: number) => `${prefix}-${index + 1}`
 const strings = (raw = '') => raw.split('||').map((item) => item.trim()).filter(Boolean)
@@ -36,7 +40,6 @@ const objects = (raw: string, fields: string[], prefix: string): Array<{_key: st
   return {_key: key(prefix, index), ...Object.fromEntries(fields.map((field, fieldIndex) => [field, (parts[fieldIndex] || '').trim()]))}
 })
 const imageList = (raw: string, prefix: string, altPrefix: string) => strings(raw).map((externalUrl, index) => ({_key: key(prefix, index), _type: 'externalImage', externalUrl, alt: `${altPrefix} ${index + 1}`}))
-const decode = (value: string) => value.replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
 const truncateMeta = (value: string, maxLength: number) => {
   const normalized = value.replace(/\s+/g, ' ').trim()
   if (normalized.length <= maxLength) return normalized
@@ -84,7 +87,7 @@ const siteSettings = {
   trustMetrics: [1, 2, 4, 5].map((cell, index) => ({_key: key('metric', index), _type: 'trustMetric', value: firstPage[`trust_cell_${cell}_value`], label: firstPage[`trust_cell_${cell}_label`]})),
   trustCards: objects(firstPage.trust_cards, ['title', 'body'], 'trust-card').map((item) => ({...item, _type: 'titledBody'})),
   reviewsHeading: firstPage.reviews_heading,
-  reviewsDisclaimer: firstPage.reviews_disclaimer,
+  reviewsDisclaimer: 'Full text from public Google reviews, each linking to the original. Google and Yelp ratings are reported separately, never merged.',
   formSubtitle: firstPage.form_subtitle,
   formNote: firstPage.form_note,
 }
@@ -126,7 +129,7 @@ const pages = source.page.map((row) => ({
     description: buildMetaDescription(row.meta_description, firstPage.phone_display),
     canonicalUrl: row.canonical_url,
   },
-  reviews: objects(row.reviews, ['quote', 'author', 'location', 'sourceUrl', 'sourceId'], `review-${row.service_id}`).map((item) => ({...item, _type: 'review', verifiedAt: '2026-08-27'})),
+  reviews: objects(row.reviews, ['quote', 'author', 'location', 'sourceUrl', 'sourceId'], `review-${row.service_id}`).map((item) => ({...item, quote: fullReviews[item.sourceId] || item.quote, _type: 'review', verifiedAt: '2026-08-27'})),
   gallery: imageList(row.gallery, `gallery-${row.service_id}`, `${row.equipment_slug} project`),
   workingPhotos: imageList(row.working_photos, `working-${row.service_id}`, `${row.equipment_slug} work in ${row.area_slug}`),
   guides: objects(row.guides, ['title', 'legacyHtml'], `guide-${row.service_id}`).map((item, index) => ({...item, _type: 'guide', body: blocksFromHtml(item.legacyHtml, `guide-${row.service_id}-${index}`)})),
