@@ -1,0 +1,26 @@
+node_modules/
+.pnpm-store/
+.next/
+out/
+.vercel/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Secrets. Keep the documented template only.
+.env
+.env.*
+!.env.example
+
+# Local analysis and source-delivery archives are not application source.
+.codex-analysis/
+*.zip
+page_generator_tool/
+mmm/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,38 @@
+{
+  "name": "highlights-chicago-service-pages",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "studio": "sanity dev",
+    "studio:deploy": "sanity deploy",
+    "source:extract": "node scripts/extract-source.mjs",
+    "source:validate": "tsx scripts/validate-source.ts",
+    "content:import": "tsx scripts/import-content.ts"
+  },
+  "dependencies": {
+    "@portabletext/react": "8.0.1",
+    "@sanity/image-url": "2.1.1",
+    "@sanity/vision": "6.11.0",
+    "next": "16.3.3",
+    "next-sanity": "13.3.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sanity": "6.11.0",
+    "styled-components": "6.5.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.3",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3"
+  }
+}
