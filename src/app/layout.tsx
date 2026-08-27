@@ -1,9 +1,12 @@
 import type {Metadata} from 'next'
+import {Inter} from 'next/font/google'
 import {draftMode} from 'next/headers'
 import {VisualEditing} from 'next-sanity/visual-editing'
 import {DisableDraftMode} from '@/components/disable-draft-mode'
 import {SanityLive} from '@/sanity/lib/live'
 import './globals.css'
+
+const inter = Inter({subsets: ['latin'], variable: '--font-inter', display: 'swap'})
 
 export const metadata: Metadata = {
   title: {default: 'Highlights Chicago Service Pages', template: '%s | Highlights Chicago'},
@@ -14,7 +17,7 @@ export default async function RootLayout({children}: Readonly<{children: React.R
   const draft = await draftMode()
   return (
     <html lang="en">
-      <body>
+      <body className={inter.variable}>
         {children}
         <SanityLive />
         {draft.isEnabled && <><VisualEditing /><DisableDraftMode /></>}

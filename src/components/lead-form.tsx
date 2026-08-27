@@ -1,6 +1,6 @@
 'use client'
 
-import {FormEvent, useState} from 'react'
+import {FormEvent, useId, useState} from 'react'
 
 type Props = {
   service: string
@@ -15,18 +15,24 @@ type Props = {
 
 export function LeadForm(props: Props) {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const id = useId()
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setStatus('sending')
-    const form = new FormData(event.currentTarget)
-    const response = await fetch('/api/lead', {
-      method: 'POST',
-      headers: {'content-type': 'application/json'},
-      body: JSON.stringify(Object.fromEntries(form.entries())),
-    })
-    setStatus(response.ok ? 'sent' : 'error')
-    if (response.ok) event.currentTarget.reset()
+    const target = event.currentTarget
+    const form = new FormData(target)
+    try {
+      const response = await fetch('/api/lead', {
+        method: 'POST',
+        headers: {'content-type': 'application/json'},
+        body: JSON.stringify(Object.fromEntries(form.entries())),
+      })
+      setStatus(response.ok ? 'sent' : 'error')
+      if (response.ok) target.reset()
+    } catch {
+      setStatus('error')
+    }
   }
 
   return (
@@ -37,12 +43,12 @@ export function LeadForm(props: Props) {
         <input type="hidden" name="service" value={props.service} />
         <input type="hidden" name="area" value={props.area} />
         <label className="honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
-        <label>Name<input name="name" required autoComplete="name" /></label>
-        <label>Phone<input name="phone" type="tel" required autoComplete="tel" /></label>
-        <label>Street or cross streets<input name="address" placeholder={props.addressPlaceholder} autoComplete="street-address" /></label>
-        <label>Building type<select name="buildingType">{props.buildingTypes?.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label>{props.issueQuestion || 'What do you need?'}<select name="issue">{props.issueOptions?.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <button className="button primary block" type="submit" disabled={status === 'sending'}>
+        <div className="field"><label htmlFor={`${id}-name`}>Name</label><input id={`${id}-name`} name="name" required autoComplete="name" /></div>
+        <div className="field"><label htmlFor={`${id}-phone`}>Phone</label><input id={`${id}-phone`} name="phone" type="tel" required autoComplete="tel" /></div>
+        <div className="field"><label htmlFor={`${id}-address`}>Street or cross streets</label><input id={`${id}-address`} name="address" placeholder={props.addressPlaceholder} autoComplete="street-address" /></div>
+        <div className="field"><label htmlFor={`${id}-building`}>Building type</label><select id={`${id}-building`} name="buildingType">{props.buildingTypes?.map((item) => <option key={item}>{item}</option>)}</select></div>
+        <div className="field"><label htmlFor={`${id}-issue`}>{props.issueQuestion || 'What do you need?'}</label><select id={`${id}-issue`} name="issue">{props.issueOptions?.map((item) => <option key={item}>{item}</option>)}</select></div>
+        <button className="btn btn-primary btn-block" type="submit" disabled={status === 'sending'}>
           {status === 'sending' ? 'Sending…' : 'Request service'}
         </button>
         {props.note && <p className="form-note">{props.note}</p>}

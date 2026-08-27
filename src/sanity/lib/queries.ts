@@ -15,6 +15,10 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
 
 export const SERVICE_PAGE_QUERY = defineQuery(`
   {
+    "serviceRoutes": *[_type == "servicePage"] {
+      "serviceSlug": service->slug.current,
+      "areaSlug": area->slug.current
+    },
     "page": *[
       _type == "servicePage" &&
       service->slug.current == $serviceSlug &&
@@ -25,8 +29,8 @@ export const SERVICE_PAGE_QUERY = defineQuery(`
       serviceId,
       seo,
       reviews,
-      gallery,
-      workingPhotos,
+      gallery[]{..., "resolvedUrl": coalesce(image.asset->url, externalUrl)},
+      workingPhotos[]{..., "resolvedUrl": coalesce(image.asset->url, externalUrl)},
       guides,
       localFaqOverrides,
       template->{name, version, active, sectionOrder},
@@ -75,7 +79,7 @@ export const SERVICE_PAGE_QUERY = defineQuery(`
         areasHeading,
         areasLede,
         areasNote,
-        subAreas,
+        subAreas[]{..., photo{..., "resolvedUrl": coalesce(image.asset->url, externalUrl)}},
         mapQuery,
         libraryHeading,
         libraryLede,
