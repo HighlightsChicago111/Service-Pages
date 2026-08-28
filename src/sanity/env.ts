@@ -1,15 +1,12 @@
-function required(value: string | undefined, name: string): string {
-  if (!value) throw new Error(`Missing environment variable: ${name}`)
-  return value
-}
-
 function usableSecret(value: string | undefined): string | undefined {
   if (!value || /^(PASTE_|your_)/i.test(value)) return undefined
   return value
 }
 
-export const projectId = required(process.env.NEXT_SANITY_PROJECT_ID, 'NEXT_SANITY_PROJECT_ID')
-export const dataset = required(process.env.NEXT_SANITY_DATASET, 'NEXT_SANITY_DATASET')
+// These are public Sanity identifiers, not credentials. Keep stable defaults so
+// Vercel Preview builds do not fail when variables are scoped to Production only.
+export const projectId = process.env.NEXT_SANITY_PROJECT_ID || '5w5623jq'
+export const dataset = process.env.NEXT_SANITY_DATASET || 'production'
 export const apiVersion = process.env.NEXT_SANITY_API_VERSION || '2026-03-01'
 export const studioUrl = process.env.NEXT_SANITY_STUDIO_URL || '/studio'
 export const siteUrl = process.env.NEXT_SITE_URL || 'http://localhost:3000'

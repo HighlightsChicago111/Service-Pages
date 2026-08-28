@@ -91,8 +91,8 @@ Configure variables separately for Development, Preview, and Production. Redeplo
 
 | Variable | Dev | Preview | Prod | Secret? | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `NEXT_SANITY_PROJECT_ID` | Yes | Yes | Yes | No | `5w5623jq` |
-| `NEXT_SANITY_DATASET` | Yes | Yes | Yes | No | `production` |
+| `NEXT_SANITY_PROJECT_ID` | Yes | Recommended | Yes | No | `5w5623jq` |
+| `NEXT_SANITY_DATASET` | Yes | Recommended | Yes | No | `production` |
 | `NEXT_SANITY_API_VERSION` | Yes | Yes | Yes | No | `2026-03-01` |
 | `NEXT_SANITY_STUDIO_URL` | Yes | Yes | Yes | No | `/studio` |
 | `NEXT_SITE_URL` | Yes | Yes | Yes | No | Use the matching deployed origin; production should use the final canonical domain |
@@ -111,6 +111,8 @@ Do **not** add these to Vercel unless a future server-only feature explicitly ne
 The write token is for local import/CLI work. The application does not write website content to Sanity at runtime.
 
 The five `NEXT_*` values above are public application configuration even though their Vercel names do not include `NEXT_PUBLIC_`. `next.config.ts` exposes only this explicit allowlist to the embedded browser Studio. Tokens and secrets are never included in that allowlist.
+
+The application has checked-in defaults for the public Sanity project ID and dataset, so a Preview deployment still builds if those two variables are scoped only to Production. Add them to Preview as well when testing a different Sanity project or dataset. Tokens and secrets never have checked-in defaults.
 
 ## 6. Resend lead delivery
 
