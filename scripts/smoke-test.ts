@@ -54,6 +54,10 @@ function anchorHrefs(html: string) {
   return [...html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/gi)].map((match) => match[1].replace(/&amp;/g, '&'))
 }
 
+function headingTexts(html: string) {
+  return [...html.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)].map((match) => visibleText(match[1]).trim())
+}
+
 async function testDocument(pathname: string, requiredText: string[]) {
   const {response, text} = await request(pathname)
   expect(response.status === 200, `${pathname} returned ${response.status}`)
@@ -80,6 +84,10 @@ async function run() {
   ]) expect(anchorHrefs(collection).includes(href), `Collection page is missing live destination ${href}`)
   expect(collection.includes('class="collection-footer-form"'), 'Collection page is missing the live-style footer quote form')
   expect(collection.includes('served the Chicagoland area for over 12 years'), 'Collection footer is missing the live company summary')
+  expect(collection.includes('class="collection-utility"'), 'Collection page is missing the live utility bar')
+  expect(collection.includes('6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'), 'Collection page is not using the exact live header logo')
+  expect(collection.includes('class="collection-footer-title"'), 'Collection footer is missing the single-line quote heading')
+  expect((collection.match(/class="collection-social-icon"/g) || []).length === 2, 'Collection footer does not render both social icons')
   expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
   const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1])
   expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
@@ -106,7 +114,11 @@ async function run() {
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
     expect((text.match(/class="collection-header"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
     expect((text.match(/class="collection-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
+    expect((text.match(/class="collection-utility"/g) || []).length === 1, `${pathname} does not render exactly one utility bar`)
     const renderedText = visibleText(text)
+    for (const pageHeading of headingTexts(text).filter((value) => /^(what|why|who)\b/i.test(value))) {
+      expect(pageHeading.endsWith('?'), `${pathname} question heading is missing ?: ${pageHeading}`)
+    }
     for (const href of anchorHrefs(text)) {
       expect(Boolean(href), `${pathname} contains an empty link`)
       if (href.startsWith('#')) expect(text.includes(`id="${href.slice(1)}"`), `${pathname} has a broken ${href} anchor`)
@@ -132,10 +144,14 @@ async function run() {
       expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
       expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
     }
-    expect(text.includes('class="area-rail"'), `${pathname} does not render the horizontal location rail`)
+    expect(text.includes('area-rail-two-row'), `${pathname} does not render the two-row horizontal location rail`)
     expect(!text.includes('class="area-grid"'), `${pathname} still renders locations as a wrapping grid`)
-    expect(text.indexOf('class="area-map"') < text.indexOf('class="area-rail"'), `${pathname} does not render the map before the location rail`)
+    expect(text.indexOf('class="area-map"') < text.indexOf('area-rail-two-row'), `${pathname} does not render the map before the location rail`)
     expect((text.match(/class="area-chip"/g) || []).length === (area?.sub_areas || '').split('||').filter(Boolean).length, `${pathname} does not render every location in the rail`)
+    expect(text.includes('scroll horizontally to view all columns'), `${pathname} does not expose its mobile pricing table as horizontally scrollable`)
+    const faqSection = text.match(/<section class="wrap" id="faq">([\s\S]*?)<\/section>/)?.[1] || ''
+    expect((faqSection.match(/class="faq-chevron"/g) || []).length === (faqSection.match(/<details\b/g) || []).length, `${pathname} does not render one FAQ chevron per question`)
+    expect(text.includes('class="section-tint library-section"'), `${pathname} does not use shared library section spacing`)
     expect(text.includes('class="collection-footer-form"'), `${pathname} is missing the live-style footer quote form`)
     expect(renderedText.includes(`${service?.pricing_heading} in ${area?.name}?`), `${pathname} pricing heading is not a question`)
   }
