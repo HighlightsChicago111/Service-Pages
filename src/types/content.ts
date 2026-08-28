@@ -93,7 +93,23 @@ export type ServicePageData = {
     workingPhotos?: ExternalImage[]
     guides?: Guide[]
     localFaqOverrides?: Faq[]
-    template?: {name?: string; version?: string; active?: boolean; sectionOrder?: string[]}
+    template?: {
+      name?: string
+      version?: string
+      active?: boolean
+      sectionOrder?: string[]
+      presentation?: {
+        footerColor?: string
+        accentColor?: string
+        accentDarkColor?: string
+        equalHeightReviewCards?: boolean
+        ratingAfterReviewText?: boolean
+        coverageMapFirst?: boolean
+        neighborhoodGrid?: boolean
+        brandLogoCards?: boolean
+        pricingHeadingAsQuestion?: boolean
+      }
+    }
     service: ServiceDefinition
     area: ServiceArea
   } | null

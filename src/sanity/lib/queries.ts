@@ -39,7 +39,7 @@ export const SERVICE_PAGE_QUERY = defineQuery(`
       workingPhotos[]{..., "resolvedUrl": coalesce(image.asset->url, externalUrl)},
       guides,
       localFaqOverrides,
-      template->{name, version, active, sectionOrder},
+      template->{name, version, active, sectionOrder, presentation},
       service->{
         serviceId,
         name,
