@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto'
 import {NextResponse} from 'next/server'
 
-const allowedFields = ['name', 'phone', 'address', 'buildingType', 'issue', 'service', 'area'] as const
+const allowedFields = ['name', 'email', 'phone', 'address', 'buildingType', 'issue', 'service', 'area'] as const
 const resendEndpoint = 'https://api.resend.com/emails'
 
 function configured(value: string | undefined) {
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     'New website service request',
     '',
     `Name: ${clean.name}`,
+    `Email: ${clean.email || 'Not provided'}`,
     `Phone: ${clean.phone}`,
     `Address: ${clean.address || 'Not provided'}`,
     `Building type: ${clean.buildingType || 'Not provided'}`,

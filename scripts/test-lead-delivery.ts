@@ -31,6 +31,7 @@ async function run() {
 
   const success = await POST(leadRequest({
     name: 'QA Customer',
+    email: 'qa@example.com',
     phone: '(773) 555-0100',
     address: 'Lincoln & Foster',
     buildingType: 'Two-flat or three-flat',
@@ -49,6 +50,7 @@ async function run() {
   assert.deepEqual(email.to, ['dispatch@example.com', 'owner@example.com'])
   assert.equal(email.subject, 'New Generator Installation lead — Chicago')
   assert.match(email.text, /Name: QA Customer/)
+  assert.match(email.text, /Email: qa@example.com/)
   assert.match(email.text, /Phone: \(773\) 555-0100/)
   assert.match(email.text, /Request: Quote only/)
 

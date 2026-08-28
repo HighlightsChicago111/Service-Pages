@@ -75,9 +75,11 @@ async function run() {
     'https://www.highlightschicago.com/our-team',
     'https://www.highlightschicago.com/testimonials',
     'https://www.highlightschicago.com/faq',
-    'tel:7732623333',
+    'tel:773-262-3333',
     'mailto:info@highlightschicago.com',
   ]) expect(anchorHrefs(collection).includes(href), `Collection page is missing live destination ${href}`)
+  expect(collection.includes('class="collection-footer-form"'), 'Collection page is missing the live-style footer quote form')
+  expect(collection.includes('served the Chicagoland area for over 12 years'), 'Collection footer is missing the live company summary')
   expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
   const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1])
   expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
@@ -108,7 +110,7 @@ async function run() {
     for (const href of anchorHrefs(text)) {
       expect(Boolean(href), `${pathname} contains an empty link`)
       if (href.startsWith('#')) expect(text.includes(`id="${href.slice(1)}"`), `${pathname} has a broken ${href} anchor`)
-      else if (href.startsWith('tel:')) expect(/^tel:(?:\+\d{11,15}|\d{10})$/.test(href), `${pathname} has an invalid phone link ${href}`)
+      else if (href.startsWith('tel:')) expect(/^\+?\d{10,15}$/.test(href.slice(4).replace(/[^+\d]/g, '')), `${pathname} has an invalid phone link ${href}`)
       else if (href.startsWith('mailto:')) expect(/^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/.test(href), `${pathname} has an invalid email link ${href}`)
       else if (/^https?:/.test(href)) expect(Boolean(new URL(href)), `${pathname} has an invalid external URL ${href}`)
       else expect(validServicePaths.has(href), `${pathname} has an invalid internal URL ${href}`)
@@ -122,6 +124,7 @@ async function run() {
     }
     expect((text.match(/class="rev-card"/g) || []).length === 4, `${pathname} does not render four review cards`)
     expect(text.includes('reviews-grid-equal'), `${pathname} does not use equal-height review cards`)
+    expect(!text.includes('class="rev-head"'), `${pathname} still renders the duplicate aggregate rating above reviews`)
     expect(text.indexOf('class="rev-rating"') > text.indexOf('<blockquote>'), `${pathname} does not place the rating after review feedback`)
     expect(text.includes('class="brands-section"'), `${pathname} does not use the footer-colored brand section`)
     for (const brand of (service?.brands || '').split('||').filter(Boolean)) {
@@ -129,8 +132,11 @@ async function run() {
       expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
       expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
     }
-    expect(!text.includes('class="area-carousel"'), `${pathname} still renders the scrolling neighborhood carousel`)
-    expect(text.indexOf('class="area-map"') < text.indexOf('class="area-grid"'), `${pathname} does not render the map before neighborhoods`)
+    expect(text.includes('class="area-rail"'), `${pathname} does not render the horizontal location rail`)
+    expect(!text.includes('class="area-grid"'), `${pathname} still renders locations as a wrapping grid`)
+    expect(text.indexOf('class="area-map"') < text.indexOf('class="area-rail"'), `${pathname} does not render the map before the location rail`)
+    expect((text.match(/class="area-chip"/g) || []).length === (area?.sub_areas || '').split('||').filter(Boolean).length, `${pathname} does not render every location in the rail`)
+    expect(text.includes('class="collection-footer-form"'), `${pathname} is missing the live-style footer quote form`)
     expect(renderedText.includes(`${service?.pricing_heading} in ${area?.name}?`), `${pathname} pricing heading is not a question`)
   }
 

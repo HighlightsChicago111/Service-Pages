@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
+import {FooterLeadForm} from './footer-lead-form'
+
 const LIVE_SITE = 'https://www.highlightschicago.com'
 const HEADER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/6a3c3c20491b43b0858c1876_highlights-chicago-logo-p-500.webp'
 const FOOTER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/69ffb4d8099654cbee2d7b53_Highlights-Chicago_Logo-white.webp'
@@ -43,7 +45,7 @@ export function CollectionFooter() {
           <a className="collection-footer-logo" href={`${LIVE_SITE}/`} aria-label="Highlights Chicago home">
             <img src={FOOTER_LOGO} alt="Highlights Chicago" />
           </a>
-          <p className="collection-footer-intro">Highlights Chicago is a full-service, family-owned electrical company serving the Chicagoland area with high-quality workmanship and dependable customer service.</p>
+          <p className="collection-footer-intro">Highlights Chicago is a full-service, family-owned electrical company that has served the Chicagoland area for over 12 years. From the beginning, the team has focused on high-quality workmanship and superior customer service.</p>
           <a className="collection-ai-link" href={`${LIVE_SITE}/`}>Learn about Highlights Chicago with AI <span aria-hidden="true">→</span></a>
           <div className="collection-footer-rule" />
           <div className="collection-footer-links">
@@ -62,8 +64,8 @@ export function CollectionFooter() {
             </nav>
             <address>
               <h2>Contact</h2>
-              <a href="https://www.google.com/maps/search/?api=1&query=5766+N+Lincoln+Avenue+Chicago+IL+60659">Address: 5766 N. Lincoln Avenue<br />Chicago, IL 60659</a>
-              <a href="tel:7732623333">Phone: 773-262-3333</a>
+              <a href="https://www.google.com/maps/place/Highlights+Chicago+Electrical+Services/@41.986143,-87.700781,15z/data=!4m5!3m4!1s0x0:0xae9382f0c0f6b3b!8m2!3d41.9861431!4d-87.7007806?hl=en-US&amp;shorturl=1">Address: 5766 N. Lincoln Avenue<br />Chicago, IL 60659</a>
+              <a href="tel:773-262-3333">Phone: 773-262-3333</a>
               <a href="mailto:info@highlightschicago.com">Email: info@highlightschicago.com</a>
             </address>
           </div>
@@ -79,8 +81,8 @@ export function CollectionFooter() {
           <p className="collection-footer-kicker">Request a quick</p>
           <h2>Quote</h2>
           <p>Tell the Highlights Chicago team what electrical service you need and get help planning the next step.</p>
-          <a className="collection-footer-primary" href={`${LIVE_SITE}/contact-us`}>Request Free Quote</a>
-          <a className="collection-footer-phone" href="tel:7732623333">Or call 773-262-3333</a>
+          <FooterLeadForm />
+          <a className="collection-footer-phone" href="tel:773-262-3333">Or call 773-262-3333</a>
         </aside>
       </div>
     </footer>
