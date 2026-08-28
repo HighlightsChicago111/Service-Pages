@@ -17,14 +17,17 @@ function imageStyle(image?: ExternalImage): CSSProperties | undefined {
   return url ? {backgroundImage: `url(${JSON.stringify(url)})`} : undefined
 }
 
-function brandLogoPath(brand: string): string {
-  const slug = brand
+function brandSlug(brand: string): string {
+  return brand
     .normalize('NFKD')
     .toLowerCase()
     .replace(/&/g, ' and ')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-  return `/images/brands/${slug}.png`
+}
+
+function brandLogoPath(brand: string): string {
+  return `/images/brands/${brandSlug(brand)}.png`
 }
 
 function asQuestion(value: string | undefined, area: string): string {
@@ -186,7 +189,7 @@ export function ServiceLandingPage({data}: Props) {
 
       <section className="wrap" id="equipment"><h2>{questionHeading(service.typesHeading)}</h2><p className="lede narrow">{service.typesLede}</p><div className="equip-strip" aria-label={service.typesHeading}><div className="equip-track">{[...equipment, ...equipment].map((item, index) => <div className="equip" key={`${item._key || item.name}-${index}`} aria-hidden={index >= equipment.length || undefined}><EquipmentIcon index={index} /><b>{item.name}</b><span>{item.description}</span></div>)}</div></div>{service.typesFootnote && <p className="small muted section-note">{service.typesFootnote}</p>}</section>
 
-      <section className="brands-section" id="brands"><div className="wrap"><h2>{questionHeading(`${service.brandsHeading} in ${area.name}`)}</h2><p className="lede narrow">{service.brandsLede}</p><div className="brand-strip" aria-label={`${service.brandsHeading} in ${area.name}`}><div className="brand-track">{[0, 1].map((copy) => <div className="brand-sequence" aria-hidden={copy === 1 || undefined} key={copy}>{brands.map((brand) => <div className="brand-tile" key={`${copy}-${brand}`}><span className="brand-mark" style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} /><strong>{brand}</strong></div>)}</div>)}</div></div>{service.brandsNote && <p className="small section-note">{service.brandsNote}</p>}</div></section>
+      <section className="brands-section" id="brands"><div className="wrap"><h2>{questionHeading(`${service.brandsHeading} in ${area.name}`)}</h2><p className="lede narrow">{service.brandsLede}</p><div className="brand-strip" aria-label={`${service.brandsHeading} in ${area.name}`}><div className="brand-track">{[0, 1].map((copy) => <div className="brand-sequence" aria-hidden={copy === 1 || undefined} key={copy}>{brands.map((brand) => <div className="brand-tile" key={`${copy}-${brand}`}><span className={`brand-mark brand-mark--${brandSlug(brand)}`} style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} /><strong>{brand}</strong></div>)}</div>)}</div></div>{service.brandsNote && <p className="small section-note">{service.brandsNote}</p>}</div></section>
 
       <section className="wrap" id="trust"><h2>{questionHeading(settings.trustHeading)}</h2><p className="lede narrow">{settings.trustLede}</p><div className="trust-strip">{trustMetrics.slice(0, 2).map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}{rating && <div className="trust-cell google-proof-cell"><b><Rating rating={rating} largeMark /></b><span>{reviewCount} Google reviews</span></div>}{trustMetrics.slice(2).map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}</div><div className="grid grid-3 trust-cards">{settings.trustCards?.map((item) => <article className="card" key={item._key || item.title}><h3>{questionHeading(item.title)}</h3><p className="small">{item.body}</p></article>)}</div></section>
 

@@ -146,7 +146,9 @@ async function run() {
     expect(!text.includes('class="fill"'), `${pathname} still renders an overlapping duplicate star layer`)
     for (const brand of (service?.brands || '').split('||').filter(Boolean)) {
       const logoPath = brandLogoPath(brand)
+      const logoSlug = logoPath.slice('/images/brands/'.length, -'.png'.length)
       expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
+      expect(text.includes(`brand-mark--${logoSlug}`), `${pathname} is missing the ${brand} contrast class`)
       expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
     }
     const whySection = text.match(/<section class="wrap" id="why-us">([\s\S]*?)<\/section>/)?.[1] || ''
@@ -162,7 +164,7 @@ async function run() {
     const faqSection = text.match(/<section class="wrap" id="faq">([\s\S]*?)<\/section>/)?.[1] || ''
     expect((faqSection.match(/class="faq-chevron"/g) || []).length === (faqSection.match(/<details\b/g) || []).length, `${pathname} does not render one FAQ chevron per question`)
     expect(text.includes('class="wrap closing-cta-section"'), `${pathname} is missing the compact closing-CTA spacing hook`)
-    expect(text.includes('class="cta-heading"'), `${pathname} does not mark the closing CTA heading as mobile single-line`)
+    expect(text.includes('class="cta-heading"'), `${pathname} does not mark the closing CTA heading for responsive sizing`)
     expect(text.includes('class="section-tint library-section"'), `${pathname} does not use shared library section spacing`)
     expect(text.includes('class="collection-footer-form"'), `${pathname} is missing the live-style footer quote form`)
     expect(renderedText.includes(`${service?.pricing_heading} in ${area?.name}?`), `${pathname} pricing heading is not a question`)

@@ -184,3 +184,22 @@ a{color:var(--brand);text-underline-offset:3px}
 .service-landing .faq-chevron{transition:none}
 @media(max-width:900px){.service-landing .guide-mobile-head::after{transition:none}}
 @media(max-width:720px){.service-landing .why-chevron{transition:none}.service-landing .why-item:not([open]) .why-body{display:none}}
+
+/* Shared mobile title safety, single-line breadcrumbs, and restrained monochrome brand treatment. */
+.service-landing .brand-mark{filter:grayscale(1) contrast(1.45) brightness(1.55);mix-blend-mode:screen;opacity:.82}
+.service-landing .brand-mark--big-ass-fans,.service-landing .brand-mark--broan,.service-landing .brand-mark--cummins,.service-landing .brand-mark--federal-pacific,.service-landing .brand-mark--kohler,.service-landing .brand-mark--lg,.service-landing .brand-mark--lutron,.service-landing .brand-mark--milbank,.service-landing .brand-mark--minka-aire,.service-landing .brand-mark--solaredge,.service-landing .brand-mark--tesla{filter:grayscale(1) invert(1) contrast(1.35);opacity:.8}
+.service-landing .brand-tile strong{color:#e3e7ea}
+@media(max-width:620px){
+  .service-landing .crumbs{font-size:.78rem;overflow-x:auto;overscroll-behavior-inline:contain;padding-block:10px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .service-landing .crumbs::-webkit-scrollbar{display:none}
+  .service-landing .crumbs ol{flex-wrap:nowrap;gap:6px;width:max-content}
+  .service-landing .crumbs li{white-space:nowrap}
+  .service-landing .crumbs li:not(:last-child)::after{margin-left:6px}
+  .service-landing .hero{padding-block:28px 38px}
+  .service-landing .hero-grid>div{min-width:0}
+  .service-landing .hero h1{font-size:clamp(1.75rem,8vw,2.2rem);line-height:1.08;max-width:100%;overflow-wrap:break-word;text-wrap:balance}
+  .service-landing .hero .eyebrow{text-align:left}
+  .service-landing .single-line-mobile{font-size:clamp(.92rem,4.35vw,1.2rem);letter-spacing:-.035em;white-space:nowrap}
+  .service-landing .cta-heading{font-size:clamp(.9rem,4vw,1.05rem);letter-spacing:-.03em;max-width:100%;overflow-wrap:break-word;text-wrap:balance;white-space:normal}
+  .service-landing .cta-final{overflow:hidden}
+}
