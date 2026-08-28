@@ -93,8 +93,19 @@ const siteSettings = {
 }
 
 const template = {
-  _id: 'servicePageTemplate-standard-v1', _type: 'servicePageTemplate', name: 'Standard service landing page', version: '1.0.0', active: true,
+  _id: 'servicePageTemplate-standard-v1', _type: 'servicePageTemplate', name: 'Standard service landing page', version: '1.1.0', active: true,
   sectionOrder: ['hero', 'types', 'brands', 'trust', 'reviews', 'why', 'workingArea', 'coverage', 'otherServices', 'pricing', 'faq', 'closingCta', 'guides'],
+  presentation: {
+    footerColor: '#151f2a',
+    accentColor: '#9ec837',
+    accentDarkColor: '#82aa24',
+    equalHeightReviewCards: true,
+    ratingAfterReviewText: true,
+    coverageMapFirst: true,
+    neighborhoodGrid: true,
+    brandLogoCards: true,
+    pricingHeadingAsQuestion: true,
+  },
 }
 
 const services = source.equip.map((row) => ({

@@ -16,6 +16,21 @@ function imageStyle(image?: ExternalImage): CSSProperties | undefined {
   return url ? {backgroundImage: `url(${JSON.stringify(url)})`} : undefined
 }
 
+function brandLogoPath(brand: string): string {
+  const slug = brand
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  return `/images/brands/${slug}.png`
+}
+
+function asQuestion(value: string | undefined, area: string): string {
+  const heading = `${value || 'What This Work Costs'} in ${area}`.trim()
+  return heading.endsWith('?') ? heading : `${heading}?`
+}
+
 function serviceHref(url: string | undefined, routes: NonNullable<ServicePageData['serviceRoutes']>, areaSlug: string) {
   if (!url) return '/services'
   try {
@@ -132,18 +147,27 @@ export function ServiceLandingPage({data}: Props) {
   const localFaqs = page.localFaqOverrides?.length ? page.localFaqOverrides : area.localFaqs
   const rating = settings.google?.rating
   const reviewCount = settings.google?.reviewCount
+  const presentation = page.template?.presentation
+  const coverageMapFirst = presentation?.coverageMapFirst !== false
+  const equalHeightReviews = presentation?.equalHeightReviewCards !== false
+  const footerColor = presentation?.footerColor || '#151f2a'
+  const accentColor = presentation?.accentColor || '#9ec837'
+  const accentDarkColor = presentation?.accentDarkColor || '#82aa24'
   const brandStyle = {
-    '--brand': settings.brand?.primary || '#223D90',
-    '--brand-dk': settings.brand?.dark || '#182c69',
-    '--brand-lt': settings.brand?.light || '#e9edf7',
-    '--brand-2': settings.brand?.secondary || '#0F7CC1',
-    '--accent': settings.brand?.accent || '#66B143',
-    '--accent-dk': settings.brand?.accentDark || '#4e8f33',
+    '--brand': footerColor,
+    '--brand-dk': '#0f171f',
+    '--brand-lt': '#f4f6f7',
+    '--brand-2': accentDarkColor,
+    '--accent': accentColor,
+    '--accent-dk': accentDarkColor,
+    '--footer': footerColor,
   } as CSSProperties
   const equipment = service.types || []
   const trustMetrics = settings.trustMetrics || []
   const guideItems = (page.guides || []).map((guide) => ({title: guide.title, paragraphs: guideText(guide)}))
   const serviceRoutes = data.serviceRoutes || []
+  const coverageMap = area.mapQuery ? <div className="area-map"><iframe title={`${area.name} service area map`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(area.mapQuery)}&output=embed`} /></div> : null
+  const coverageAreas = <div className="area-grid" role="list">{area.subAreas?.map((subArea) => <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img" style={imageStyle(subArea.photo)}>{!imageUrl(subArea.photo) && <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span></a>)}</div>
 
   return (
     <div className="site-chrome">
@@ -160,21 +184,21 @@ export function ServiceLandingPage({data}: Props) {
 
       <section className="wrap" id="equipment"><h2>{service.typesHeading}</h2><p className="lede narrow">{service.typesLede}</p><div className="equip-strip" aria-label={service.typesHeading}><div className="equip-track">{[...equipment, ...equipment].map((item, index) => <div className="equip" key={`${item._key || item.name}-${index}`} aria-hidden={index >= equipment.length || undefined}><EquipmentIcon index={index} /><b>{item.name}</b><span>{item.description}</span></div>)}</div></div>{service.typesFootnote && <p className="small muted section-note">{service.typesFootnote}</p>}</section>
 
-      <section className="section-tint" id="brands"><div className="wrap"><h2>{service.brandsHeading} in {area.name}</h2><p className="lede narrow">{service.brandsLede}</p><div className="brand-grid">{service.brands?.map((brand) => <div className="brand-tile" key={brand}><svg viewBox="0 0 200 40" role="img" aria-label={brand}><text x="100" y="28" textAnchor="middle">{brand}</text></svg></div>)}</div>{service.brandsNote && <p className="small muted section-note">{service.brandsNote}</p>}</div></section>
+      <section className="brands-section" id="brands"><div className="wrap"><h2>{service.brandsHeading} in {area.name}</h2><p className="lede narrow">{service.brandsLede}</p><div className="brand-grid">{service.brands?.map((brand) => <div className="brand-tile" key={brand}><span className="brand-mark" style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} /><strong>{brand}</strong></div>)}</div>{service.brandsNote && <p className="small section-note">{service.brandsNote}</p>}</div></section>
 
       <section className="wrap" id="trust"><h2>{settings.trustHeading}</h2><p className="lede narrow">{settings.trustLede}</p><div className="trust-strip">{trustMetrics.slice(0, 2).map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}{rating && <div className="trust-cell"><b><Rating rating={rating} largeMark /></b><span><span className="static-stars" aria-hidden="true">★★★★★</span> {reviewCount} Google reviews</span></div>}{trustMetrics.slice(2).map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}</div><div className="grid grid-3 trust-cards">{settings.trustCards?.map((item) => <article className="card" key={item._key || item.title}><h3>{item.title}</h3><p className="small">{item.body}</p></article>)}</div></section>
 
-      <section className="section-tint" id="reviews"><div className="wrap"><h2>{settings.reviewsHeading}</h2>{rating && <div className="rev-head"><Rating rating={rating} count={reviewCount} largeMark /></div>}<div className="grid grid-2 reviews-grid">{page.reviews?.map((review, index) => <a className="rev-card" href={review.sourceUrl} target="_blank" rel="noreferrer" key={review._key || index}><blockquote>{review.quote}</blockquote><span className="rev-meta">{rating && <Rating rating={rating} compact />}<strong>{review.author}</strong>{review.location && <> · {review.location}</>}<span className="rev-src">View on Google →</span></span></a>)}</div>{settings.google?.reviewsUrl && <div className="rev-cta"><a className="rev-cta-btn" href={settings.google.reviewsUrl}>Read all Google reviews →</a></div>}{settings.reviewsDisclaimer && <p className="small muted review-note">{settings.reviewsDisclaimer}</p>}</div></section>
+      <section className="section-tint" id="reviews"><div className="wrap"><h2>{settings.reviewsHeading}</h2>{rating && <div className="rev-head"><Rating rating={rating} count={reviewCount} largeMark /></div>}<div className={`grid grid-2 reviews-grid${equalHeightReviews ? ' reviews-grid-equal' : ''}`}>{page.reviews?.map((review, index) => <a className="rev-card" href={review.sourceUrl} target="_blank" rel="noreferrer" key={review._key || index}><blockquote>{review.quote}</blockquote>{rating && <div className="rev-rating"><Rating rating={rating} compact /></div>}<footer className="rev-meta"><span><strong>{review.author}</strong>{review.location && <> · {review.location}</>}</span><span className="rev-src">View on Google →</span></footer></a>)}</div>{settings.google?.reviewsUrl && <div className="rev-cta"><a className="rev-cta-btn" href={settings.google.reviewsUrl}>Read all Google reviews →</a></div>}{settings.reviewsDisclaimer && <p className="small muted review-note">{settings.reviewsDisclaimer}</p>}</div></section>
 
       <section className="wrap" id="why-us"><h2>{service.whyHeading}</h2><p className="lede narrow">{service.whyLede}</p><div className="why-grid">{service.whyItems?.map((item) => <details className="why-item" open key={item._key || item.title}><summary><span>{item.title}</span><span className="why-plus">+</span></summary><p className="why-body">{item.body}</p></details>)}</div></section>
 
       <section className="section-tint" id="working-in-area"><div className="wrap"><h2>Working in {area.name}</h2><p className="lede narrow">{area.workingLede}</p><div className="photo-grid">{page.workingPhotos?.map((photo, index) => <div className="ph" key={photo._key || index} style={imageStyle(photo)} role="img" aria-label={photo.alt || `${service.name} work in ${area.name} ${index + 1}`}>{!imageUrl(photo) && <EmptyImageIcon />}</div>)}</div></div></section>
 
-      <section className="wrap" id="areas"><h2>{area.areasHeading}</h2><p className="lede narrow">{area.areasLede}</p><div className="area-carousel" role="list">{area.subAreas?.map((subArea) => <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img" style={imageStyle(subArea.photo)}>{!imageUrl(subArea.photo) && <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span></a>)}</div>{area.areasNote && <p className="small muted">{area.areasNote}</p>}{area.mapQuery && <div className="area-map"><iframe title={`${area.name} service area map`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(area.mapQuery)}&output=embed`} /></div>}</section>
+      <section className="wrap" id="areas"><h2>{area.areasHeading}</h2><p className="lede narrow">{area.areasLede}</p><div className="coverage-stack">{coverageMapFirst ? <>{coverageMap}{coverageAreas}</> : <>{coverageAreas}{coverageMap}</>}</div>{area.areasNote && <p className="small muted coverage-note">{area.areasNote}</p>}</section>
 
       <section className="wrap" id="other-services"><h2>Our other services in {area.name}</h2><div className="svc-split">{service.featuredCategory?.title && <a className="svc-feature" href={serviceHref(service.featuredCategory.url, serviceRoutes, area.slug)}><span className="svc-feature-tag">{service.featuredCategory.tag}</span><h3>{service.featuredCategory.title}</h3><p>{service.featuredCategory.description}</p><span className="svc-feature-tag">{service.featuredCategory.cta} →</span></a>}<div className="svc-four">{service.otherServices?.slice(0, 4).map((item) => <a className="svc-mini" href={serviceHref(item.url, serviceRoutes, area.slug)} key={item._key || item.name}><b>{item.name}</b><span>{item.description}</span></a>)}</div></div></section>
 
-      <section className="section-tint" id="pricing"><div className="wrap"><h2>{service.pricing?.heading} in {area.name}</h2><p className="lede narrow">{service.pricing?.lede}</p><div className="table-wrap"><table><caption>{service.pricing?.caption}</caption><thead><tr><th>{service.pricing?.column1}</th><th>{service.pricing?.column2}</th><th>{service.pricing?.column3}</th></tr></thead><tbody>{service.pricing?.rows?.map((row) => <tr key={row._key || row.job}><td>{row.job}</td><td>{row.driver}</td><td>{row.permit}</td></tr>)}</tbody></table></div>{service.pricing?.note && <p className="small muted section-note">{service.pricing.note}</p>}</div></section>
+      <section className="section-tint" id="pricing"><div className="wrap"><h2>{presentation?.pricingHeadingAsQuestion === false ? `${service.pricing?.heading} in ${area.name}` : asQuestion(service.pricing?.heading, area.name)}</h2><p className="lede narrow">{service.pricing?.lede}</p><div className="table-wrap"><table><caption>{service.pricing?.caption}</caption><thead><tr><th>{service.pricing?.column1}</th><th>{service.pricing?.column2}</th><th>{service.pricing?.column3}</th></tr></thead><tbody>{service.pricing?.rows?.map((row) => <tr key={row._key || row.job}><td>{row.job}</td><td>{row.driver}</td><td>{row.permit}</td></tr>)}</tbody></table></div>{service.pricing?.note && <p className="small muted section-note">{service.pricing.note}</p>}</div></section>
 
       <section className="wrap" id="faq"><h2>{service.name} in {area.name} — FAQs</h2><div className="faq">{[...(service.faqs || []), ...(localFaqs || [])].map((faq) => <details key={faq._key || faq.question}><summary>{faq.question}</summary><div className="faq-body"><p>{faq.answer}</p></div></details>)}</div></section>
 

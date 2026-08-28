@@ -28,6 +28,16 @@ function reviewIds(raw = '') {
   return raw.split('||').map((entry) => entry.split('::').at(-1)?.trim()).filter(Boolean) as string[]
 }
 
+function brandLogoPath(brand: string) {
+  const slug = brand
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  return `/images/brands/${slug}.png`
+}
+
 function visibleText(html: string) {
   return html
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
@@ -111,6 +121,17 @@ async function run() {
       expect(Boolean(expected && renderedText.includes(expected)), `${pathname} is missing full review ${sourceId}`)
     }
     expect((text.match(/class="rev-card"/g) || []).length === 4, `${pathname} does not render four review cards`)
+    expect(text.includes('reviews-grid-equal'), `${pathname} does not use equal-height review cards`)
+    expect(text.indexOf('class="rev-rating"') > text.indexOf('<blockquote>'), `${pathname} does not place the rating after review feedback`)
+    expect(text.includes('class="brands-section"'), `${pathname} does not use the footer-colored brand section`)
+    for (const brand of (service?.brands || '').split('||').filter(Boolean)) {
+      const logoPath = brandLogoPath(brand)
+      expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
+      expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
+    }
+    expect(!text.includes('class="area-carousel"'), `${pathname} still renders the scrolling neighborhood carousel`)
+    expect(text.indexOf('class="area-map"') < text.indexOf('class="area-grid"'), `${pathname} does not render the map before neighborhoods`)
+    expect(renderedText.includes(`${service?.pricing_heading} in ${area?.name}?`), `${pathname} pricing heading is not a question`)
   }
 
   for (const [pathname, destination] of [
