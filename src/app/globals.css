@@ -106,7 +106,7 @@ a{color:var(--brand);text-underline-offset:3px}
 
 .service-landing .brand-tile{background:transparent;border:1px solid #34424d;color:#fff}
 .service-landing .brand-tile:hover{background:#1d2a35;border-color:var(--accent);color:#fff}
-.service-landing .brand-mark{background-color:transparent;border-radius:0;box-shadow:none;filter:grayscale(1) brightness(0) invert(1)}
+.service-landing .brand-mark{background-color:transparent;border-radius:0;box-shadow:none;filter:none}
 .service-landing .brand-tile strong{color:#fff}
 .service-landing .reviews-grid{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;width:100%}
 .service-landing .rev-card{max-width:100%;min-width:0;overflow:hidden;width:100%}
@@ -122,6 +122,12 @@ a{color:var(--brand);text-underline-offset:3px}
 .service-landing .faq details[open] .faq-chevron{transform:rotate(225deg)}
 .service-landing .faq-body{padding:0 4px 20px}
 .service-landing .library-section{padding-block:clamp(64px,7vw,96px)}
+.service-landing .library-section .guide-tabs{gap:40px;grid-template-columns:minmax(280px,320px) minmax(0,1fr);margin-top:32px}
+.service-landing .library-section .guide-nav{gap:12px}
+.service-landing .library-section .guide-nav button{padding:20px 22px}
+.service-landing .library-section .guide-panel{padding:44px 48px}
+.service-landing .library-section .guide-body p{margin-bottom:22px}
+.service-landing .library-section .guide-body p:last-child{margin-bottom:0}
 
 @media(max-width:820px){
   .collection-footer-grid{grid-template-columns:minmax(0,1fr)}
@@ -135,6 +141,16 @@ a{color:var(--brand);text-underline-offset:3px}
   .collection-desktop-nav,.collection-contact-button{display:none}
   .collection-mobile-menu{display:block}
   .collection-mobile-menu nav a{font-size:16px;font-weight:400;padding:10px 0;text-transform:uppercase}
+}
+@media(max-width:1100px) and (min-width:901px){
+  .service-landing .library-section .guide-tabs{gap:28px;grid-template-columns:280px minmax(0,1fr)}
+  .service-landing .library-section .guide-panel{padding:36px 38px}
+}
+@media(max-width:900px){
+  .service-landing .library-section .guide-tabs{gap:12px;grid-template-columns:minmax(0,1fr);margin-top:24px}
+  .service-landing .library-section .guide-panel{padding:0}
+  .service-landing .library-section .guide-mobile-head{padding:18px 20px}
+  .service-landing .library-section .guide-body{padding:4px 20px 24px}
 }
 @media(max-width:620px){
   .collection-nav-shell{min-height:0;width:100%}
