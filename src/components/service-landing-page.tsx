@@ -8,6 +8,20 @@ import {questionHeading} from '@/lib/headings'
 
 type Props = {data: ServicePageData}
 
+const BRAND_MONOGRAMS: Record<string, string> = {
+  'canadian-solar': 'CS',
+  casablanca: 'C',
+  challenger: 'C',
+  'cutler-hammer': 'CH',
+  eaton: 'E',
+  'hampton-bay': 'HB',
+  honeywell: 'H',
+  kohler: 'K',
+  'minka-aire': 'MA',
+  murray: 'M',
+  'pass-and-seymour': 'P&S',
+}
+
 function imageUrl(image?: ExternalImage): string | undefined {
   return image?.resolvedUrl || image?.externalUrl
 }
@@ -28,6 +42,12 @@ function brandSlug(brand: string): string {
 
 function brandLogoPath(brand: string): string {
   return `/images/brands/${brandSlug(brand)}.png`
+}
+
+function BrandMark({brand}: {brand: string}) {
+  const slug = brandSlug(brand)
+  const monogram = BRAND_MONOGRAMS[slug]
+  return <span className={`brand-mark brand-mark--${slug}${monogram ? ' brand-mark--monogram' : ''}`} data-monogram={monogram} style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} />
 }
 
 function asQuestion(value: string | undefined, area: string): string {
@@ -189,7 +209,7 @@ export function ServiceLandingPage({data}: Props) {
 
       <section className="wrap" id="equipment"><h2>{questionHeading(service.typesHeading)}</h2><p className="lede narrow">{service.typesLede}</p><div className="equip-strip" aria-label={service.typesHeading}><div className="equip-track">{[...equipment, ...equipment].map((item, index) => <div className="equip" key={`${item._key || item.name}-${index}`} aria-hidden={index >= equipment.length || undefined}><EquipmentIcon index={index} /><b>{item.name}</b><span>{item.description}</span></div>)}</div></div>{service.typesFootnote && <p className="small muted section-note">{service.typesFootnote}</p>}</section>
 
-      <section className="brands-section" id="brands"><div className="wrap"><h2>{questionHeading(`${service.brandsHeading} in ${area.name}`)}</h2><p className="lede narrow">{service.brandsLede}</p><div className="brand-strip" aria-label={`${service.brandsHeading} in ${area.name}`}><div className="brand-track">{[0, 1].map((copy) => <div className="brand-sequence" aria-hidden={copy === 1 || undefined} key={copy}>{brands.map((brand) => <div className="brand-tile" key={`${copy}-${brand}`}><span className={`brand-mark brand-mark--${brandSlug(brand)}`} style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} /><strong>{brand}</strong></div>)}</div>)}</div></div>{service.brandsNote && <p className="small section-note">{service.brandsNote}</p>}</div></section>
+      <section className="brands-section" id="brands"><div className="wrap"><h2>{questionHeading(`${service.brandsHeading} in ${area.name}`)}</h2><p className="lede narrow">{service.brandsLede}</p><div className="brand-strip" aria-label={`${service.brandsHeading} in ${area.name}`}><div className="brand-track">{[0, 1].map((copy) => <div className="brand-sequence" aria-hidden={copy === 1 || undefined} key={copy}>{brands.map((brand) => <div className="brand-tile" key={`${copy}-${brand}`}><BrandMark brand={brand} /><strong>{brand}</strong></div>)}</div>)}</div></div>{service.brandsNote && <p className="small section-note">{service.brandsNote}</p>}</div></section>
 
       <section className="wrap" id="trust"><h2>{questionHeading(settings.trustHeading)}</h2><p className="lede narrow">{settings.trustLede}</p><div className="trust-strip">{trustMetrics.slice(0, 2).map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}{rating && <div className="trust-cell google-proof-cell"><b><Rating rating={rating} largeMark /></b><span>{reviewCount} Google reviews</span></div>}{trustMetrics.slice(2).map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}</div><div className="grid grid-3 trust-cards">{settings.trustCards?.map((item) => <article className="card" key={item._key || item.title}><h3>{questionHeading(item.title)}</h3><p className="small">{item.body}</p></article>)}</div></section>
 

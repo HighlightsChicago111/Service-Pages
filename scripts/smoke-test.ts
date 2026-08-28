@@ -10,6 +10,7 @@ const fullReviews = JSON.parse(fs.readFileSync(path.resolve('data/full-reviews.j
 const serviceBySlug = new Map(source.equip.map((row) => [row.slug, row]))
 const areaBySlug = new Map(source.area.map((row) => [row.slug, row]))
 const validServicePaths = new Set(['/services', ...source.page.map((row) => `/services/${row.equipment_slug}/${row.area_slug}`)])
+const monogramBrands = new Set(['canadian-solar', 'casablanca', 'challenger', 'cutler-hammer', 'eaton', 'hampton-bay', 'honeywell', 'kohler', 'minka-aire', 'murray', 'pass-and-seymour'])
 const failures: string[] = []
 let assertions = 0
 
@@ -149,6 +150,7 @@ async function run() {
       const logoSlug = logoPath.slice('/images/brands/'.length, -'.png'.length)
       expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
       expect(text.includes(`brand-mark--${logoSlug}`), `${pathname} is missing the ${brand} contrast class`)
+      if (monogramBrands.has(logoSlug)) expect(text.includes(`brand-mark--${logoSlug} brand-mark--monogram`), `${pathname} does not replace the low-quality ${brand} favicon`)
       expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
     }
     const whySection = text.match(/<section class="wrap" id="why-us">([\s\S]*?)<\/section>/)?.[1] || ''

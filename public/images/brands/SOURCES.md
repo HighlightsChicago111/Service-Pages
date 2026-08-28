@@ -2,6 +2,8 @@
 
 Local brand marks are downloaded from Google's favicon service using each manufacturer's official domain. Brand names remain visible beside each mark for clarity and accessibility.
 
+Favicons that are shared by several legacy brands or too small to render cleanly are retained here for provenance, but the service-page renderer replaces them with a consistent labelled monogram. This avoids showing the wrong parent-company favicon and keeps every visible mark optically aligned.
+
 | Brand | Official domain | Local asset |
 | --- | --- | --- |
 | Generac | https://generac.com | generac.png |
