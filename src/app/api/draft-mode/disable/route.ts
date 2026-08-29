@@ -4,5 +4,5 @@ import {siteUrl} from '@/sanity/env'
 
 export async function GET() {
   ;(await draftMode()).disable()
-  return NextResponse.redirect(new URL('/', siteUrl))
+  return NextResponse.redirect(new URL('/services', siteUrl))
 }

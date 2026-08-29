@@ -22,16 +22,16 @@ export type PreparedCollectionItem = Omit<CollectionItem, 'serviceSlug' | 'areaS
 }
 
 const serviceCardImages: Record<string, string> = {
-  'generator-installation': '/images/services/generator-installation.jpg',
-  'solar-panel-installation': '/images/services/solar-panel-installation.jpg',
-  'ceiling-fan-installation': '/images/services/ceiling-fan-installation.jpg',
-  'generator-repair': '/images/services/generator-repair.jpg',
-  'whole-house-surge-protector': '/images/services/whole-house-surge-protector.jpg',
-  'gfci-outlet-installation': '/images/services/gfci-outlet-installation.jpg',
-  'garbage-disposal-wiring': '/images/services/garbage-disposal-wiring.jpg',
-  'electrical-repair': '/images/services/electrical-repair.jpg',
-  'electrical-panel-upgrade': '/images/services/electrical-panel-upgrade.jpg',
-  'circuit-breaker-replacement': '/images/services/circuit-breaker-replacement.jpg',
+  'generator-installation': '/services/images/services/generator-installation.jpg',
+  'solar-panel-installation': '/services/images/services/solar-panel-installation.jpg',
+  'ceiling-fan-installation': '/services/images/services/ceiling-fan-installation.jpg',
+  'generator-repair': '/services/images/services/generator-repair.jpg',
+  'whole-house-surge-protector': '/services/images/services/whole-house-surge-protector.jpg',
+  'gfci-outlet-installation': '/services/images/services/gfci-outlet-installation.jpg',
+  'garbage-disposal-wiring': '/services/images/services/garbage-disposal-wiring.jpg',
+  'electrical-repair': '/services/images/services/electrical-repair.jpg',
+  'electrical-panel-upgrade': '/services/images/services/electrical-panel-upgrade.jpg',
+  'circuit-breaker-replacement': '/services/images/services/circuit-breaker-replacement.jpg',
 }
 
 function cleanString(value: unknown): string | undefined {

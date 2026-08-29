@@ -44,7 +44,7 @@ export function ServiceCollection({pages}: {pages: CollectionItem[]}) {
         {stablePages.length > 0 && filtered.length === 0 && <div className="collection-empty"><h3>No matching services</h3><p>Try a broader service name or clear the search.</p><button type="button" onClick={() => {setQuery(''); setArea('All areas')}}>Clear filters</button></div>}
         <div className="collection-card-grid">
           {filtered.map((page) => (
-            <Link className="collection-card" data-card-image={page.cardImage} href={`/services/${page.serviceSlug}/${page.areaSlug}`} key={page._id}>
+            <Link className="collection-card" data-card-image={page.cardImage} href={`/${page.serviceSlug}/${page.areaSlug}`} key={page._id}>
               <span className={`collection-card-media${page.cardImage ? '' : ' collection-card-media-empty'}`} style={page.cardImage ? {backgroundImage: `linear-gradient(180deg, rgba(21,31,42,0) 45%, rgba(21,31,42,.14)), url("${page.cardImage}")`} : undefined} role="img" aria-label={`${page.serviceName} in ${page.areaName}`}>
                 {!page.cardImage && <span aria-hidden="true">HC</span>}
               </span>

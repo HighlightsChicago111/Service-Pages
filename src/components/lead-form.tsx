@@ -23,7 +23,7 @@ export function LeadForm(props: Props) {
     const target = event.currentTarget
     const form = new FormData(target)
     try {
-      const response = await fetch('/api/lead', {
+      const response = await fetch('/services/api/lead', {
         method: 'POST',
         headers: {'content-type': 'application/json'},
         body: JSON.stringify(Object.fromEntries(form.entries())),

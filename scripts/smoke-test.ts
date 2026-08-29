@@ -35,7 +35,7 @@ function brandLogoPath(brand: string) {
     .replace(/&/g, ' and ')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-  return `/images/brands/${slug}.png`
+  return `/services/images/brands/${slug}.png`
 }
 
 function visibleText(html: string) {
@@ -67,8 +67,7 @@ async function testDocument(pathname: string, requiredText: string[]) {
 }
 
 async function run() {
-  const collection = await testDocument('/', ['Electrical services built around Chicago', 'Find the right electrical service'])
-  await testDocument('/services', ['Electrical services built around Chicago', 'Find the right electrical service'])
+  const collection = await testDocument('/services', ['Electrical services built around Chicago', 'Find the right electrical service'])
   for (const href of [
     'https://www.highlightschicago.com/',
     'https://www.highlightschicago.com/about-us',
@@ -93,8 +92,8 @@ async function run() {
   expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
   expect(new Set(cardImages).size === source.page.length, 'Collection cards must use unique cover images')
   for (const image of cardImages) {
-    expect(image.startsWith('/images/services/'), `Collection image is not local: ${image}`)
-    const imagePath = path.resolve('public', image.slice(1))
+    expect(image.startsWith('/services/images/services/'), `Collection image is not local: ${image}`)
+    const imagePath = path.resolve('public', image.replace('/services/', ''))
     expect(fs.existsSync(imagePath), `Collection image file is missing: ${image}`)
     const imageBytes = fs.readFileSync(imagePath)
     expect(imageBytes.length > 10_000, `Collection image is unexpectedly small: ${image}`)
@@ -104,7 +103,7 @@ async function run() {
     expect(imageResponse.headers.get('content-type')?.startsWith('image/jpeg'), `Collection image has an invalid content type: ${image}`)
     expect((await imageResponse.arrayBuffer()).byteLength === imageBytes.length, `Collection image response is incomplete: ${image}`)
   }
-  await testDocument('/studio', [])
+  await testDocument('/services/studio', [])
 
   for (const row of source.page) {
     const pathname = `/services/${row.equipment_slug}/${row.area_slug}`
@@ -148,10 +147,10 @@ async function run() {
     expect(!text.includes('class="fill"'), `${pathname} still renders an overlapping duplicate star layer`)
     for (const brand of (service?.brands || '').split('||').filter(Boolean)) {
       const logoPath = brandLogoPath(brand)
-      const logoSlug = logoPath.slice('/images/brands/'.length, -'.png'.length)
+      const logoSlug = logoPath.slice('/services/images/brands/'.length, -'.png'.length)
       expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
       expect(text.includes(`brand-mark--${logoSlug}`), `${pathname} is missing the ${brand} logo class`)
-      expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
+      expect(fs.existsSync(path.resolve('public', logoPath.replace('/services/', ''))), `Local brand logo is missing: ${logoPath}`)
     }
     const whySection = text.match(/<section class="wrap" id="why-us">([\s\S]*?)<\/section>/)?.[1] || ''
     expect((whySection.match(/<article class="why-item"/g) || []).length === (service?.why || '').split('||').filter(Boolean).length, `${pathname} does not render every why-us item as always-visible content`)
@@ -186,21 +185,21 @@ async function run() {
   const missing = await fetch(`${baseUrl}/services/not-a-service/chicago`, {redirect: 'manual'})
   expect(missing.status === 404, `Unknown service returned ${missing.status} instead of 404`)
 
-  const invalidLead = await request('/api/lead', {
+  const invalidLead = await request('/services/api/lead', {
     method: 'POST',
     headers: {'content-type': 'application/json'},
     body: JSON.stringify({}),
   })
   expect(invalidLead.response.status === 400, `Invalid lead returned ${invalidLead.response.status}`)
 
-  const honeypot = await request('/api/lead', {
+  const honeypot = await request('/services/api/lead', {
     method: 'POST',
     headers: {'content-type': 'application/json'},
     body: JSON.stringify({website: 'bot.example'}),
   })
   expect(honeypot.response.status === 200, `Honeypot lead returned ${honeypot.response.status}`)
 
-  const invalidWebhook = await request('/api/revalidate', {
+  const invalidWebhook = await request('/services/api/revalidate', {
     method: 'POST',
     headers: {'content-type': 'application/json'},
     body: JSON.stringify({documentType: 'servicePage'}),

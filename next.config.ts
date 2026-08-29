@@ -12,19 +12,25 @@ const browserConfig = {
 }
 
 const nextConfig: NextConfig = {
+  // The app is served under the /services subdirectory of the main site.
+  // basePath is compiled into the client bundle and is applied automatically to
+  // routes, <Link> hrefs, redirect source/destination, and public assets — but
+  // NOT to fetch() calls or raw string asset paths, which are prefixed manually.
+  basePath: '/services',
   env: browserConfig,
   poweredByHeader: false,
   reactStrictMode: true,
   async redirects() {
+    // Sources/destinations are base-relative; basePath re-adds the /services prefix.
     return [
       {
-        source: '/services/circuit-breaker',
-        destination: '/services/circuit-breaker-replacement/chicago',
+        source: '/circuit-breaker',
+        destination: '/circuit-breaker-replacement/chicago',
         permanent: true,
       },
       {
-        source: '/services/amperage-upgrade',
-        destination: '/services/electrical-panel-upgrade/chicago',
+        source: '/amperage-upgrade',
+        destination: '/electrical-panel-upgrade/chicago',
         permanent: true,
       },
     ]

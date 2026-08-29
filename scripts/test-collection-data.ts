@@ -45,7 +45,7 @@ assert.equal(prepared[0].serviceName, 'Changed generator title', 'Title should b
 assert.equal(prepared[0].areaName, 'Chicago', 'Missing area names should receive a safe display fallback')
 assert.equal(prepared[0].monthlySearchVolume, undefined, 'Invalid search volume should be removed')
 assert.equal(prepared[0].metaDescription, 'Updated Sanity description', 'Changed text should be normalized')
-assert.equal(prepared[0].cardImage, '/images/services/generator-installation.jpg', 'Known services should keep their stable local image')
+assert.equal(prepared[0].cardImage, '/services/images/services/generator-installation.jpg', 'Known services should keep their stable local image')
 assert.equal(prepared[1].serviceName, 'Future electrical service', 'Future services should render from their title')
 assert.equal(prepared[1].cardImage, 'https://cdn.example.com/future-cover.webp', 'Future services should accept a changed Sanity image')
 assert.equal(prepared[2].serviceName, 'Electrical service', 'Missing labels should receive a safe fallback')
