@@ -24,6 +24,16 @@ const nextConfig: NextConfig = {
     // Sources/destinations are base-relative; basePath re-adds the /services prefix.
     return [
       {
+        // The bare origin root has no page under basePath. basePath:false keeps this
+        // matching the literal "/" (not "/services") and redirecting to the literal
+        // "/services" collection (not "/services/services"). Only affects the direct
+        // Vercel URL; at the public domain "/" is served by Webflow, not proxied here.
+        source: '/',
+        destination: '/services',
+        permanent: false,
+        basePath: false,
+      },
+      {
         source: '/circuit-breaker',
         destination: '/circuit-breaker-replacement/chicago',
         permanent: true,
