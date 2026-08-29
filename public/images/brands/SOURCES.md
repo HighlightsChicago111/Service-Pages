@@ -2,7 +2,7 @@
 
 Local brand marks are downloaded from Google's favicon service using each manufacturer's official domain. Brand names remain visible beside each mark for clarity and accessibility.
 
-Favicons that are shared by several legacy brands or too small to render cleanly are retained here for provenance, but the service-page renderer replaces them with a consistent labelled monogram. This avoids showing the wrong parent-company favicon and keeps every visible mark optically aligned.
+The service-page renderer keeps each source mark's original silhouette, removes opaque light favicon backgrounds with a shared luminance filter, and presents every mark in the same off-white brand treatment. Brand names remain alongside the marks, so even low-resolution legacy favicons stay unambiguous without substituting generic letter icons.
 
 | Brand | Official domain | Local asset |
 | --- | --- | --- |

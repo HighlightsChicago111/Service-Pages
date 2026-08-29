@@ -142,6 +142,8 @@ async function run() {
     expect(text.includes('class="brand-strip"'), `${pathname} does not use the shared horizontal brand marquee`)
     expect((text.match(/class="brand-sequence"/g) || []).length === 2, `${pathname} does not render two seamless brand-marquee sequences`)
     expect(text.includes('class="trust-cell google-proof-cell"'), `${pathname} is missing the normalized Google proof rating`)
+    expect(text.indexOf('>A+</b>') < text.indexOf('class="trust-cell google-proof-cell"'), `${pathname} does not place A+ before the final Google proof cell`)
+    expect(text.indexOf('class="trust-cell google-proof-cell"') > text.lastIndexOf('class="trust-cell"'), `${pathname} does not render Google proof as the fifth trust cell`)
     expect(!text.includes('class="static-stars"'), `${pathname} still renders a duplicate row of Google stars`)
     expect(!text.includes('class="fill"'), `${pathname} still renders an overlapping duplicate star layer`)
     for (const brand of (service?.brands || '').split('||').filter(Boolean)) {
@@ -152,13 +154,15 @@ async function run() {
       expect(fs.existsSync(path.resolve('public', logoPath.slice(1))), `Local brand logo is missing: ${logoPath}`)
     }
     const whySection = text.match(/<section class="wrap" id="why-us">([\s\S]*?)<\/section>/)?.[1] || ''
-    expect((whySection.match(/<details class="why-item" open=""/g) || []).length === (whySection.match(/<details class="why-item"/g) || []).length, `${pathname} does not open every why-us item by default`)
-    expect((whySection.match(/class="why-chevron"/g) || []).length === (whySection.match(/<details class="why-item"/g) || []).length, `${pathname} does not render one why-us chevron per item`)
+    expect((whySection.match(/<article class="why-item"/g) || []).length === (service?.why || '').split('||').filter(Boolean).length, `${pathname} does not render every why-us item as always-visible content`)
+    expect(!whySection.includes('<details') && !whySection.includes('why-chevron'), `${pathname} still renders mobile why-us accordion controls`)
+    expect(renderedText.includes(`Read all ${row.google_review_count} reviews`), `${pathname} does not include the live review count in the all-reviews CTA`)
+    expect(text.indexOf('class="cs-gallery-rail"') < text.indexOf('class="cs-gallery-head"'), `${pathname} does not place the crew gallery caption below its images`)
     expect(renderedText.includes(`Our Works in ${area?.name}`), `${pathname} does not use the updated work-section heading`)
     expect(text.includes('class="single-line-mobile"'), `${pathname} does not mark the coverage heading as mobile single-line`)
-    expect(text.includes('area-rail-two-row'), `${pathname} does not render the two-row horizontal location rail`)
+    expect(text.includes('area-rail-single-row'), `${pathname} does not render the single-row horizontal location rail`)
     expect(!text.includes('class="area-grid"'), `${pathname} still renders locations as a wrapping grid`)
-    expect(text.indexOf('class="area-map"') < text.indexOf('area-rail-two-row'), `${pathname} does not render the map before the location rail`)
+    expect(text.indexOf('class="area-map"') < text.indexOf('area-rail-single-row'), `${pathname} does not render the map before the location rail`)
     expect((text.match(/class="area-chip"/g) || []).length === (area?.sub_areas || '').split('||').filter(Boolean).length, `${pathname} does not render every location in the rail`)
     expect(text.includes('scroll horizontally to view all columns'), `${pathname} does not expose its mobile pricing table as horizontally scrollable`)
     const faqSection = text.match(/<section class="wrap" id="faq">([\s\S]*?)<\/section>/)?.[1] || ''
