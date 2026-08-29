@@ -8,20 +8,6 @@ import {questionHeading} from '@/lib/headings'
 
 type Props = {data: ServicePageData}
 
-const BRAND_MONOGRAMS: Record<string, string> = {
-  'canadian-solar': 'CS',
-  casablanca: 'C',
-  challenger: 'C',
-  'cutler-hammer': 'CH',
-  eaton: 'E',
-  'hampton-bay': 'HB',
-  honeywell: 'H',
-  kohler: 'K',
-  'minka-aire': 'MA',
-  murray: 'M',
-  'pass-and-seymour': 'P&S',
-}
-
 function imageUrl(image?: ExternalImage): string | undefined {
   return image?.resolvedUrl || image?.externalUrl
 }
@@ -46,8 +32,7 @@ function brandLogoPath(brand: string): string {
 
 function BrandMark({brand}: {brand: string}) {
   const slug = brandSlug(brand)
-  const monogram = BRAND_MONOGRAMS[slug]
-  return <span className={`brand-mark brand-mark--${slug}${monogram ? ' brand-mark--monogram' : ''}`} data-monogram={monogram} style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} />
+  return <span className={`brand-mark brand-mark--${slug}`} style={{backgroundImage: `url(${JSON.stringify(brandLogoPath(brand))})`}} role="img" aria-label={`${brand} logo`} />
 }
 
 function asQuestion(value: string | undefined, area: string): string {
