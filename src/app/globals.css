@@ -166,7 +166,7 @@ a{color:var(--brand);text-underline-offset:3px}
   .collection-footer-title{font-size:20px!important}
   .service-landing .reviews-grid{gap:16px;grid-template-columns:minmax(0,1fr)}
   .service-landing .rev-card{display:grid;grid-template-columns:auto minmax(0,1fr);padding:18px}
-  .service-landing .rev-card blockquote{border-bottom:1px solid var(--line-2);font-size:.94rem;grid-column:1/-1;line-height:1.55;margin-bottom:0;min-height:10.85em;max-height:10.85em;padding-bottom:var(--sp-4)}
+  .service-landing .rev-card blockquote{block-size:11.2rem;border-bottom:1px solid var(--line-2);font-size:.94rem;grid-column:1/-1;line-height:1.55;margin-bottom:0;min-height:0;max-height:none;padding-bottom:var(--sp-4)}
   .service-landing .rev-rating{align-self:center;border-top:0;grid-column:1;grid-row:2;margin-top:0;padding-top:var(--sp-3)}
   .service-landing .rev-meta{display:contents}
   .service-landing .rev-meta>span:first-child{align-self:center;grid-column:2;grid-row:2;justify-self:end;min-width:0;padding-top:var(--sp-3);text-align:right}
@@ -192,7 +192,7 @@ a{color:var(--brand);text-underline-offset:3px}
   .service-landing .crumbs ol{flex-wrap:nowrap;gap:6px;width:max-content}
   .service-landing .crumbs li{white-space:nowrap}
   .service-landing .crumbs li:not(:last-child)::after{margin-left:6px}
-  .service-landing .hero{padding-block:28px 38px}
+  .service-landing .hero{background:linear-gradient(145deg,#b4dc52 0%,var(--accent) 58%,#89b22b 100%);padding-block:28px 38px}
   .service-landing .hero-grid>div{min-width:0}
   .service-landing .hero h1{font-size:clamp(1.75rem,8vw,2.2rem);line-height:1.08;max-width:100%;overflow-wrap:break-word;text-wrap:balance}
   .service-landing .hero .eyebrow{text-align:left}
