@@ -16,12 +16,12 @@ export default defineConfig({
   title: 'Highlights Chicago Service Pages',
   projectId,
   dataset,
-  basePath: '/studio',
+  basePath: '/services/studio',
   plugins: [
     structureTool({structure}),
     presentationTool({
       resolve,
-      previewUrl: {previewMode: {enable: '/api/draft-mode/enable'}},
+      previewUrl: {previewMode: {enable: '/services/api/draft-mode/enable'}},
     }),
     visionTool(),
   ],

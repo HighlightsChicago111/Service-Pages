@@ -3,12 +3,14 @@ import {Inter} from 'next/font/google'
 import {draftMode} from 'next/headers'
 import {VisualEditing} from 'next-sanity/visual-editing'
 import {DisableDraftMode} from '@/components/disable-draft-mode'
+import {siteUrl} from '@/sanity/env'
 import {SanityLive} from '@/sanity/lib/live'
 import './globals.css'
 
 const inter = Inter({subsets: ['latin'], variable: '--font-inter', display: 'swap'})
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {default: 'Highlights Chicago Service Pages', template: '%s | Highlights Chicago'},
   description: 'Licensed electrical services across Chicago.',
 }
