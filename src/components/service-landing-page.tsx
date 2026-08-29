@@ -2,6 +2,7 @@ import type {CSSProperties, ReactNode} from 'react'
 import Link from 'next/link'
 import type {ExternalImage, Faq, Guide, ServicePageData} from '@/types/content'
 import {GuideTabs} from './guide-tabs'
+import {CenteredAreaRail} from './centered-area-rail'
 import {LeadForm} from './lead-form'
 import {CollectionFooter, CollectionHeader} from './collection-chrome'
 import {questionHeading} from '@/lib/headings'
@@ -190,7 +191,7 @@ export function ServiceLandingPage({data}: Props) {
   const guideItems = (page.guides || []).map((guide) => ({title: guide.title, paragraphs: guideText(guide)}))
   const serviceRoutes = data.serviceRoutes || []
   const coverageMap = area.mapQuery ? <div className="area-map"><iframe title={`${area.name} service area map`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(area.mapQuery)}&output=embed`} /></div> : null
-  const coverageAreas = <div className="area-rail area-rail-single-row" role="list" aria-label={`${area.name} service locations`} tabIndex={0}>{area.subAreas?.map((subArea) => <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img" style={imageStyle(subArea.photo)}>{!imageUrl(subArea.photo) && <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span></a>)}</div>
+  const coverageAreas = <CenteredAreaRail label={`${area.name} service locations`}>{area.subAreas?.map((subArea) => <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img" style={imageStyle(subArea.photo)}>{!imageUrl(subArea.photo) && <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span></a>)}</CenteredAreaRail>
 
   return (
     <div className="site-chrome">

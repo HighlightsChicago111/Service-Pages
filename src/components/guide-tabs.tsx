@@ -1,6 +1,6 @@
 'use client'
 
-import {useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {questionHeading} from '@/lib/headings'
 
 type GuideItem = {title: string; paragraphs: string[]}
@@ -8,6 +8,17 @@ type GuideItem = {title: string; paragraphs: string[]}
 export function GuideTabs({guides}: {guides: GuideItem[]}) {
   const [active, setActive] = useState(0)
   const guidePanelsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 901px)')
+    const keepDesktopGuideOpen = () => {
+      if (desktop.matches) setActive((current) => current < 0 ? 0 : current)
+    }
+
+    keepDesktopGuideOpen()
+    desktop.addEventListener('change', keepDesktopGuideOpen)
+    return () => desktop.removeEventListener('change', keepDesktopGuideOpen)
+  }, [])
 
   function selectGuide(index: number) {
     setActive(index)
