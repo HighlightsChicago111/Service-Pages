@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element -- Service covers can be local or Sanity-managed URLs and must remain crawlable. */
+
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
 import {prepareCollectionItems, type CollectionItem} from '@/lib/collection-items'
@@ -45,7 +47,8 @@ export function ServiceCollection({pages}: {pages: CollectionItem[]}) {
         <div className="collection-card-grid">
           {filtered.map((page) => (
             <Link className="collection-card" data-card-image={page.cardImage} href={`/${page.serviceSlug}/${page.areaSlug}`} key={page._id}>
-              <span className={`collection-card-media${page.cardImage ? '' : ' collection-card-media-empty'}`} style={page.cardImage ? {backgroundImage: `linear-gradient(180deg, rgba(21,31,42,0) 45%, rgba(21,31,42,.14)), url("${page.cardImage}")`} : undefined} role="img" aria-label={`${page.serviceName} in ${page.areaName}`}>
+              <span className={`collection-card-media${page.cardImage ? '' : ' collection-card-media-empty'}`}>
+                {page.cardImage && <img className="collection-card-image" src={page.cardImage} alt={page.cardImageAlt} title={page.cardImageCaption} loading="lazy" decoding="async" />}
                 {!page.cardImage && <span aria-hidden="true">HC</span>}
               </span>
               <span className="collection-card-arrow" aria-hidden="true">→</span>

@@ -58,6 +58,10 @@ function headingTexts(html: string) {
   return [...html.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)].map((match) => visibleText(match[1]).trim())
 }
 
+function imageAlts(html: string) {
+  return [...html.matchAll(/<img\b[^>]*\balt="([^"]*)"/gi)].map((match) => match[1].trim())
+}
+
 async function testDocument(pathname: string, requiredText: string[]) {
   const {response, text} = await request(pathname)
   expect(response.status === 200, `${pathname} returned ${response.status}`)
@@ -88,6 +92,10 @@ async function run() {
   expect(collection.includes('class="collection-footer-title"'), 'Collection footer is missing the single-line quote heading')
   expect((collection.match(/class="collection-social-icon"/g) || []).length === 2, 'Collection footer does not render both social icons')
   expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
+  const collectionAlts = imageAlts(collection)
+  expect(collectionAlts.length >= source.page.length + 3, 'Collection page does not expose its card and chrome imagery as crawlable img elements')
+  expect(collectionAlts.every(Boolean), 'Collection page contains an image without alt text')
+  expect(collection.includes('alt="Electrical panel upgrade service by Highlights Chicago"'), 'Collection hero image is missing descriptive alt text')
   const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1])
   expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
   expect(new Set(cardImages).size === source.page.length, 'Collection cards must use unique cover images')
@@ -111,6 +119,11 @@ async function run() {
     const area = areaBySlug.get(row.area_slug)
     const heading = `${service?.h1_prefix} in ${area?.name}`
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
+    const serviceImageAlts = imageAlts(text)
+    expect(serviceImageAlts.length >= 10, `${pathname} does not expose its service photos as crawlable img elements`)
+    expect(serviceImageAlts.every(Boolean), `${pathname} contains an image without alt text`)
+    expect(!serviceImageAlts.some((alt) => /^[a-z0-9-]+ (?:project|work in [a-z0-9-]+) \d+$/i.test(alt)), `${pathname} still exposes imported placeholder alt text`)
+    expect(text.includes('<figcaption>'), `${pathname} does not render captions for completed-work photos`)
     expect((text.match(/class="collection-header"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
     expect((text.match(/class="collection-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
     expect((text.match(/class="collection-utility"/g) || []).length === 1, `${pathname} does not render exactly one utility bar`)

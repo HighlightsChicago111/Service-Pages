@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Sanity permits arbitrary external image sources; native img keeps alt text crawlable. */
 import type {CSSProperties, ReactNode} from 'react'
 import Link from 'next/link'
 import type {ExternalImage, Faq, Guide, ServicePageData} from '@/types/content'
@@ -6,6 +7,7 @@ import {CenteredAreaRail} from './centered-area-rail'
 import {LeadForm} from './lead-form'
 import {CollectionFooter, CollectionHeader} from './collection-chrome'
 import {questionHeading} from '@/lib/headings'
+import {serviceCardImageForSlug} from '@/lib/collection-items'
 
 type Props = {data: ServicePageData}
 
@@ -15,9 +17,14 @@ function imageUrl(image?: ExternalImage): string | undefined {
   return image?.resolvedUrl || image?.externalUrl
 }
 
-function imageStyle(image?: ExternalImage): CSSProperties | undefined {
-  const url = imageUrl(image)
-  return url ? {backgroundImage: `url(${JSON.stringify(url)})`} : undefined
+function imageAlt(image: ExternalImage | undefined, fallback: string): string {
+  const alt = image?.alt?.trim()
+  const importedPlaceholder = /^[a-z0-9-]+ (?:project|work in [a-z0-9-]+) \d+$/i
+  return alt && !importedPlaceholder.test(alt) ? alt : fallback
+}
+
+function imageCaption(image: ExternalImage | undefined, fallback: string): string {
+  return image?.caption?.trim() || fallback
 }
 
 function brandSlug(brand: string): string {
@@ -191,7 +198,15 @@ export function ServiceLandingPage({data}: Props) {
   const guideItems = (page.guides || []).map((guide) => ({title: guide.title, paragraphs: guideText(guide)}))
   const serviceRoutes = data.serviceRoutes || []
   const coverageMap = area.mapQuery ? <div className="area-map"><iframe title={`${area.name} service area map`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(area.mapQuery)}&output=embed`} /></div> : null
-  const coverageAreas = <CenteredAreaRail label={`${area.name} service locations`}>{area.subAreas?.map((subArea) => <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img" style={imageStyle(subArea.photo)}>{!imageUrl(subArea.photo) && <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span></a>)}</CenteredAreaRail>
+  const coverageAreas = <CenteredAreaRail label={`${area.name} service locations`}>{area.subAreas?.map((subArea) => {
+    const src = imageUrl(subArea.photo)
+    const neighborhoodFallback = `${subArea.name} neighborhood landmark in ${area.name}`
+    const storedAlt = subArea.photo?.alt?.trim()
+    const alt = !storedAlt || storedAlt.toLowerCase() === subArea.name.trim().toLowerCase()
+      ? neighborhoodFallback
+      : imageAlt(subArea.photo, neighborhoodFallback)
+    return <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img">{src ? <img src={src} alt={alt} title={imageCaption(subArea.photo, subArea.note || subArea.name)} loading="lazy" decoding="async" /> : <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span></a>
+  })}</CenteredAreaRail>
 
   return (
     <div className="site-chrome">
@@ -203,7 +218,16 @@ export function ServiceLandingPage({data}: Props) {
         <p className="eyebrow">{area.heroEyebrow}</p><h1>{questionHeading(`${service.h1Prefix} in ${area.name}`)}</h1><p className="lede">{service.heroLede}</p>
         <div className="trustbar">{settings.trustLines?.map((line) => <span className="trust-item" key={line}>◆ {line}</span>)}{rating && <Rating rating={rating} count={reviewCount} />}</div>
         <div className="btn-row"><a className="btn btn-primary" href={`tel:${settings.phoneE164}`}>Call {settings.phoneDisplay}</a><a className="btn btn-secondary" href="#quote">{service.secondaryCta || 'Request service'}</a></div>
-        <div className="cs-gallery"><div className="cs-gallery-rail">{page.gallery?.slice(0, 3).map((photo, index) => <a className="cs-shot" href="#working-in-area" key={photo._key || index} aria-label={photo.alt || `${service.name} project ${index + 1}`}><span className="cs-shot-img" style={imageStyle(photo)}>{!imageUrl(photo) && <EmptyImageIcon />}</span></a>)}</div><div className="cs-gallery-head"><p className="eyebrow">{area.galleryLabel}</p><a href="#working-in-area">See more →</a></div></div>
+        <div className="cs-gallery"><div className="cs-gallery-rail">{page.gallery?.slice(0, 3).map((photo, index) => {
+          const src = (index === 0 ? serviceCardImageForSlug(service.slug) : undefined) || imageUrl(photo)
+          const fallbacks = [
+            `${service.name} project completed by Highlights Chicago electricians in ${area.name}`,
+            'Highlights Chicago electrical services logo',
+            `Highlights Chicago service van serving ${area.name}`,
+          ]
+          const alt = imageAlt(photo, fallbacks[index] || `${service.name} project in ${area.name}`)
+          return <a className="cs-shot" href="#working-in-area" key={photo._key || index} aria-label={imageCaption(photo, alt)}><span className="cs-shot-img">{src ? <img src={src} alt={alt} title={imageCaption(photo, alt)} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" /> : <EmptyImageIcon />}</span></a>
+        })}</div><div className="cs-gallery-head"><p className="eyebrow">{area.galleryLabel}</p><a href="#working-in-area">See more →</a></div></div>
       </div><LeadForm service={service.name} area={area.name} issueQuestion={service.issueQuestion} issueOptions={service.issueOptions} buildingTypes={area.buildingTypes} addressPlaceholder={area.addressPlaceholder} subtitle={settings.formSubtitle} note={settings.formNote} /></div></header>
 
       <section className="wrap" id="equipment"><h2>{questionHeading(service.typesHeading)}</h2><p className="lede narrow">{service.typesLede}</p><div className="equip-strip" aria-label={service.typesHeading}><div className="equip-track">{[...equipment, ...equipment].map((item, index) => <div className="equip" key={`${item._key || item.name}-${index}`} aria-hidden={index >= equipment.length || undefined}><EquipmentIcon index={index} /><b>{item.name}</b><span>{item.description}</span></div>)}</div></div>{service.typesFootnote && <p className="small muted section-note">{service.typesFootnote}</p>}</section>
@@ -216,7 +240,13 @@ export function ServiceLandingPage({data}: Props) {
 
       <section className="wrap" id="why-us"><h2>{questionHeading(service.whyHeading)}</h2><p className="lede narrow">{service.whyLede}</p><div className="why-grid">{service.whyItems?.map((item) => <article className="why-item" key={item._key || item.title}><h3 className="why-title">{questionHeading(item.title)}</h3><p className="why-body">{item.body}</p></article>)}</div></section>
 
-      <section className="section-tint" id="working-in-area"><div className="wrap"><h2>{questionHeading(`Our Works in ${area.name}`)}</h2><p className="lede narrow">{area.workingLede}</p><div className="photo-grid">{page.workingPhotos?.map((photo, index) => <div className="ph" key={photo._key || index} style={imageStyle(photo)} role="img" aria-label={photo.alt || `${service.name} work in ${area.name} ${index + 1}`}>{!imageUrl(photo) && <EmptyImageIcon />}</div>)}</div></div></section>
+      <section className="section-tint" id="working-in-area"><div className="wrap"><h2>{questionHeading(`Our Works in ${area.name}`)}</h2><p className="lede narrow">{area.workingLede}</p><div className="photo-grid">{page.workingPhotos?.map((photo, index) => {
+        const src = imageUrl(photo)
+        const fallback = `${service.name} work completed by Highlights Chicago in ${area.name} — project photo ${index + 1}`
+        const alt = imageAlt(photo, fallback)
+        const caption = imageCaption(photo, fallback)
+        return <figure className="work-photo" key={photo._key || index}><div className="ph">{src ? <img src={src} alt={alt} title={caption} loading="lazy" decoding="async" /> : <EmptyImageIcon />}</div><figcaption>{caption}</figcaption></figure>
+      })}</div></div></section>
 
       <section className="wrap" id="areas"><h2 className="single-line-mobile">{questionHeading(area.areasHeading)}</h2><p className="lede narrow">{area.areasLede}</p><div className="coverage-stack">{coverageMapFirst ? <>{coverageMap}{coverageAreas}</> : <>{coverageAreas}{coverageMap}</>}</div>{area.areasNote && <p className="small muted coverage-note">{area.areasNote}</p>}</section>
 

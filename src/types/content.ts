@@ -1,6 +1,6 @@
 export type Faq = {_key?: string; question: string; answer: string}
 export type TitledBody = {_key?: string; title: string; body: string}
-export type ExternalImage = {_key?: string; externalUrl?: string; resolvedUrl?: string; alt?: string; credit?: string}
+export type ExternalImage = {_key?: string; externalUrl?: string; resolvedUrl?: string; alt?: string; caption?: string; credit?: string}
 export type Review = {_key?: string; quote: string; author?: string; location?: string; sourceUrl?: string; sourceId?: string}
 export type Guide = {_key?: string; title: string; body?: unknown[]; legacyHtml?: string}
 

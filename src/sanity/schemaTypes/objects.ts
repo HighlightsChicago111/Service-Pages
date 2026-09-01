@@ -18,7 +18,20 @@ export const externalImage = defineType({
   fields: [
     defineField({name: 'image', title: 'Sanity image', type: 'image', options: {hotspot: true}}),
     defineField({name: 'externalUrl', title: 'Imported external URL', type: 'url'}),
-    defineField({name: 'alt', title: 'Alternative text', type: 'string'}),
+    defineField({
+      name: 'alt',
+      title: 'Alternative text',
+      description: 'Describe the image for search engines and people using screen readers. Do not start with “image of”.',
+      type: 'string',
+      validation: (rule) => rule.required().min(5).max(160),
+    }),
+    defineField({
+      name: 'caption',
+      title: 'Caption',
+      description: 'Optional visible context for the image. Keep it concise and factual.',
+      type: 'string',
+      validation: (rule) => rule.max(180),
+    }),
     defineField({name: 'credit', title: 'Credit / source', type: 'string'}),
   ],
   preview: {select: {title: 'alt', media: 'image', subtitle: 'externalUrl'}},
@@ -138,4 +151,3 @@ export const trustMetric = defineType({
   ],
   preview: {select: {title: 'value', subtitle: 'label'}},
 })
-

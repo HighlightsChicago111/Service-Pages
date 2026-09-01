@@ -15,7 +15,9 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
       gallery[0].externalUrl,
       workingPhotos[0].image.asset->url,
       workingPhotos[0].externalUrl
-    )
+    ),
+    "cardImageAlt": coalesce(gallery[0].alt, workingPhotos[0].alt),
+    "cardImageCaption": coalesce(gallery[0].caption, workingPhotos[0].caption)
   }
 `)
 

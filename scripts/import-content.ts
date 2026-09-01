@@ -39,7 +39,10 @@ const objects = (raw: string, fields: string[], prefix: string): Array<{_key: st
   const parts = item.split('::')
   return {_key: key(prefix, index), ...Object.fromEntries(fields.map((field, fieldIndex) => [field, (parts[fieldIndex] || '').trim()]))}
 })
-const imageList = (raw: string, prefix: string, altPrefix: string) => strings(raw).map((externalUrl, index) => ({_key: key(prefix, index), _type: 'externalImage', externalUrl, alt: `${altPrefix} ${index + 1}`}))
+const imageList = (raw: string, prefix: string, descriptions: string[]) => strings(raw).map((externalUrl, index) => {
+  const alt = descriptions[index] || descriptions.at(-1) || 'Highlights Chicago electrical service project'
+  return {_key: key(prefix, index), _type: 'externalImage', externalUrl, alt, caption: alt}
+})
 const truncateMeta = (value: string, maxLength: number) => {
   const normalized = value.replace(/\s+/g, ' ').trim()
   if (normalized.length <= maxLength) return normalized
@@ -127,7 +130,7 @@ const areas = source.area.map((row) => ({
   _id: `area-${row.slug}`, _type: 'serviceArea', name: row.name, slug: {_type: 'slug', current: row.slug}, state: row.state,
   heroEyebrow: row.hero_eyebrow, galleryLabel: row.gallery_label, addressPlaceholder: row.address_placeholder, buildingTypes: strings(row.building_types),
   workingLede: row.working_lede, areasHeading: row.areas_heading, areasLede: row.areas_lede, areasNote: row.areas_note,
-  subAreas: objects(row.sub_areas, ['name', 'note', 'externalUrl'], `subarea-${row.slug}`).map(({externalUrl, ...item}) => ({...item, _type: 'subArea', photo: {_type: 'externalImage', externalUrl, alt: item.name}})),
+  subAreas: objects(row.sub_areas, ['name', 'note', 'externalUrl'], `subarea-${row.slug}`).map(({externalUrl, ...item}) => ({...item, _type: 'subArea', photo: {_type: 'externalImage', externalUrl, alt: `${item.name} neighborhood landmark near Highlights Chicago service area`, caption: item.note || item.name}})),
   mapQuery: row.map_query, libraryHeading: row.library_heading, libraryLede: row.library_lede,
   localFaqs: objects(firstPage.faqs_local, ['question', 'answer'], `local-faq-${row.slug}`).map((item) => ({...item, _type: 'faq'})),
 }))
@@ -141,8 +144,12 @@ const pages = source.page.map((row) => ({
     canonicalUrl: row.canonical_url,
   },
   reviews: objects(row.reviews, ['quote', 'author', 'location', 'sourceUrl', 'sourceId'], `review-${row.service_id}`).map((item) => ({...item, quote: fullReviews[item.sourceId] || item.quote, _type: 'review', verifiedAt: '2026-08-27'})),
-  gallery: imageList(row.gallery, `gallery-${row.service_id}`, `${row.equipment_slug} project`),
-  workingPhotos: imageList(row.working_photos, `working-${row.service_id}`, `${row.equipment_slug} work in ${row.area_slug}`),
+  gallery: imageList(row.gallery, `gallery-${row.service_id}`, [
+    `${titleFromSlug(row.equipment_slug)} project completed by Highlights Chicago electricians in ${areaNameBySlug.get(row.area_slug) || titleFromSlug(row.area_slug)}`,
+    'Highlights Chicago electrical services logo',
+    `Highlights Chicago service van serving ${areaNameBySlug.get(row.area_slug) || titleFromSlug(row.area_slug)}`,
+  ]),
+  workingPhotos: imageList(row.working_photos, `working-${row.service_id}`, strings(row.working_photos).map((_, index) => `${titleFromSlug(row.equipment_slug)} work completed by Highlights Chicago in ${areaNameBySlug.get(row.area_slug) || titleFromSlug(row.area_slug)} — project photo ${index + 1}`)),
   guides: objects(row.guides, ['title', 'legacyHtml'], `guide-${row.service_id}`).map((item, index) => ({...item, _type: 'guide', body: blocksFromHtml(item.legacyHtml, `guide-${row.service_id}-${index}`)})),
   localFaqOverrides: [],
 }))

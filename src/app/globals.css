@@ -203,3 +203,16 @@ a{color:var(--brand);text-underline-offset:3px}
   .service-landing .brand-tile{flex-basis:clamp(164px,47vw,190px);min-height:84px;padding:var(--sp-3)}
   .service-landing .brand-mark{flex-basis:44px;height:30px;width:44px}
 }
+/* Crawlable service imagery: real img elements retain the existing cover treatment. */
+.collection-card-media{overflow:hidden;position:relative}
+.collection-card-media::after{background:linear-gradient(180deg,rgba(21,31,42,0) 45%,rgba(21,31,42,.14));content:"";inset:0;pointer-events:none;position:absolute;z-index:1}
+.collection-card-image{height:100%;inset:0;object-fit:cover;position:absolute;width:100%}
+.collection-card-media-empty>span{position:relative;z-index:2}
+.collection-hero-panel{background-image:none}
+.collection-hero-panel-image{height:100%;inset:0;object-fit:cover;position:absolute;width:100%;z-index:0}
+.collection-hero-panel::after{background:linear-gradient(90deg,rgba(15,25,35,.96) 0%,rgba(15,25,35,.86) 48%,rgba(15,25,35,.38) 100%);content:"";inset:0;position:absolute;z-index:0}
+.collection-hero-panel::before{z-index:2}
+.service-landing .cs-shot-img,.service-landing .ph,.service-landing .area-img{background-image:none!important;overflow:hidden}
+.service-landing .cs-shot-img img,.service-landing .ph img,.service-landing .area-img img{height:100%;object-fit:cover;width:100%}
+.service-landing .work-photo{margin:0;min-width:0}
+.service-landing .work-photo figcaption{color:var(--ink-3);font-size:.76rem;line-height:1.45;margin-top:8px}

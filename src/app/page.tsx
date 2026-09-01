@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Crawlable local imagery is intentionally rendered without Next's generated image wrapper. */
 import type {Metadata} from 'next'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
 import {CollectionItem, ServiceCollection} from '@/components/service-collection'
@@ -30,6 +31,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="collection-hero-panel" aria-label={`${pages.length} available local service pages`}>
+              <img className="collection-hero-panel-image" src="/services/images/services/electrical-panel-upgrade.jpg" alt="Electrical panel upgrade service by Highlights Chicago" decoding="async" />
               <span>Service library</span>
               <strong>{pages.length}</strong>
               <p>Local service pages and growing</p>
