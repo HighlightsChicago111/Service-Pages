@@ -2,6 +2,8 @@
 
 Local brand marks are downloaded from Google's favicon service using each manufacturer's official domain. Brand names remain visible beside each mark for clarity and accessibility.
 
+The local set was expanded on 2026-09-01 for service pages 311–330, covering the additional lighting, EV charging, life-safety, low-voltage, energy-audit, storage, appliance, and controls brands listed in the supplied service-page workbook.
+
 The service-page renderer keeps each source mark's original silhouette, removes opaque light favicon backgrounds with a shared luminance filter, and presents every mark in the same off-white brand treatment. Brand names remain alongside the marks, so even low-resolution legacy favicons stay unambiguous without substituting generic letter icons.
 
 | Brand | Official domain | Local asset |

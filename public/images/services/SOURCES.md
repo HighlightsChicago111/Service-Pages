@@ -14,3 +14,28 @@ These local card covers were selected through Google Images from Pexels results 
 - `circuit-breaker-replacement.jpg` — [A man working on a circuit breaker](https://www.pexels.com/photo/a-man-working-on-the-circuit-breaker-switch-9679179/)
 
 License: [Pexels license](https://www.pexels.com/license/)
+
+## Service pages 311–330
+
+The following collection covers were generated as original, logo-free editorial photography with OpenAI image generation on 2026-09-01. They were normalized to progressive 1200 × 800 JPEGs for consistent collection-card rendering. Each filename corresponds directly to its service slug:
+
+- `outdoor-lighting-installation.jpg`
+- `tesla-and-ev-charger-installation.jpg`
+- `fire-alarm-installation.jpg`
+- `electrical-outlet-installation.jpg`
+- `recessed-lighting-installation.jpg`
+- `electrical-wiring-and-repair-services.jpg`
+- `carbon-monoxide-detector-installation.jpg`
+- `landscape-lighting-installation.jpg`
+- `smoke-detector-installation-and-wiring.jpg`
+- `home-energy-audit.jpg`
+- `structured-cabling-installation.jpg`
+- `solar-battery-installation.jpg`
+- `breaker-box-and-panel-repair.jpg`
+- `light-fixture-installation-and-replacement.jpg`
+- `electrical-troubleshooting.jpg`
+- `electrical-installation-services.jpg`
+- `low-voltage-wiring-installation.jpg`
+- `cctv-installation.jpg`
+- `energy-star-appliances.jpg`
+- `light-switch-replacement-and-installation.jpg`
