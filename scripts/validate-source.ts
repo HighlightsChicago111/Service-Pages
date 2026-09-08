@@ -36,7 +36,7 @@ for (const row of source.page) {
   if (!service || service.service_id !== row.service_id) errors.push(`service_id mismatch for ${row.equipment_slug}`)
   if (entries(row.reviews).length !== 4) errors.push(`Expected four reviews for ${row.equipment_slug}`)
   if (entries(row.gallery).length < 1) errors.push(`Missing gallery for ${row.equipment_slug}`)
-  if (entries(row.working_photos).length < 3) errors.push(`Expected three working photos for ${row.equipment_slug}`)
+  if (entries(row.working_photos).length < 1) errors.push(`Missing working photos for ${row.equipment_slug}`)
   if (entries(row.guides).length < 1) errors.push(`Missing guides for ${row.equipment_slug}`)
   for (const review of entries(row.reviews)) {
     const [quote, , , sourceUrl, sourceId] = review.split('::').map((value) => value.trim())

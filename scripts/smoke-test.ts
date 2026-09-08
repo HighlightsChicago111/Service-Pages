@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import {publishedServiceRoutes, routeByServiceId, serviceClusters, servicePath} from '../src/lib/service-hierarchy'
 
 type Row = Record<string, string>
 type Source = {equip: Row[]; area: Row[]; page: Row[]}
@@ -10,13 +9,7 @@ const source = JSON.parse(fs.readFileSync(path.resolve('data/source-content.json
 const fullReviews = JSON.parse(fs.readFileSync(path.resolve('data/full-reviews.json'), 'utf8')) as Record<string, string>
 const serviceBySlug = new Map(source.equip.map((row) => [row.slug, row]))
 const areaBySlug = new Map(source.area.map((row) => [row.slug, row]))
-const validServicePaths = new Set([
-  '/services',
-  '/services/reviews',
-  ...serviceClusters.map((cluster) => `/services/${cluster.slug}`),
-  ...publishedServiceRoutes.map(servicePath),
-  ...source.page.map((row) => `/services/reviews/${row.equipment_slug}`),
-])
+const validServicePaths = new Set(['/services', ...source.page.map((row) => `/services/${row.equipment_slug}/${row.area_slug}`)])
 const failures: string[] = []
 let assertions = 0
 
@@ -78,7 +71,7 @@ async function testDocument(pathname: string, requiredText: string[]) {
 }
 
 async function run() {
-  const collection = await testDocument('/services', ['Chicago electrical services, organized by system', 'Choose an electrical work category'])
+  const collection = await testDocument('/services', ['Electrical services built around Chicago', 'Find the right electrical service'])
   for (const href of [
     'https://www.highlightschicago.com/',
     'https://www.highlightschicago.com/about-us',
@@ -98,25 +91,14 @@ async function run() {
   expect(collection.includes('6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'), 'Collection page is not using the exact live header logo')
   expect(collection.includes('class="collection-footer-title"'), 'Collection footer is missing the single-line quote heading')
   expect((collection.match(/class="collection-social-icon"/g) || []).length === 2, 'Collection footer does not render both social icons')
-  expect((collection.match(/class="collection-card cluster-card"/g) || []).length === serviceClusters.length, 'Collection page does not render every workbook cluster')
+  expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
   const collectionAlts = imageAlts(collection)
-  expect(collectionAlts.length >= serviceClusters.length + 3, 'Collection page does not expose its cluster and chrome imagery as crawlable img elements')
+  expect(collectionAlts.length >= source.page.length + 3, 'Collection page does not expose its card and chrome imagery as crawlable img elements')
   expect(collectionAlts.every(Boolean), 'Collection page contains an image without alt text')
   expect(collection.includes('alt="Electrical panel upgrade service by Highlights Chicago"'), 'Collection hero image is missing descriptive alt text')
-  const clusterDocuments: string[] = []
-  for (const cluster of serviceClusters) {
-    const expectedCount = publishedServiceRoutes.filter((route) => route.clusterSlug === cluster.slug).length
-    const html = await testDocument(`/services/${cluster.slug}`, [])
-    const renderedCluster = visibleText(html)
-    clusterDocuments.push(html)
-    expect(renderedCluster.includes(cluster.name), `/services/${cluster.slug} is missing its cluster name`)
-    expect(renderedCluster.includes(`Showing ${expectedCount} of ${expectedCount} service pages`), `/services/${cluster.slug} reports the wrong published service count`)
-    expect((html.match(/class="collection-card"/g) || []).length === expectedCount, `/services/${cluster.slug} does not render its ${expectedCount} published service cards`)
-    expect(html.includes('class="collection-breadcrumbs collection-wrap"'), `/services/${cluster.slug} is missing hierarchy breadcrumbs`)
-  }
-  const cardImages = clusterDocuments.flatMap((html) => [...html.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1]))
-  expect(cardImages.length === publishedServiceRoutes.length, 'Cluster pages do not collectively render every published service cover image')
-  expect(new Set(cardImages).size === publishedServiceRoutes.length, 'Published service cards must use unique cover images across clusters')
+  const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1])
+  expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
+  expect(new Set(cardImages).size === source.page.length, 'Collection cards must use unique cover images')
   for (const image of cardImages) {
     expect(image.startsWith('/services/images/services/'), `Collection image is not local: ${image}`)
     const imagePath = path.resolve('public', image.replace('/services/', ''))
@@ -132,10 +114,7 @@ async function run() {
   await testDocument('/services/studio', [])
 
   for (const row of source.page) {
-    const route = routeByServiceId(row.service_id)
-    expect(Boolean(route), `Service ${row.service_id} (${row.equipment_slug}) is missing from the workbook hierarchy map`)
-    if (!route) continue
-    const pathname = servicePath(route)
+    const pathname = `/services/${row.equipment_slug}/${row.area_slug}`
     const service = serviceBySlug.get(row.equipment_slug)
     const area = areaBySlug.get(row.area_slug)
     const heading = `${service?.h1_prefix} in ${area?.name}`
@@ -148,8 +127,6 @@ async function run() {
     expect((text.match(/class="collection-header"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
     expect((text.match(/class="collection-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
     expect((text.match(/class="collection-utility"/g) || []).length === 1, `${pathname} does not render exactly one utility bar`)
-    expect(text.includes(route.clusterSlug) && text.includes('class="crumbs wrap"'), `${pathname} is missing its cluster breadcrumb`)
-    expect(text.includes(`<link rel="canonical" href="https://www.highlightschicago.com${pathname}"`), `${pathname} does not use the hierarchical canonical URL`)
     const renderedText = visibleText(text)
     for (const pageHeading of headingTexts(text).filter((value) => /^(what|why|who)\b/i.test(value))) {
       expect(pageHeading.endsWith('?'), `${pathname} question heading is missing ?: ${pageHeading}`)
@@ -194,8 +171,6 @@ async function run() {
     expect(renderedText.includes(`Read all ${row.google_review_count} reviews`), `${pathname} does not include the live review count in the all-reviews CTA`)
     expect(text.indexOf('class="cs-gallery-rail"') < text.indexOf('class="cs-gallery-head"'), `${pathname} does not place the crew gallery caption below its images`)
     expect(renderedText.includes(`Our Works in ${area?.name}`), `${pathname} does not use the updated work-section heading`)
-    const workingSection = text.match(/<section class="section-tint" id="working-in-area">([\s\S]*?)<\/section>/)?.[1] || ''
-    expect((workingSection.match(/<figure\b/g) || []).length === 3, `${pathname} does not render exactly three working photos`)
     expect(text.includes('class="single-line-mobile"'), `${pathname} does not mark the coverage heading as mobile single-line`)
     expect(text.includes('area-rail-single-row'), `${pathname} does not render the single-row horizontal location rail`)
     expect(!text.includes('class="area-grid"'), `${pathname} still renders locations as a wrapping grid`)
@@ -209,15 +184,11 @@ async function run() {
     expect(text.includes('class="section-tint library-section"'), `${pathname} does not use shared library section spacing`)
     expect(text.includes('class="collection-footer-form"'), `${pathname} is missing the live-style footer quote form`)
     expect(renderedText.includes(`${service?.pricing_heading} in ${area?.name}?`), `${pathname} pricing heading is not a question`)
-
-    const legacy = await fetch(`${baseUrl}/services/${row.equipment_slug}/${row.area_slug}`, {redirect: 'manual'})
-    expect([307, 308].includes(legacy.status), `/services/${row.equipment_slug}/${row.area_slug} did not redirect`)
-    expect(legacy.headers.get('location') === pathname, `/services/${row.equipment_slug}/${row.area_slug} redirected to ${legacy.headers.get('location')} instead of ${pathname}`)
   }
 
   for (const [pathname, destination] of [
-    ['/services/circuit-breaker', '/services/panels-circuits/circuit-breaker-replacement-and-repair'],
-    ['/services/amperage-upgrade', '/services/power-distribution/electrical-panel-upgrade'],
+    ['/services/circuit-breaker', '/services/circuit-breaker-replacement/chicago'],
+    ['/services/amperage-upgrade', '/services/electrical-panel-upgrade/chicago'],
   ]) {
     const response = await fetch(`${baseUrl}${pathname}`, {redirect: 'manual'})
     expect([307, 308].includes(response.status), `${pathname} did not redirect`)

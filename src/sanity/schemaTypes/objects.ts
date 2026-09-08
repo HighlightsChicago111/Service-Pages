@@ -17,18 +17,7 @@ export const externalImage = defineType({
   type: 'object',
   fields: [
     defineField({name: 'image', title: 'Sanity image', type: 'image', options: {hotspot: true}}),
-    defineField({
-      name: 'externalUrl',
-      title: 'Imported URL or local path',
-      description: 'Use an absolute HTTP(S) URL or a root-relative site path beginning with “/”.',
-      type: 'string',
-      validation: (rule) => rule.custom((value) => {
-        if (!value) return true
-        return /^https?:\/\//i.test(value) || value.startsWith('/')
-          ? true
-          : 'Use an absolute HTTP(S) URL or a root-relative path beginning with “/”.'
-      }),
-    }),
+    defineField({name: 'externalUrl', title: 'Imported external URL', type: 'url'}),
     defineField({
       name: 'alt',
       title: 'Alternative text',
@@ -109,8 +98,6 @@ export const review = defineType({
     defineField({name: 'quote', title: 'Quote', type: 'text', rows: 5, validation: (rule) => rule.required()}),
     defineField({name: 'author', title: 'Author / attribution', type: 'string'}),
     defineField({name: 'location', title: 'Location', type: 'string'}),
-    defineField({name: 'reviewDate', title: 'Review date', type: 'date'}),
-    defineField({name: 'rating', title: 'Star rating', type: 'number', validation: (rule) => rule.min(1).max(5)}),
     defineField({name: 'sourceUrl', title: 'Source URL', type: 'url'}),
     defineField({name: 'sourceId', title: 'Source review ID', type: 'string'}),
     defineField({name: 'verifiedAt', title: 'Last verified', type: 'date'}),

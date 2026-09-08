@@ -1,6 +1,5 @@
 export type CollectionItem = {
   _id?: string | null
-  serviceId?: number | string | null
   title?: string | null
   serviceSlug?: string | null
   areaSlug?: string | null

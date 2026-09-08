@@ -1,9 +1,8 @@
 export type Faq = {_key?: string; question: string; answer: string}
 export type TitledBody = {_key?: string; title: string; body: string}
 export type ExternalImage = {_key?: string; externalUrl?: string; resolvedUrl?: string; alt?: string; caption?: string; credit?: string}
-export type Review = {_key?: string; quote: string; author?: string; location?: string; reviewDate?: string; rating?: number; sourceUrl?: string; sourceId?: string}
+export type Review = {_key?: string; quote: string; author?: string; location?: string; sourceUrl?: string; sourceId?: string}
 export type Guide = {_key?: string; title: string; body?: unknown[]; legacyHtml?: string}
-export type ServiceRouteContext = {clusterSlug: string; clusterName: string; routeSlug: string; canonicalUrl: string}
 
 export type ServiceDefinition = {
   serviceId: number
@@ -115,26 +114,4 @@ export type ServicePageData = {
     area: ServiceArea
   } | null
   settings: SiteSettings | null
-}
-
-export type ReviewCollectionItem = {
-  _id: string
-  serviceSlug: string
-  areaSlug: string
-  serviceName: string
-  parentName?: string
-  monthlySearchVolume?: number
-  cardImage?: string
-  cardImageAlt?: string
-  reviews: Review[]
-}
-
-export type ReviewCollectionData = {
-  pages: ReviewCollectionItem[]
-  settings: Pick<SiteSettings, 'companyName' | 'siteUrl' | 'phoneDisplay' | 'phoneE164' | 'google' | 'reviewsDisclaimer'> | null
-}
-
-export type ReviewServiceData = {
-  page: ReviewCollectionItem | null
-  settings: ReviewCollectionData['settings']
 }

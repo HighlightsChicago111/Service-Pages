@@ -34,14 +34,6 @@ const changedData: CollectionItem[] = [
     cardImage: null,
   },
   {
-    _id: 'new-sanity-backed-service',
-    title: 'Bathroom Exhaust Fan Installation',
-    serviceSlug: 'bathroom-exhaust-fan-installation',
-    areaSlug: 'chicago',
-    cardImage: 'https://cdn.sanity.io/images/example/production/cover.jpg',
-    cardImageAlt: 'Bathroom exhaust fan installed in Chicago',
-  },
-  {
     _id: 'missing-route-data',
     title: 'Incomplete draft',
     serviceSlug: null,
@@ -51,7 +43,7 @@ const changedData: CollectionItem[] = [
 
 const prepared = prepareCollectionItems(changedData)
 
-assert.equal(prepared.length, 4, 'Incomplete route records should be omitted without crashing')
+assert.equal(prepared.length, 3, 'Incomplete route records should be omitted without crashing')
 assert.equal(prepared[0].serviceName, 'Changed generator title', 'Title should backfill a missing service name')
 assert.equal(prepared[0].areaName, 'Chicago', 'Missing area names should receive a safe display fallback')
 assert.equal(prepared[0].monthlySearchVolume, undefined, 'Invalid search volume should be removed')
@@ -65,7 +57,5 @@ assert.equal(prepared[1].cardImageCaption, 'Future electrical service in Evansto
 assert.equal(prepared[2].serviceName, 'Electrical service', 'Missing labels should receive a safe fallback')
 assert.equal(prepared[2].cardImage, undefined, 'Missing images should use the visual placeholder')
 assert.equal(prepared[2].cardImageAlt, 'Electrical service in Chicago', 'Missing image metadata should receive a safe contextual fallback')
-assert.equal(prepared[3].cardImage, 'https://cdn.sanity.io/images/example/production/cover.jpg', 'Newly published services should use their Sanity cover asset')
-assert.equal(prepared[3].cardImageAlt, 'Bathroom exhaust fan installed in Chicago', 'New Sanity-backed covers should retain their authored alt text')
 
 console.log('Collection resilience test passed: changed images, optional sub-data, and incomplete routes are handled safely.')
