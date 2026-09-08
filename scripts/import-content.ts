@@ -143,7 +143,10 @@ const pages = source.page.map((row) => ({
     description: buildMetaDescription(row.meta_description, firstPage.phone_display),
     canonicalUrl: row.canonical_url,
   },
-  reviews: objects(row.reviews, ['quote', 'author', 'location', 'sourceUrl', 'sourceId'], `review-${row.service_id}`).map((item) => ({...item, quote: fullReviews[item.sourceId] || item.quote, _type: 'review', verifiedAt: '2026-08-27'})),
+  reviews: objects(row.reviews, ['quote', 'author', 'location', 'sourceUrl', 'sourceId'], `review-${row.service_id}`).map((item) => {
+    const reviewDate = /^20\d{2}-\d{2}-\d{2}$/.test(item.location) ? item.location : undefined
+    return {...item, location: reviewDate ? undefined : item.location, reviewDate, quote: fullReviews[item.sourceId] || item.quote, _type: 'review', verifiedAt: '2026-08-27'}
+  }),
   gallery: imageList(row.gallery, `gallery-${row.service_id}`, [
     `${titleFromSlug(row.equipment_slug)} project completed by Highlights Chicago electricians in ${areaNameBySlug.get(row.area_slug) || titleFromSlug(row.area_slug)}`,
     'Highlights Chicago electrical services logo',

@@ -1,14 +1,16 @@
 /* eslint-disable @next/next/no-img-element -- Crawlable local imagery is intentionally rendered without Next's generated image wrapper. */
 import type {Metadata} from 'next'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
-import {CollectionItem, ServiceCollection} from '@/components/service-collection'
+import {ClusterCollection} from '@/components/cluster-collection'
+import type {CollectionItem} from '@/components/service-collection'
 import {sanityFetch} from '@/sanity/lib/live'
 import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
+import {serviceClusters} from '@/lib/service-hierarchy'
 
 export const revalidate = 60
 export const metadata: Metadata = {
   title: 'Electrical Services in Chicago',
-  description: 'Explore Highlights Chicago electrical service pages for installations, repairs, protection, power, lighting, and more.',
+  description: 'Explore Highlights Chicago electrical services by category, from power distribution and lighting to safety, backup power, EV charging, and low voltage.',
   alternates: {canonical: 'https://www.highlightschicago.com/services'},
 }
 
@@ -23,23 +25,23 @@ export default async function HomePage() {
           <div className="collection-wrap collection-hero-grid">
             <div>
               <p className="collection-hero-kicker">Licensed Chicago electricians</p>
-              <h1>Electrical services built around Chicago</h1>
-              <p>Explore service-specific guidance for safer installations, dependable repairs, and code-conscious electrical work across Chicago homes and businesses.</p>
+              <h1>Chicago electrical services, organized by system</h1>
+              <p>Choose a service cluster first, then find the exact installation, repair, replacement, inspection, or upgrade for your property.</p>
               <div className="collection-hero-actions">
-                <a href="#service-directory-title">Explore services</a>
+                <a href="#cluster-directory-title">Explore clusters</a>
                 <a href="https://www.highlightschicago.com/contact-us">Contact us</a>
               </div>
             </div>
-            <div className="collection-hero-panel" aria-label={`${pages.length} available local service pages`}>
+            <div className="collection-hero-panel" aria-label={`${serviceClusters.length} service clusters with ${pages.length} available local service pages`}>
               <img className="collection-hero-panel-image" src="/services/images/services/electrical-panel-upgrade.jpg" alt="Electrical panel upgrade service by Highlights Chicago" decoding="async" />
-              <span>Service library</span>
-              <strong>{pages.length}</strong>
-              <p>Local service pages and growing</p>
+              <span>Electrical service tree</span>
+              <strong>{serviceClusters.length}</strong>
+              <p>Clusters connecting {pages.length} published service pages</p>
               <a href="tel:7732623333">Talk with an electrician <span aria-hidden="true">→</span></a>
             </div>
           </div>
         </section>
-        <ServiceCollection pages={pages} />
+        <ClusterCollection pages={pages} />
         <section className="collection-trust-band">
           <div className="collection-wrap">
             <p>Why Highlights Chicago</p>

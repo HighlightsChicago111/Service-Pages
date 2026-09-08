@@ -4,6 +4,7 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
   *[_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)] | order(service->monthlySearchVolume desc) {
     _id,
     title,
+    "serviceId": service->serviceId,
     "serviceSlug": service->slug.current,
     "areaSlug": area->slug.current,
     "serviceName": service->name,
@@ -124,4 +125,67 @@ export const SERVICE_PAGE_METADATA_QUERY = defineQuery(`
     service->slug.current == $serviceSlug &&
     area->slug.current == $areaSlug
   ][0] {"title": seo.title, "description": seo.description, "canonicalUrl": seo.canonicalUrl}
+`)
+
+const REVIEW_PAGE_FIELDS = `
+  _id,
+  "serviceSlug": service->slug.current,
+  "areaSlug": area->slug.current,
+  "serviceName": service->name,
+  "parentName": service->parentName,
+  "monthlySearchVolume": service->monthlySearchVolume,
+  "cardImage": coalesce(
+    gallery[0].image.asset->url,
+    gallery[0].externalUrl,
+    workingPhotos[0].image.asset->url,
+    workingPhotos[0].externalUrl
+  ),
+  "cardImageAlt": coalesce(gallery[0].alt, workingPhotos[0].alt),
+  reviews[]{_key, quote, author, location, reviewDate, rating, sourceUrl, sourceId}
+`
+
+const REVIEW_SETTINGS_FIELDS = `
+  companyName,
+  siteUrl,
+  phoneDisplay,
+  phoneE164,
+  google,
+  reviewsDisclaimer
+`
+
+export const REVIEW_COLLECTION_QUERY = defineQuery(`
+  {
+    "pages": *[
+      _type == "servicePage" &&
+      defined(service->slug.current) &&
+      defined(area->slug.current) &&
+      count(reviews) > 0
+    ] | order(service->monthlySearchVolume desc) {
+      ${REVIEW_PAGE_FIELDS}
+    },
+    "settings": *[_id == "siteSettings"][0] {
+      ${REVIEW_SETTINGS_FIELDS}
+    }
+  }
+`)
+
+export const REVIEW_SERVICE_QUERY = defineQuery(`
+  {
+    "page": *[
+      _type == "servicePage" &&
+      service->slug.current == $serviceSlug &&
+      count(reviews) > 0
+    ][0] {
+      ${REVIEW_PAGE_FIELDS}
+    },
+    "settings": *[_id == "siteSettings"][0] {
+      ${REVIEW_SETTINGS_FIELDS}
+    }
+  }
+`)
+
+export const REVIEW_SERVICE_SLUGS_QUERY = defineQuery(`
+  *[_type == "servicePage" && defined(service->slug.current) && count(reviews) > 0] {
+    "serviceSlug": service->slug.current
+  }
 `)
