@@ -3,6 +3,7 @@ import {defineQuery} from 'next-sanity'
 export const SERVICE_INDEX_QUERY = defineQuery(`
   *[_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)] | order(service->monthlySearchVolume desc) {
     _id,
+    _updatedAt,
     title,
     "serviceSlug": service->slug.current,
     "areaSlug": area->slug.current,
@@ -25,7 +26,9 @@ export const SERVICE_PAGE_QUERY = defineQuery(`
   {
     "serviceRoutes": *[_type == "servicePage"] {
       "serviceSlug": service->slug.current,
-      "areaSlug": area->slug.current
+      "areaSlug": area->slug.current,
+      "serviceName": service->name,
+      "parentName": service->parentName
     },
     "page": *[
       _type == "servicePage" &&
@@ -123,5 +126,10 @@ export const SERVICE_PAGE_METADATA_QUERY = defineQuery(`
     _type == "servicePage" &&
     service->slug.current == $serviceSlug &&
     area->slug.current == $areaSlug
-  ][0] {"title": seo.title, "description": seo.description, "canonicalUrl": seo.canonicalUrl}
+  ][0] {
+    "title": seo.title,
+    "description": seo.description,
+    "serviceName": service->name,
+    "areaName": area->name
+  }
 `)

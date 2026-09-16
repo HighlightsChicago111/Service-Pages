@@ -16,6 +16,8 @@
     "source:validate": "tsx scripts/validate-source.ts",
     "test:smoke": "tsx scripts/smoke-test.ts",
     "test:collection-data": "tsx scripts/test-collection-data.ts",
+    "test:indexing-contract": "tsx scripts/test-service-url-contract.ts",
+    "test:indexing": "tsx scripts/test-indexing.ts",
     "test:lead": "tsx scripts/test-lead-delivery.ts",
     "content:import": "tsx scripts/import-content.ts",
     "content:update-template": "tsx scripts/update-service-template.ts",
