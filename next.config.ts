@@ -35,12 +35,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/circuit-breaker',
-        destination: '/circuit-breaker-replacement/chicago',
+        destination: '/circuit-breaker-replacement',
         permanent: true,
       },
       {
         source: '/amperage-upgrade',
-        destination: '/electrical-panel-upgrade/chicago',
+        destination: '/electrical-panel-upgrade',
         permanent: true,
       },
     ]

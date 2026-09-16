@@ -1,17 +1,18 @@
 export const PUBLIC_SITE_ORIGIN = 'https://www.highlightschicago.com'
 export const SERVICES_PATH = '/services'
+export const PRIMARY_AREA_SLUG = 'chicago'
 
 export type ServiceRoute = {
   serviceSlug: string
   areaSlug: string
 }
 
-export function servicePagePath(serviceSlug: string, areaSlug: string): string {
-  return `${SERVICES_PATH}/${serviceSlug}/${areaSlug}`
+export function servicePagePath(serviceSlug: string): string {
+  return `${SERVICES_PATH}/${serviceSlug}`
 }
 
-export function servicePageUrl(serviceSlug: string, areaSlug: string): string {
-  return `${PUBLIC_SITE_ORIGIN}${servicePagePath(serviceSlug, areaSlug)}`
+export function servicePageUrl(serviceSlug: string): string {
+  return `${PUBLIC_SITE_ORIGIN}${servicePagePath(serviceSlug)}`
 }
 
 function slugify(value: string): string {
@@ -51,7 +52,7 @@ export function resolvePublishedServicePath(
   if (name) candidates.push(slugify(name))
 
   const route = areaRoutes.find((item) => candidates.includes(item.serviceSlug))
-  return route ? servicePagePath(route.serviceSlug, route.areaSlug) : null
+  return route ? servicePagePath(route.serviceSlug) : null
 }
 
 /** Remove any stored brand suffix so the root metadata template adds it once. */

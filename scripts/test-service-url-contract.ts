@@ -12,10 +12,10 @@ const routes = [
   {serviceSlug: 'ev-charger-installation', areaSlug: 'chicago'},
 ]
 
-assert.equal(servicePagePath('gfci-outlet-installation', 'chicago'), '/services/gfci-outlet-installation/chicago')
+assert.equal(servicePagePath('gfci-outlet-installation'), '/services/gfci-outlet-installation')
 assert.equal(
-  servicePageUrl('gfci-outlet-installation', 'chicago'),
-  `${PUBLIC_SITE_ORIGIN}/services/gfci-outlet-installation/chicago`,
+  servicePageUrl('gfci-outlet-installation'),
+  `${PUBLIC_SITE_ORIGIN}/services/gfci-outlet-installation`,
 )
 assert.equal(
   resolvePublishedServicePath(
@@ -24,7 +24,7 @@ assert.equal(
     routes,
     'chicago',
   ),
-  '/services/gfci-outlet-installation/chicago',
+  '/services/gfci-outlet-installation',
 )
 assert.equal(
   resolvePublishedServicePath('/services/residential-electrical-services/', 'Residential electrical services', routes, 'chicago'),

@@ -23,7 +23,7 @@ function titleFrom(html: string): string {
 function serviceLinks(html: string): string[] {
   return [...html.matchAll(/<a\b[^>]*\bhref="(\/services\/[^"#?]+)"/gi)]
     .map((match) => match[1])
-    .filter((href) => href.split('/').filter(Boolean).length === 3)
+    .filter((href) => href.split('/').filter(Boolean).length === 2)
 }
 
 function relatedServiceLinks(html: string): string[] {
@@ -49,7 +49,7 @@ async function run() {
   const sitemap = await sitemapResponse.text()
   const locations = xmlValues(sitemap, 'loc')
   const lastModified = xmlValues(sitemap, 'lastmod')
-  const serviceLocations = locations.filter((url) => new URL(url).pathname.split('/').filter(Boolean).length === 3)
+  const serviceLocations = locations.filter((url) => new URL(url).pathname.split('/').filter(Boolean).length === 2)
   const servicePaths = new Set(serviceLocations.map((url) => new URL(url).pathname))
 
   assert.equal(serviceLocations.length, expectedPageCount, `Sitemap must contain ${expectedPageCount} service pages`)
@@ -64,6 +64,7 @@ async function run() {
     assert.ok(!/no-store/i.test(response.headers.get('cache-control') || ''), `${pathname} must be cacheable`)
     const html = await response.text()
     assert.equal(canonicalFrom(html), publicUrl, `${pathname} canonical must exactly match its sitemap URL`)
+    assert.ok(!pathname.endsWith('/chicago'), `${pathname} must not contain the area slug`)
     assert.ok(!publicUrl.endsWith('/'), `${pathname} canonical must not have a trailing slash`)
     assert.equal((titleFrom(html).match(/Highlights Chicago/gi) || []).length, 1, `${pathname} title must contain the brand once`)
 
@@ -77,6 +78,10 @@ async function run() {
     for (const href of relatedLinks) {
       assert.ok(servicePaths.has(href), `${pathname} links to unpublished service route ${href}`)
     }
+
+    const legacyResponse = await fetch(`${baseUrl}${pathname}/chicago`, {redirect: 'manual'})
+    assert.equal(legacyResponse.status, 308, `${pathname}/chicago must permanently redirect`)
+    assert.equal(legacyResponse.headers.get('location'), pathname, `${pathname}/chicago must redirect to ${pathname}`)
   }
 
   console.log(`Indexing regression test passed for ${serviceLocations.length} service pages.`)

@@ -9,7 +9,7 @@ const source = JSON.parse(fs.readFileSync(path.resolve('data/source-content.json
 const fullReviews = JSON.parse(fs.readFileSync(path.resolve('data/full-reviews.json'), 'utf8')) as Record<string, string>
 const serviceBySlug = new Map(source.equip.map((row) => [row.slug, row]))
 const areaBySlug = new Map(source.area.map((row) => [row.slug, row]))
-const validServicePaths = new Set(['/services', ...source.page.map((row) => `/services/${row.equipment_slug}/${row.area_slug}`)])
+const validServicePaths = new Set(['/services', ...source.page.map((row) => `/services/${row.equipment_slug}`)])
 const failures: string[] = []
 let assertions = 0
 
@@ -114,7 +114,7 @@ async function run() {
   await testDocument('/services/studio', [])
 
   for (const row of source.page) {
-    const pathname = `/services/${row.equipment_slug}/${row.area_slug}`
+    const pathname = `/services/${row.equipment_slug}`
     const service = serviceBySlug.get(row.equipment_slug)
     const area = areaBySlug.get(row.area_slug)
     const heading = `${service?.h1_prefix} in ${area?.name}`
@@ -187,15 +187,15 @@ async function run() {
   }
 
   for (const [pathname, destination] of [
-    ['/services/circuit-breaker', '/services/circuit-breaker-replacement/chicago'],
-    ['/services/amperage-upgrade', '/services/electrical-panel-upgrade/chicago'],
+    ['/services/circuit-breaker', '/services/circuit-breaker-replacement'],
+    ['/services/amperage-upgrade', '/services/electrical-panel-upgrade'],
   ]) {
     const response = await fetch(`${baseUrl}${pathname}`, {redirect: 'manual'})
     expect([307, 308].includes(response.status), `${pathname} did not redirect`)
     expect(response.headers.get('location') === destination, `${pathname} redirected to ${response.headers.get('location')}`)
   }
 
-  const missing = await fetch(`${baseUrl}/services/not-a-service/chicago`, {redirect: 'manual'})
+  const missing = await fetch(`${baseUrl}/services/not-a-service`, {redirect: 'manual'})
   expect(missing.status === 404, `Unknown service returned ${missing.status} instead of 404`)
 
   const invalidLead = await request('/services/api/lead', {

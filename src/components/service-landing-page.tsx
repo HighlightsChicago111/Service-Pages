@@ -124,7 +124,7 @@ function JsonLd({data}: Props) {
   const {page, settings} = data
   if (!page || !settings) return null
   const {service, area} = page
-  const canonicalUrl = servicePageUrl(service.slug, area.slug)
+  const canonicalUrl = servicePageUrl(service.slug)
   const faqs: Faq[] = [...(service.faqs || []), ...(page.localFaqOverrides?.length ? page.localFaqOverrides : area.localFaqs || [])]
   const graph = [
     {
@@ -195,12 +195,12 @@ export function ServiceLandingPage({data}: Props) {
     .sort((left, right) => Number(right.parentName === service.parentName) - Number(left.parentName === service.parentName))
   for (const route of fallbackRoutes) {
     if (relatedServices.length >= 4) break
-    const href = servicePageUrl(route.serviceSlug, route.areaSlug).replace(PUBLIC_SITE_ORIGIN, '')
+    const href = servicePageUrl(route.serviceSlug).replace(PUBLIC_SITE_ORIGIN, '')
     if (usedRelatedPaths.has(href)) continue
     relatedServices.push({
       name: route.serviceName || route.serviceSlug,
       description: `Explore ${route.serviceName || 'this electrical service'} from Highlights Chicago.`,
-      url: servicePageUrl(route.serviceSlug, route.areaSlug),
+      url: servicePageUrl(route.serviceSlug),
       href,
     })
     usedRelatedPaths.add(href)

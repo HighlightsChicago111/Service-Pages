@@ -6,11 +6,10 @@ export const resolve: PresentationPluginOptions['resolve'] = {
       select: {
         title: 'title',
         serviceSlug: 'service->slug.current',
-        areaSlug: 'area->slug.current',
       },
       resolve: (document) => ({
-        locations: document?.serviceSlug && document?.areaSlug
-          ? [{title: document.title || 'Service page', href: `/services/${document.serviceSlug}/${document.areaSlug}`}]
+        locations: document?.serviceSlug
+          ? [{title: document.title || 'Service page', href: `/services/${document.serviceSlug}`}]
           : [],
       }),
     }),

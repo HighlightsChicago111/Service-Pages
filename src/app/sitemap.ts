@@ -1,7 +1,7 @@
 import type {MetadataRoute} from 'next'
 import {metadataClient} from '@/sanity/lib/client'
 import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
-import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, servicePageUrl} from '@/lib/service-urls'
+import {PRIMARY_AREA_SLUG, PUBLIC_SITE_ORIGIN, SERVICES_PATH, servicePageUrl} from '@/lib/service-urls'
 
 // Next serves this at /services/sitemap.xml because basePath is applied to the
 // sitemap route automatically. Every <loc> is an absolute URL on the public
@@ -13,9 +13,9 @@ type Route = {serviceSlug?: string | null; areaSlug?: string | null; _updatedAt?
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = (await metadataClient.fetch<Route[]>(SERVICE_INDEX_QUERY)) || []
   const servicePages = pages
-    .filter((page): page is Route & {serviceSlug: string; areaSlug: string} => Boolean(page.serviceSlug && page.areaSlug))
+    .filter((page): page is Route & {serviceSlug: string; areaSlug: string} => Boolean(page.serviceSlug && page.areaSlug === PRIMARY_AREA_SLUG))
     .map((page) => ({
-      url: servicePageUrl(page.serviceSlug, page.areaSlug),
+      url: servicePageUrl(page.serviceSlug),
       lastModified: page._updatedAt ? new Date(page._updatedAt) : undefined,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
