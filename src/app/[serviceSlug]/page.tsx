@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation'
 import {ServiceLandingPage} from '@/components/service-landing-page'
 import {metadataClient} from '@/sanity/lib/client'
 import {SERVICE_INDEX_QUERY, SERVICE_PAGE_METADATA_QUERY, SERVICE_PAGE_QUERY} from '@/sanity/lib/queries'
-import {PRIMARY_AREA_SLUG, servicePageUrl, unbrandedPageTitle} from '@/lib/service-urls'
+import {PRIMARY_AREA_SLUG, servicePageUrl} from '@/lib/service-urls'
 import type {ServicePageData} from '@/types/content'
 
 type Props = {params: Promise<{serviceSlug: string}>}
@@ -23,9 +23,12 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   const queryParams = {serviceSlug, areaSlug: PRIMARY_AREA_SLUG}
   const metadata = await metadataClient.fetch(SERVICE_PAGE_METADATA_QUERY, queryParams)
   if (!metadata) return {}
-  const title = unbrandedPageTitle(metadata.title)
   return {
-    title: title || `${metadata.serviceName} in ${metadata.areaName}`,
+    // Build the title from authoritative names instead of the imported SEO
+    // title. Several imported titles contain a truncated brand suffix, a
+    // leftover "Inc.", or title-cased acronyms such as CCTV and EV. The root
+    // layout adds the brand exactly once.
+    title: `${metadata.serviceName} in ${metadata.areaName}`,
     description: metadata.description,
     alternates: {canonical: servicePageUrl(serviceSlug)},
   }

@@ -66,7 +66,10 @@ async function run() {
     assert.equal(canonicalFrom(html), publicUrl, `${pathname} canonical must exactly match its sitemap URL`)
     assert.ok(!pathname.endsWith('/chicago'), `${pathname} must not contain the area slug`)
     assert.ok(!publicUrl.endsWith('/'), `${pathname} canonical must not have a trailing slash`)
-    assert.equal((titleFrom(html).match(/Highlights Chicago/gi) || []).length, 1, `${pathname} title must contain the brand once`)
+    const pageTitle = titleFrom(html)
+    assert.equal((pageTitle.match(/Highlights/gi) || []).length, 1, `${pathname} title must contain the brand once`)
+    assert.ok(!/(?:…|\.\.\.)/.test(pageTitle), `${pathname} title must not contain a truncation ellipsis`)
+    assert.ok(!/\bInc\.\s*\|\s*Highlights Chicago$/i.test(pageTitle), `${pathname} title must not retain the old company suffix`)
 
     const breadcrumbs = breadcrumbLists(html)
     assert.equal(breadcrumbs.length, 1, `${pathname} must have one BreadcrumbList`)
@@ -81,7 +84,9 @@ async function run() {
 
     const legacyResponse = await fetch(`${baseUrl}${pathname}/chicago`, {redirect: 'manual'})
     assert.equal(legacyResponse.status, 308, `${pathname}/chicago must permanently redirect`)
-    assert.equal(legacyResponse.headers.get('location'), pathname, `${pathname}/chicago must redirect to ${pathname}`)
+    const legacyLocation = legacyResponse.headers.get('location')
+    assert.ok(legacyLocation, `${pathname}/chicago must include a redirect location`)
+    assert.equal(new URL(legacyLocation, baseUrl).pathname, pathname, `${pathname}/chicago must redirect to ${pathname}`)
   }
 
   console.log(`Indexing regression test passed for ${serviceLocations.length} service pages.`)
