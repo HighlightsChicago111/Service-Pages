@@ -1,6 +1,6 @@
 'use client'
 
-import {FormEvent, useId, useState} from 'react'
+import {FormEvent, useEffect, useId, useRef, useState} from 'react'
 
 type Props = {
   service: string
@@ -16,6 +16,18 @@ type Props = {
 export function LeadForm(props: Props) {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const id = useId()
+  const successDialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    const dialog = successDialogRef.current
+    if (status === 'sent' && dialog && !dialog.open) dialog.showModal()
+  }, [status])
+
+  function closeSuccessDialog() {
+    const dialog = successDialogRef.current
+    if (dialog?.open) dialog.close()
+    else setStatus('idle')
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -52,9 +64,29 @@ export function LeadForm(props: Props) {
           {status === 'sending' ? 'Sending…' : 'Request service'}
         </button>
         {props.note && <p className="form-note">{props.note}</p>}
-        {status === 'sent' && <p className="form-success" role="status">Thanks—your request was sent.</p>}
         {status === 'error' && <p className="form-error" role="alert">The form is not connected yet. Please call us instead.</p>}
       </form>
+      {status === 'sent' && (
+        <dialog
+          ref={successDialogRef}
+          className="service-success-dialog"
+          aria-labelledby={`${id}-success-title`}
+          aria-describedby={`${id}-success-message`}
+          onClose={() => setStatus('idle')}
+        >
+          <div className="service-success-dialog-content">
+            <button className="service-success-dialog-close" type="button" aria-label="Close confirmation" onClick={closeSuccessDialog}>×</button>
+            <div className="service-success-dialog-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="m6.8 12.3 3.3 3.3 7.1-7.2" /></svg>
+            </div>
+            <p className="service-success-dialog-kicker">Request received</p>
+            <h2 id={`${id}-success-title`}>Thank you.</h2>
+            <p className="service-success-dialog-message" id={`${id}-success-message`}>Your request was sent.</p>
+            <p className="service-success-dialog-detail">A Highlights Chicago team member will contact you shortly to discuss your service request.</p>
+            <button className="btn btn-primary service-success-dialog-button" type="button" autoFocus onClick={closeSuccessDialog}>Done</button>
+          </div>
+        </dialog>
+      )}
     </aside>
   )
 }
