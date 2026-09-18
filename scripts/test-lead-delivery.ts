@@ -6,12 +6,13 @@ const originalEnv = {
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   LEAD_FROM_EMAIL: process.env.LEAD_FROM_EMAIL,
   LEAD_NOTIFICATION_EMAIL: process.env.LEAD_NOTIFICATION_EMAIL,
+  LEAD_WEBHOOK_URL: process.env.LEAD_WEBHOOK_URL,
 }
 
-function leadRequest(payload: Record<string, unknown>) {
+function leadRequest(payload: Record<string, unknown>, referer?: string) {
   return new Request('http://localhost/api/lead', {
     method: 'POST',
-    headers: {'content-type': 'application/json'},
+    headers: {'content-type': 'application/json', ...(referer ? {referer} : {})},
     body: JSON.stringify(payload),
   })
 }
@@ -58,6 +59,51 @@ async function run() {
   const upstreamFailure = await POST(leadRequest({name: 'QA Customer', phone: '7735550100'}))
   assert.equal(upstreamFailure.status, 502)
 
+  // GHL/CRM webhook forwarding: fires before the email, carries sourceUrl/submittedAt,
+  // and both calls happen even though the webhook is unrelated to Resend.
+  process.env.LEAD_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/test/webhook/'
+  const calls: {url: string; init?: RequestInit}[] = []
+  global.fetch = async (input, init) => {
+    calls.push({url: String(input), init})
+    if (String(input) === process.env.LEAD_WEBHOOK_URL) return new Response(null, {status: 200})
+    return new Response(JSON.stringify({id: 'email_test_456'}), {status: 200, headers: {'content-type': 'application/json'}})
+  }
+  const withWebhook = await POST(leadRequest({
+    name: 'QA Customer',
+    phone: '(773) 555-0100',
+    service: 'Generator Installation',
+    area: 'Chicago',
+  }, 'https://www.highlightschicago.com/services/generator-installation'))
+  assert.equal(withWebhook.status, 200)
+  assert.equal(calls.length, 2, 'expected one webhook call and one Resend call')
+  assert.equal(calls[0].url, process.env.LEAD_WEBHOOK_URL)
+  assert.equal(calls[1].url, 'https://api.resend.com/emails')
+  const webhookBody = JSON.parse(String(calls[0].init?.body)) as Record<string, string>
+  assert.equal(webhookBody.name, 'QA Customer')
+  assert.equal(webhookBody.service, 'Generator Installation')
+  assert.equal(webhookBody.sourceUrl, 'https://www.highlightschicago.com/services/generator-installation')
+  assert.match(webhookBody.submittedAt, /^\d{4}-\d{2}-\d{2}T/)
+
+  // A down/erroring webhook must never break or delay a real lead's email delivery.
+  calls.length = 0
+  global.fetch = async (input) => {
+    if (String(input) === process.env.LEAD_WEBHOOK_URL) throw new Error('ECONNREFUSED')
+    return new Response(JSON.stringify({id: 'email_test_789'}), {status: 200, headers: {'content-type': 'application/json'}})
+  }
+  const webhookDown = await POST(leadRequest({name: 'QA Customer', phone: '7735550100'}))
+  assert.equal(webhookDown.status, 200, 'email must still succeed when the webhook is unreachable')
+
+  // No LEAD_WEBHOOK_URL configured: no webhook call is made at all.
+  delete process.env.LEAD_WEBHOOK_URL
+  const noCalls: string[] = []
+  global.fetch = async (input) => {
+    noCalls.push(String(input))
+    return new Response(JSON.stringify({id: 'email_test_000'}), {status: 200, headers: {'content-type': 'application/json'}})
+  }
+  const webhookDisabled = await POST(leadRequest({name: 'QA Customer', phone: '7735550100'}))
+  assert.equal(webhookDisabled.status, 200)
+  assert.deepEqual(noCalls, ['https://api.resend.com/emails'])
+
   delete process.env.RESEND_API_KEY
   const unconfigured = await POST(leadRequest({name: 'QA Customer', phone: '7735550100'}))
   assert.equal(unconfigured.status, 503)
@@ -65,7 +111,7 @@ async function run() {
   const invalid = await POST(leadRequest({name: 'QA Customer', phone: '123'}))
   assert.equal(invalid.status, 400)
 
-  console.log('Lead delivery test passed: Resend request, recipients, content, idempotency, validation, and failure handling.')
+  console.log('Lead delivery test passed: Resend request, recipients, content, idempotency, validation, failure handling, and GHL/CRM webhook forwarding (success, resilience, and disabled).')
 }
 
 run().finally(() => {

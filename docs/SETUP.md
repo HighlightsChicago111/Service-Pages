@@ -101,6 +101,7 @@ Configure variables separately for Development, Preview, and Production. Redeplo
 | `RESEND_API_KEY` | If testing | If testing | If form is live | Yes | Resend API key restricted to sending email |
 | `LEAD_FROM_EMAIL` | If testing | If testing | If form is live | No | Sender on the exact domain or subdomain verified in Resend |
 | `LEAD_NOTIFICATION_EMAIL` | If testing | If testing | If form is live | Yes | Recipient inbox; comma-separate up to 50 addresses |
+| `LEAD_WEBHOOK_URL` | Optional | Optional | If CRM forwarding is live | Yes | GHL/Zapier catch-hook URL; see §6a |
 
 Do **not** add these to Vercel unless a future server-only feature explicitly needs write access:
 
@@ -130,6 +131,24 @@ Before enabling the form:
 4. Set `LEAD_FROM_EMAIL` to a sender on that exact verified domain, for example `Highlights Chicago <leads@updates.highlightschicago.com>`.
 5. Set `LEAD_NOTIFICATION_EMAIL` to the inbox that should receive leads. Multiple recipients may be comma-separated.
 6. Redeploy, then submit one clearly labelled test request from the deployed page.
+
+## 6a. GHL/CRM webhook forwarding (optional)
+
+`/api/lead` can also forward every accepted lead to a CRM automation catch hook — currently a Zapier "Catch Hook" that a teammate's GoHighLevel (GHL) Zap listens on — in addition to (never instead of) the Resend email above. It is intentionally best-effort: the webhook call is fired first and its result only ever logged server-side, so a slow or unreachable webhook can never turn a real lead into a failed submission, and never blocks or delays the email path.
+
+The forwarded JSON body is the same accepted fields (`name`, `phone`, `address`, `buildingType`, `issue`, `service`, `area`; `email` when the form collects it) plus:
+
+- `sourceUrl` — the `Referer` header, i.e. which page the lead came from (a specific service page or the footer form).
+- `submittedAt` — server-side ISO 8601 timestamp.
+
+To enable it:
+
+1. Get the catch-hook URL from whoever owns the Zap/GHL workflow (Zapier: **Trigger → Catch Hook → Copy webhook URL**).
+2. Set `LEAD_WEBHOOK_URL` to that URL in `.env.local` for local testing, and in Vercel (Preview/Production as needed) to go live. Never commit the real URL — only the placeholder in `.env.example`.
+3. In Zapier/GHL, map the incoming JSON fields above to contact fields (name, phone, address, etc.) and to whatever pipeline/tag should receive service-page leads.
+4. Redeploy, then submit one clearly labelled test request and confirm it lands in GHL before pointing the team at real leads.
+
+Leave `LEAD_WEBHOOK_URL` unset to keep this disabled; nothing else changes.
 
 ## 7. GitHub and Vercel connection
 
