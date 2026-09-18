@@ -64,7 +64,7 @@ Do not add a wildcard `*.vercel.app` origin with credentials. Add only origins t
 
 After Vercel is deployed, add a Sanity webhook:
 
-- URL: `https://YOUR_DOMAIN/api/revalidate`
+- URL: `https://www.highlightschicago.com/services/api/revalidate`
 - Dataset: `production`
 - Trigger on: create, update, delete
 - HTTP method: POST
