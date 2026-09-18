@@ -16,6 +16,30 @@ function notificationRecipients(value: string) {
   return value.split(',').map((email) => email.trim()).filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)).slice(0, 50)
 }
 
+/**
+ * Best-effort forward of the lead to a CRM/automation webhook (GHL via Zapier,
+ * or any Zapier/Make catch hook). This never affects the response sent to the
+ * browser: the lead's own email delivery below is still the source of truth
+ * that gates success/failure, so a slow or failing webhook can't block or
+ * break a real lead. Failures are logged server-side only.
+ */
+async function forwardToLeadWebhook(clean: Record<string, string>, sourceUrl: string) {
+  const webhookUrl = configured(process.env.LEAD_WEBHOOK_URL)
+  if (!webhookUrl) return
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify({...clean, sourceUrl, submittedAt: new Date().toISOString()}),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok) console.error('Lead webhook delivery failed', {status: response.status})
+  } catch (error: unknown) {
+    console.error('Lead webhook delivery request failed', {error: error instanceof Error ? error.name : 'UnknownError'})
+  }
+}
+
 export const runtime = 'nodejs'
 
 export async function POST(request: Request) {
@@ -23,6 +47,8 @@ export async function POST(request: Request) {
   if (!payload || payload.website) return NextResponse.json({ok: true})
   const clean = Object.fromEntries(allowedFields.map((field) => [field, cleanField(payload[field])])) as Record<(typeof allowedFields)[number], string>
   if (!clean.name || clean.phone.replace(/\D/g, '').length < 7) return NextResponse.json({message: 'A valid name and phone are required'}, {status: 400})
+
+  await forwardToLeadWebhook(clean, cleanField(request.headers.get('referer')))
 
   const apiKey = configured(process.env.RESEND_API_KEY)
   const from = configured(process.env.LEAD_FROM_EMAIL)
