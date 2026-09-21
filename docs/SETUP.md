@@ -150,6 +150,15 @@ To enable it:
 
 Leave `LEAD_WEBHOOK_URL` unset to keep this disabled; nothing else changes.
 
+## 6b. Thank-you page (conversion tracking)
+
+Every successful submission — the service-page form and the sitewide footer form — sends the visitor to `https://www.highlightschicago.com/services/thank-you` instead of showing a popup. The team can track conversions by page view on that URL, while the webhook above continues to carry the lead's details (including `sourceUrl`, so you can still tell which page it came from).
+
+- The redirect is a full page load, not client-side routing, so URL-based trackers fire reliably.
+- The page is `noindex, nofollow` and is not in the sitemap.
+- The URL is a public contract (`THANK_YOU_PATH` in `src/lib/service-urls.ts`, guarded by `pnpm test:thank-you`). Changing it silently breaks tracking, so coordinate with whoever owns the conversion goal first.
+- Nothing here touches `/api/lead` or the webhook; a failed submission shows the inline error and stays on the page.
+
 ## 7. GitHub and Vercel connection
 
 The supplied repository must exist under `HighlightsChicago111` and the GitHub account authenticated in `gh` must have write access. Then:

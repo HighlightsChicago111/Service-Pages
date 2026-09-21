@@ -19,6 +19,7 @@
     "test:indexing-contract": "tsx scripts/test-service-url-contract.ts",
     "test:indexing": "tsx scripts/test-indexing.ts",
     "test:lead": "tsx scripts/test-lead-delivery.ts",
+    "test:thank-you": "tsx scripts/test-thank-you-page.ts",
     "content:import": "tsx scripts/import-content.ts",
     "content:update-template": "tsx scripts/update-service-template.ts",
     "vercel:pull": "vercel pull --yes --environment=production",

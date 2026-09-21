@@ -1,6 +1,9 @@
 export const PUBLIC_SITE_ORIGIN = 'https://www.highlightschicago.com'
 export const SERVICES_PATH = '/services'
 export const PRIMARY_AREA_SLUG = 'chicago'
+// Where every successful lead-form submission lands. The team tracks
+// conversions on this exact URL, so treat it as a stable public contract.
+export const THANK_YOU_PATH = `${SERVICES_PATH}/thank-you`
 
 export type ServiceRoute = {
   serviceSlug: string
