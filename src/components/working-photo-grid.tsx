@@ -1,7 +1,7 @@
 'use client'
 
 /* eslint-disable @next/next/no-img-element -- These Sanity URLs can be external and need native load/error events. */
-import {useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import type {ExternalImage} from '@/types/content'
 
 type Props = {
@@ -13,6 +13,26 @@ type Props = {
 export function WorkingPhotoGrid({photos = [], serviceName, areaName}: Props) {
   const [failed, setFailed] = useState<Record<number, boolean>>({})
   const [loaded, setLoaded] = useState<Record<number, boolean>>({})
+  const imageRefs = useRef<Record<number, HTMLImageElement | null>>({})
+
+  useEffect(() => {
+    let cancelled = false
+    const alreadyLoaded: Record<number, boolean> = {}
+    const alreadyFailed: Record<number, boolean> = {}
+    for (const [key, image] of Object.entries(imageRefs.current)) {
+      if (!image?.complete) continue
+      const index = Number(key)
+      if (image.naturalWidth > 0) alreadyLoaded[index] = true
+      else alreadyFailed[index] = true
+    }
+    queueMicrotask(() => {
+      if (cancelled) return
+      if (Object.keys(alreadyLoaded).length) setLoaded((current) => ({...current, ...alreadyLoaded}))
+      if (Object.keys(alreadyFailed).length) setFailed((current) => ({...current, ...alreadyFailed}))
+    })
+    return () => {cancelled = true}
+  }, [photos])
+
   const available = photos.map((photo, index) => ({photo, index, src: photo.resolvedUrl || photo.externalUrl}))
     .filter(({src, index}) => Boolean(src) && !failed[index])
 
@@ -29,6 +49,7 @@ export function WorkingPhotoGrid({photos = [], serviceName, areaName}: Props) {
     return <figure className="work-photo" key={photo._key || index}>
       <div className="ph">
         <img
+          ref={(image) => {imageRefs.current[index] = image}}
           src={src}
           alt={alt}
           title={caption}
