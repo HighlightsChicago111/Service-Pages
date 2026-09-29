@@ -218,6 +218,7 @@ a{color:var(--brand);text-underline-offset:3px}
 .service-landing .cs-shot-img img,.service-landing .ph img,.service-landing .area-img img{height:100%;object-fit:cover;width:100%}
 .service-landing .work-photo{margin:0;min-width:0}
 .service-landing .work-photo figcaption{color:var(--ink-3);font-size:.76rem;line-height:1.45;margin-top:8px}
+.service-landing .area-credit{display:block;margin-top:4px;color:var(--ink-3);font-size:.62rem;line-height:1.25}
 .thank-you{background:var(--bg-2);padding:64px 0 88px}
 .thank-you-card,.thank-you-steps{margin-inline:auto;width:min(720px,calc(100% - 40px))}
 .thank-you-card{background:#fff;border-radius:22px;box-shadow:0 28px 80px -40px rgba(10,25,37,.45);overflow:hidden;padding:52px 48px 46px;position:relative;text-align:center}
