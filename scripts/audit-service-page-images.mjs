@@ -59,12 +59,18 @@ const pageResults = await pooled(pages, 5, async (page) => {
   try {
     const response = await fetch(`${origin}${pathname}`, {signal: AbortSignal.timeout(20000)})
     const html = await response.text()
+    const heroSection = html.match(/class="cs-gallery-rail"[\s\S]*?class="cs-gallery-head"/)?.[0] || ''
     const workSection = html.match(/id="working-in-area"[\s\S]*?id="areas"/)?.[0] || ''
+    const heroImages = imageUrls(heroSection)
+    const workImages = imageUrls(workSection)
     return {
       serviceId: page.serviceId, pathname, status: response.status,
       title: /<title>[^<]+<\/title>/i.test(html),
+      heroImages: heroImages.length,
+      distinctHeroImages: new Set(heroImages.map((image) => image.src)).size,
       workSection: Boolean(workSection),
-      workImages: imageUrls(workSection).length,
+      workImages: workImages.length,
+      distinctWorkImages: new Set(workImages.map((image) => image.src)).size,
       images: imageUrls(html),
       gallerySources: (page.gallery || []).filter((item) => item.assetUrl || item.externalUrl).length,
       workSources: (page.workingPhotos || []).filter((item) => item.assetUrl || item.externalUrl).length,
@@ -76,7 +82,7 @@ const pageResults = await pooled(pages, 5, async (page) => {
 const uniqueImages = [...new Set(pageResults.flatMap((page) => page.images.map((image) => image.src)))]
 const imageResults = await pooled(uniqueImages, 8, checkImage)
 const failedImages = imageResults.filter((image) => image.status < 200 || image.status >= 400 || !image.contentType?.startsWith('image/'))
-const failedPages = pageResults.filter((page) => page.status !== 200 || !page.title || !page.workSection || !page.workImages || !page.gallerySources || !page.workSources || page.images.some((image) => !image.alt))
+const failedPages = pageResults.filter((page) => page.status !== 200 || !page.title || !page.workSection || page.heroImages !== 3 || page.workImages !== 3 || page.distinctHeroImages !== 3 || page.distinctWorkImages !== 3 || page.gallerySources < 3 || page.workSources < 3 || page.images.some((image) => !image.alt))
 const report = {
   generatedAt: new Date().toISOString(),
   summary: {pages: pageResults.length, failedPages: failedPages.length, uniqueImages: uniqueImages.length, failedImages: failedImages.length},

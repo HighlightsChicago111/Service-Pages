@@ -1,5 +1,11 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 
+function hasImageSource(photo: unknown): boolean {
+  if (!photo || typeof photo !== 'object') return false
+  const image = photo as {image?: {asset?: {_ref?: string}}; externalUrl?: string}
+  return Boolean(image.image?.asset?._ref || image.externalUrl)
+}
+
 export const servicePage = defineType({
   name: 'servicePage',
   title: 'Service pages',
@@ -25,8 +31,16 @@ export const servicePage = defineType({
       ],
     }),
     defineField({name: 'reviews', title: 'Reviews', type: 'array', of: [defineArrayMember({type: 'review'})], group: 'proof'}),
-    defineField({name: 'gallery', title: 'Hero gallery', type: 'array', of: [defineArrayMember({type: 'externalImage'})], group: 'proof'}),
-    defineField({name: 'workingPhotos', title: 'Working-in-area photos', type: 'array', of: [defineArrayMember({type: 'externalImage'})], group: 'proof'}),
+    defineField({
+      name: 'gallery', title: 'Hero gallery', type: 'array', of: [defineArrayMember({type: 'externalImage'})], group: 'proof',
+      validation: (rule) => rule.required().min(3).max(3).custom((photos) =>
+        photos?.every(hasImageSource) ? true : 'Add an image to all three hero slots'),
+    }),
+    defineField({
+      name: 'workingPhotos', title: 'Working-in-area photos', type: 'array', of: [defineArrayMember({type: 'externalImage'})], group: 'proof',
+      validation: (rule) => rule.required().min(3).max(3).custom((photos) =>
+        photos?.every(hasImageSource) ? true : 'Add an image to all three work-photo slots'),
+    }),
     defineField({name: 'guides', title: 'Guides', type: 'array', of: [defineArrayMember({type: 'guide'})], group: 'content'}),
     defineField({name: 'localFaqOverrides', title: 'Local FAQ overrides', type: 'array', of: [defineArrayMember({type: 'faq'})], group: 'content'}),
   ],
