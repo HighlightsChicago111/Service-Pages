@@ -24,11 +24,9 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   const metadata = await metadataClient.fetch(SERVICE_PAGE_METADATA_QUERY, queryParams)
   if (!metadata) return {}
   return {
-    // Build the title from authoritative names instead of the imported SEO
-    // title. Several imported titles contain a truncated brand suffix, a
-    // leftover "Inc.", or title-cased acronyms such as CCTV and EV. The root
-    // layout adds the brand exactly once.
-    title: `${metadata.serviceName} in ${metadata.areaName}`,
+    title: metadata.title
+      ? {absolute: metadata.title}
+      : `${metadata.serviceName} in ${metadata.areaName}`,
     description: metadata.description,
     alternates: {canonical: servicePageUrl(serviceSlug)},
   }
