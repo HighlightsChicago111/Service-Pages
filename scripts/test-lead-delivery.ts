@@ -84,6 +84,26 @@ async function run() {
   assert.equal(webhookBody.sourceUrl, 'https://www.highlightschicago.com/services/generator-installation')
   assert.match(webhookBody.submittedAt, /^\d{4}-\d{2}-\d{2}T/)
 
+  // A slow webhook must not delay the email: Resend is called while the hook is still pending.
+  let releaseWebhook: () => void = () => {}
+  let emailSentWhileWebhookPending = false
+  let webhookSettled = false
+  global.fetch = async (input) => {
+    if (String(input) === process.env.LEAD_WEBHOOK_URL) {
+      // Released by the email call, or after 200ms so a sequential implementation fails instead of hanging.
+      await new Promise<void>((resolve) => {releaseWebhook = resolve; setTimeout(resolve, 200)})
+      webhookSettled = true
+      return new Response(null, {status: 200})
+    }
+    emailSentWhileWebhookPending = !webhookSettled
+    setTimeout(() => releaseWebhook(), 0)
+    return new Response(JSON.stringify({id: 'email_test_slow'}), {status: 200, headers: {'content-type': 'application/json'}})
+  }
+  const slowWebhook = await POST(leadRequest({name: 'QA Customer', phone: '7735550100'}))
+  assert.equal(slowWebhook.status, 200)
+  assert.ok(emailSentWhileWebhookPending, 'the email must be sent without waiting for the webhook')
+  assert.ok(webhookSettled, 'the response must still wait for the webhook so serverless does not drop it')
+
   // A down/erroring webhook must never break or delay a real lead's email delivery.
   calls.length = 0
   global.fetch = async (input) => {

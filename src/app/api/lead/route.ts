@@ -21,7 +21,7 @@ function notificationRecipients(value: string) {
  * or any Zapier/Make catch hook). This never affects the response sent to the
  * browser: the lead's own email delivery below is still the source of truth
  * that gates success/failure, so a slow or failing webhook can't block or
- * break a real lead. Failures are logged server-side only.
+ * break a real lead. It never rejects; failures are logged server-side only.
  */
 async function forwardToLeadWebhook(clean: Record<string, string>, sourceUrl: string) {
   const webhookUrl = configured(process.env.LEAD_WEBHOOK_URL)
@@ -48,8 +48,16 @@ export async function POST(request: Request) {
   const clean = Object.fromEntries(allowedFields.map((field) => [field, cleanField(payload[field])])) as Record<(typeof allowedFields)[number], string>
   if (!clean.name || clean.phone.replace(/\D/g, '').length < 7) return NextResponse.json({message: 'A valid name and phone are required'}, {status: 400})
 
-  await forwardToLeadWebhook(clean, cleanField(request.headers.get('referer')))
+  // Start the CRM forward without waiting on it, so a slow hook never delays the
+  // email. The response still waits for it (bounded by its own timeout) so the
+  // serverless function is not frozen before the forward is sent.
+  const webhookDelivery = forwardToLeadWebhook(clean, cleanField(request.headers.get('referer')))
+  const response = await sendLeadEmail(clean)
+  await webhookDelivery
+  return response
+}
 
+async function sendLeadEmail(clean: Record<(typeof allowedFields)[number], string>) {
   const apiKey = configured(process.env.RESEND_API_KEY)
   const from = configured(process.env.LEAD_FROM_EMAIL)
   const recipients = notificationRecipients(configured(process.env.LEAD_NOTIFICATION_EMAIL))

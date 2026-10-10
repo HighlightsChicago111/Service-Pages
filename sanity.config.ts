@@ -21,7 +21,8 @@ export default defineConfig({
     structureTool({structure}),
     presentationTool({
       resolve,
-      previewUrl: {previewMode: {enable: '/services/api/draft-mode/enable'}},
+      // The site root is the Webflow homepage, so start the preview on the service collection.
+      previewUrl: {initial: '/services', previewMode: {enable: '/services/api/draft-mode/enable'}},
     }),
     visionTool(),
   ],

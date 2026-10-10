@@ -1,6 +1,10 @@
 import type {Metadata} from 'next'
 import {Inter} from 'next/font/google'
+import {draftMode} from 'next/headers'
+import {VisualEditing} from 'next-sanity/visual-editing'
+import {DisableDraftMode} from '@/components/disable-draft-mode'
 import {siteUrl} from '@/sanity/env'
+import {SanityLive} from '@/sanity/lib/live'
 import './globals.css'
 
 const inter = Inter({subsets: ['latin'], variable: '--font-inter', display: 'swap'})
@@ -21,11 +25,22 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
+export default async function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
+  // Live draft updates and click-to-edit overlays are only for editors previewing
+  // through the Studio. Public visitors keep the static pages and never open a
+  // browser connection to Sanity.
+  const {isEnabled: isDraftMode} = await draftMode()
   return (
     <html lang="en">
       <body className={inter.variable}>
         {children}
+        {isDraftMode && (
+          <>
+            <SanityLive />
+            <VisualEditing />
+            <DisableDraftMode />
+          </>
+        )}
       </body>
     </html>
   )

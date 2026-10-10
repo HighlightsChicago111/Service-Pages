@@ -21,10 +21,16 @@ function loadLocalEnv() {
 }
 
 loadLocalEnv()
+// Sanity is the source of truth once content is live: by default only documents
+// missing from the dataset are created. --overwrite restores the old
+// createOrReplace behaviour; --dry-run reports what would happen without writing.
+const overwrite = process.argv.includes('--overwrite')
+const dryRun = process.argv.includes('--dry-run')
 const projectId = process.env.NEXT_SANITY_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '5w5623jq'
 const dataset = process.env.NEXT_SANITY_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
-const token = process.env.SANITY_API_WRITE_TOKEN || process.env.SANITY_AUTH_TOKEN
-if (!token || /^(PASTE_|your_)/i.test(token)) throw new Error('Add a Sanity Editor token to SANITY_API_WRITE_TOKEN in .env.local')
+const configuredToken = process.env.SANITY_API_WRITE_TOKEN || process.env.SANITY_AUTH_TOKEN
+const token = configuredToken && !/^(PASTE_|your_)/i.test(configuredToken) ? configuredToken : undefined
+if (!token && !dryRun) throw new Error('Add a Sanity Editor token to SANITY_API_WRITE_TOKEN in .env.local')
 
 const decode = (value: string) => value.replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
 const rawSource = JSON.parse(fs.readFileSync(path.resolve('data/source-content.json'), 'utf8')) as Source
@@ -157,10 +163,24 @@ const pages = source.page.map((row) => ({
 const documents: ImportDocument[] = [siteSettings, template, ...services, ...areas, ...pages]
 
 async function importDocuments() {
+  const existing = new Set(await client.fetch<string[]>('*[_id in $ids]._id', {ids: documents.map((document) => document._id)}))
+  const missing = documents.filter((document) => !existing.has(document._id))
+  const mode = overwrite ? 'overwrite' : 'create missing only'
+  console.log(`${documents.length} source documents (${mode}): ${missing.length} missing from ${dataset}, ${existing.size} already exist.`)
+  if (overwrite && existing.size) console.warn(`--overwrite replaces ${existing.size} existing documents. Any edits made to them in Sanity will be lost.`)
+  if (dryRun) {
+    console.log('Dry run: nothing was written.')
+    return
+  }
+  const writes = overwrite ? documents : missing
+  if (!writes.length) {
+    console.log('Nothing to import. Existing documents were left untouched.')
+    return
+  }
   let transaction = client.transaction()
-  for (const document of documents) transaction = transaction.createOrReplace(document)
+  for (const document of writes) transaction = overwrite ? transaction.createOrReplace(document) : transaction.createIfNotExists(document)
   const result = await transaction.commit()
-  console.log(`Imported ${documents.length} documents in transaction ${result.transactionId}`)
+  console.log(`${overwrite ? 'Wrote' : 'Created'} ${writes.length} documents in transaction ${result.transactionId}`)
 }
 
 importDocuments().catch((error: unknown) => {
