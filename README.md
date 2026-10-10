@@ -11,6 +11,16 @@ Next.js 16 and Sanity implementation for data-driven service × area landing pag
 - `siteSettings`: singleton for company, contact, brand, ratings, trust and form defaults.
 - Embedded Sanity Studio: `/services/studio`.
 
+## URL structure
+
+Services are grouped like `/services/heating/heater-repair/` on the City & Suburban site:
+
+- `/services`: one block per service group ("Choose a service").
+- `/services/<group>`: the group's services, e.g. `/services/backup-power`.
+- `/services/<group>/<service>`: the service page, e.g. `/services/backup-power/generator-installation`.
+
+Group names, order, descriptions and membership live in `data/cluster-hierarchy.json`, built from the cluster-level workbook; group slugs are the content plan's slugs. A group with no published service is hidden. Earlier URLs (`/services/<service>`, `/services/<service>/chicago` and the retired Webflow slugs in `next.config.ts`) permanently redirect to the nested service page. A service missing from the file keeps a flat `/services/<service>` URL.
+
 Sanity is the source of truth for published content. `data/source-content.json` is the normalized spreadsheet export that seeded the first import; it does not include the pages added later in the Studio (Sanity has 40 service pages, the file has 30). The original spreadsheet package is preserved locally but ignored by Git.
 
 ## Local setup

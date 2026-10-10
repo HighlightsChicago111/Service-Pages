@@ -1,3 +1,5 @@
+import {clusterForService} from './clusters'
+
 export const PUBLIC_SITE_ORIGIN = 'https://www.highlightschicago.com'
 export const SERVICES_PATH = '/services'
 export const PRIMARY_AREA_SLUG = 'chicago'
@@ -10,8 +12,18 @@ export type ServiceRoute = {
   areaSlug: string
 }
 
+/** Path under the /services basePath: /<cluster>/<service>, or /<service> for a service outside every cluster. */
+export function serviceRoutePath(serviceSlug: string): string {
+  const cluster = clusterForService(serviceSlug)
+  return cluster ? `/${cluster.slug}/${serviceSlug}` : `/${serviceSlug}`
+}
+
+export function clusterPagePath(clusterSlug: string): string {
+  return `${SERVICES_PATH}/${clusterSlug}`
+}
+
 export function servicePagePath(serviceSlug: string): string {
-  return `${SERVICES_PATH}/${serviceSlug}`
+  return `${SERVICES_PATH}${serviceRoutePath(serviceSlug)}`
 }
 
 export function servicePageUrl(serviceSlug: string): string {

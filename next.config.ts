@@ -1,4 +1,5 @@
 import type {NextConfig} from 'next'
+import hierarchy from './data/cluster-hierarchy.json'
 
 // These values are intentionally public application configuration, but the
 // Vercel variable names do not need a NEXT_PUBLIC_ prefix. Next.js injects only
@@ -97,6 +98,14 @@ const legacyServiceRedirects: Record<string, string> = {
 // "/services/services".
 const legacyHubRedirectSlugs = ['ejector-pump', 'furnace', 'hvac', 'water-pump']
 
+// Service pages live at /<cluster>/<service>, so redirects point straight at
+// that path instead of chaining through the old flat URL. A retired slug that
+// is now a service-group page (e.g. /low-voltage) is served, not redirected.
+const publishedClusters = hierarchy.clusters.filter((cluster) => cluster.services.length > 0)
+const clusterSlugs = new Set(publishedClusters.map((cluster) => cluster.slug))
+const clusterOfService = new Map(publishedClusters.flatMap((cluster) => cluster.services.map((service) => [service, cluster.slug] as const)))
+const servicePath = (service: string) => clusterOfService.has(service) ? `/${clusterOfService.get(service)}/${service}` : `/${service}`
+
 const nextConfig: NextConfig = {
   // The app is served under the /services subdirectory of the main site.
   // basePath is compiled into the client bundle and is applied automatically to
@@ -121,17 +130,17 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/circuit-breaker',
-        destination: '/circuit-breaker-replacement',
+        destination: servicePath('circuit-breaker-replacement'),
         permanent: true,
       },
       {
         source: '/amperage-upgrade',
-        destination: '/electrical-panel-upgrade',
+        destination: servicePath('electrical-panel-upgrade'),
         permanent: true,
       },
-      ...Object.entries(legacyServiceRedirects).map(([from, to]) => ({
+      ...Object.entries(legacyServiceRedirects).filter(([from]) => !clusterSlugs.has(from)).map(([from, to]) => ({
         source: `/${from}`,
-        destination: `/${to}`,
+        destination: servicePath(to),
         permanent: true,
       })),
       ...legacyHubRedirectSlugs.map((from) => ({

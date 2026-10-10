@@ -1,724 +1,147 @@
 {
-  "source": "Highlights Chicago - Cluster Level (40 pages).xlsx, built 2026-10-10 from \"Highlights Chicago Content Plan (1).xlsx\" (tabs 2 Cluster Level, 3 Service Level) and the live Sanity service pages.",
+  "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs are the content plan cluster URL slugs; service slugs are the live Sanity slugs.",
   "clusters": [
     {
-      "number": 1,
-      "name": "Panel Upgrades",
       "slug": "power-distribution",
-      "parent": "Cluster 1 — Power Distribution & Service Entry",
-      "parentName": "Power Distribution & Service Entry",
-      "hub": {
-        "id": 212,
-        "title": "10 Best Electrical Service and Panel Upgrade Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 44,
-        "volume": 17750,
-        "kd": 5,
-        "cpc": 3.37,
-        "primaryKeywords": [
-          {
-            "keyword": "electrical panel upgrade",
-            "volume": 11000
-          },
-          {
-            "keyword": "electrical panel upgrade near me",
-            "volume": 2000
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "electrical panel upgrade cost",
-            "volume": 1100
-          },
-          {
-            "keyword": "electrical service upgrade",
-            "volume": 800
-          }
-        ]
-      },
+      "name": "Panel Upgrades",
+      "noun": "panel upgrade",
+      "description": "Electrical panel and service upgrades for more capacity and safer power.",
       "services": [
-        {
-          "serviceId": 309,
-          "slug": "electrical-panel-upgrade",
-          "planService": "Amperage Upgrade",
-          "volume": 15440
-        }
+        "electrical-panel-upgrade"
       ]
     },
     {
-      "number": 2,
-      "name": "Circuit Protection",
       "slug": "panels-circuits",
-      "parent": "Cluster 2 — Panels, Circuits & Protection",
-      "parentName": "Panels, Circuits & Protection",
-      "hub": {
-        "id": 205,
-        "title": "10 Best Electrical Panel and Circuit Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 36,
-        "volume": 52960,
-        "kd": 4,
-        "cpc": 1.31,
-        "primaryKeywords": [
-          {
-            "keyword": "whole house surge protector",
-            "volume": 18000
-          },
-          {
-            "keyword": "circuit breaker replacement",
-            "volume": 11000
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "electrical panel replacement",
-            "volume": 4900
-          },
-          {
-            "keyword": "electrical panel installation",
-            "volume": 4100
-          }
-        ]
-      },
+      "name": "Circuit Protection",
+      "noun": "circuit protection",
+      "description": "Surge protection, circuit breakers, breaker boxes, grounding and fuse box replacement.",
       "services": [
-        {
-          "serviceId": 305,
-          "slug": "whole-house-surge-protector",
-          "planService": "Surge Protectors",
-          "volume": 20490
-        },
-        {
-          "serviceId": 310,
-          "slug": "circuit-breaker-replacement",
-          "planService": "Circuit Breaker",
-          "volume": 14900
-        },
-        {
-          "serviceId": 323,
-          "slug": "breaker-box-and-panel-repair",
-          "planService": "Circuit Breaker",
-          "volume": 2750
-        },
-        {
-          "serviceId": 332,
-          "slug": "grounding-and-bonding",
-          "planService": "Ground Fault Safety",
-          "volume": 1650
-        },
-        {
-          "serviceId": 339,
-          "slug": "fuse-box-replacement",
-          "planService": "Fuse Box",
-          "volume": 1000
-        }
+        "whole-house-surge-protector",
+        "circuit-breaker-replacement",
+        "breaker-box-and-panel-repair",
+        "grounding-and-bonding",
+        "fuse-box-replacement"
       ]
     },
     {
-      "number": 3,
-      "name": "Electrical Wiring",
       "slug": "wiring-diagnostics",
-      "parent": "Cluster 3 — Wiring, Diagnostics & Compliance",
-      "parentName": "Wiring, Diagnostics & Compliance",
-      "hub": {
-        "id": 208,
-        "title": "10 Best Electrical Wiring and Rewiring Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 55,
-        "volume": 26920,
-        "kd": 11,
-        "cpc": 4.45,
-        "primaryKeywords": [
-          {
-            "keyword": "electrical repair near me",
-            "volume": 7500
-          },
-          {
-            "keyword": "electrical repair services",
-            "volume": 3900
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "emergency electrical repair",
-            "volume": 3400
-          },
-          {
-            "keyword": "electrical installation services",
-            "volume": 2300
-          }
-        ]
-      },
+      "name": "Electrical Wiring",
+      "noun": "electrical wiring",
+      "description": "Electrical repairs, wiring, troubleshooting and new installations.",
       "services": [
-        {
-          "serviceId": 308,
-          "slug": "electrical-repair",
-          "planService": "Electrical Repairs",
-          "volume": 15620
-        },
-        {
-          "serviceId": 316,
-          "slug": "electrical-wiring-and-repair-services",
-          "planService": "Rewiring",
-          "volume": 5600
-        },
-        {
-          "serviceId": 325,
-          "slug": "electrical-troubleshooting",
-          "planService": "Electrical Troubleshooting",
-          "volume": 2660
-        },
-        {
-          "serviceId": 326,
-          "slug": "electrical-installation-services",
-          "planService": "Electrical Installations",
-          "volume": 2550
-        }
+        "electrical-repair",
+        "electrical-wiring-and-repair-services",
+        "electrical-troubleshooting",
+        "electrical-installation-services"
       ]
     },
     {
-      "number": 4,
-      "name": "Electrical Outlets",
       "slug": "outlets-switches",
-      "parent": "Cluster 4 — Outlets, Switches & Controls",
-      "parentName": "Outlets, Switches & Controls",
-      "hub": {
-        "id": 207,
-        "title": "10 Best Outlet and Switch Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 45,
-        "volume": 32900,
-        "kd": 1,
-        "cpc": 0.83,
-        "primaryKeywords": [
-          {
-            "keyword": "gfci outlet installation",
-            "volume": 15000
-          },
-          {
-            "keyword": "gfci outlet not working",
-            "volume": 3300
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "outlet installation",
-            "volume": 3200
-          },
-          {
-            "keyword": "electrical outlet installation",
-            "volume": 3200
-          }
-        ]
-      },
+      "name": "Electrical Outlets",
+      "noun": "outlet and switch",
+      "description": "GFCI outlets, new outlets and light switch installation.",
       "services": [
-        {
-          "serviceId": 306,
-          "slug": "gfci-outlet-installation",
-          "planService": "GFCI Receptacles",
-          "volume": 19000
-        },
-        {
-          "serviceId": 314,
-          "slug": "electrical-outlet-installation",
-          "planService": "Outlets",
-          "volume": 11370
-        },
-        {
-          "serviceId": 330,
-          "slug": "light-switch-replacement-and-installation",
-          "planService": "Outlets & Switches",
-          "volume": 1720
-        }
+        "gfci-outlet-installation",
+        "electrical-outlet-installation",
+        "light-switch-replacement-and-installation"
       ]
     },
     {
-      "number": 5,
-      "name": "Interior Lighting",
       "slug": "interior-lighting",
-      "parent": "Cluster 5 — Interior Lighting",
-      "parentName": "Interior Lighting",
-      "hub": {
-        "id": 209,
-        "title": "10 Best Interior Lighting Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 43,
-        "volume": 26770,
-        "kd": 6,
-        "cpc": 2.21,
-        "primaryKeywords": [
-          {
-            "keyword": "recessed lighting installation",
-            "volume": 7100
-          },
-          {
-            "keyword": "lighting installation",
-            "volume": 2600
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "light fixture installation",
-            "volume": 2200
-          },
-          {
-            "keyword": "lighting contractor",
-            "volume": 1400
-          }
-        ]
-      },
+      "name": "Interior Lighting",
+      "noun": "interior lighting",
+      "description": "Recessed lights, light fixtures, chandeliers and LED upgrades.",
       "services": [
-        {
-          "serviceId": 315,
-          "slug": "recessed-lighting-installation",
-          "planService": "Recessed Lighting",
-          "volume": 8050
-        },
-        {
-          "serviceId": 324,
-          "slug": "light-fixture-installation-and-replacement",
-          "planService": "Light Fixtures",
-          "volume": 2700
-        },
-        {
-          "serviceId": 334,
-          "slug": "led-retrofit",
-          "planService": "LED Lighting",
-          "volume": 1400
-        },
-        {
-          "serviceId": 336,
-          "slug": "chandelier-installation",
-          "planService": "Chandeliers",
-          "volume": 1320
-        }
+        "recessed-lighting-installation",
+        "light-fixture-installation-and-replacement",
+        "led-retrofit",
+        "chandelier-installation"
       ]
     },
     {
-      "number": 6,
-      "name": "Outdoor Lighting",
       "slug": "exterior-lighting",
-      "parent": "Cluster 6 — Exterior, Egress & Commercial Lighting",
-      "parentName": "Exterior, Egress & Commercial Lighting",
-      "hub": {
-        "id": 211,
-        "title": "10 Best Outdoor and Commercial Lighting Installation, Repair, Maintenance and Service Contractors in Chicago",
-        "keywordCount": 37,
-        "volume": 22310,
-        "kd": 14,
-        "cpc": 2.52,
-        "primaryKeywords": [
-          {
-            "keyword": "outdoor lighting company",
-            "volume": 2900
-          },
-          {
-            "keyword": "outdoor lighting near me",
-            "volume": 2800
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "landscape lighting installation",
-            "volume": 2800
-          },
-          {
-            "keyword": "outdoor lighting installation",
-            "volume": 2700
-          }
-        ]
-      },
+      "name": "Outdoor Lighting",
+      "noun": "outdoor lighting",
+      "description": "Outdoor, landscape, emergency and parking lot lighting.",
       "services": [
-        {
-          "serviceId": 311,
-          "slug": "outdoor-lighting-installation",
-          "planService": "Outdoor Lighting",
-          "volume": 12480
-        },
-        {
-          "serviceId": 318,
-          "slug": "landscape-lighting-installation",
-          "planService": "Garden Lights",
-          "volume": 5400
-        },
-        {
-          "serviceId": 333,
-          "slug": "emergency-lighting-services-and-maintenance",
-          "planService": "Emergency Light",
-          "volume": 1600
-        },
-        {
-          "serviceId": 338,
-          "slug": "parking-lot-lighting-repair-and-installation",
-          "planService": "Parking Garage Lighting",
-          "volume": 1270
-        }
+        "outdoor-lighting-installation",
+        "landscape-lighting-installation",
+        "emergency-lighting-services-and-maintenance",
+        "parking-lot-lighting-repair-and-installation"
       ]
     },
     {
-      "number": 7,
-      "name": "Life Safety",
       "slug": "life-safety",
-      "parent": "Cluster 7 — Life Safety Detection",
-      "parentName": "Life Safety Detection",
-      "hub": {
-        "id": 210,
-        "title": "10 Best Smoke, Heat and Carbon Monoxide Detector Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 39,
-        "volume": 22460,
-        "kd": 5,
-        "cpc": 2.53,
-        "primaryKeywords": [
-          {
-            "keyword": "carbon monoxide detector installation",
-            "volume": 5000
-          },
-          {
-            "keyword": "fire alarm installation",
-            "volume": 3500
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "smoke detector installation",
-            "volume": 2300
-          },
-          {
-            "keyword": "fire alarm system installation",
-            "volume": 2200
-          }
-        ]
-      },
+      "name": "Life Safety",
+      "noun": "life safety",
+      "description": "Smoke detectors, carbon monoxide detectors and fire alarms.",
       "services": [
-        {
-          "serviceId": 313,
-          "slug": "fire-alarm-installation",
-          "planService": "Fire Safety",
-          "volume": 11920
-        },
-        {
-          "serviceId": 317,
-          "slug": "carbon-monoxide-detector-installation",
-          "planService": "Carbon Detectors",
-          "volume": 5510
-        },
-        {
-          "serviceId": 319,
-          "slug": "smoke-detector-installation-and-wiring",
-          "planService": "Smoke Detectors",
-          "volume": 5000
-        }
+        "fire-alarm-installation",
+        "carbon-monoxide-detector-installation",
+        "smoke-detector-installation-and-wiring"
       ]
     },
     {
-      "number": 8,
-      "name": "EV Charging",
       "slug": "ev-charging",
-      "parent": "Cluster 8 — EV Charging",
-      "parentName": "EV Charging",
-      "hub": {
-        "id": 201,
-        "title": "10 Best EV Charger Installation, Repair, Maintenance and Service Contractors in Chicago",
-        "keywordCount": 39,
-        "volume": 118650,
-        "kd": 3,
-        "cpc": 4.29,
-        "primaryKeywords": [
-          {
-            "keyword": "ev charger installation",
-            "volume": 72000
-          },
-          {
-            "keyword": "ev charger installation near me",
-            "volume": 18000
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "electric car charger installation",
-            "volume": 8400
-          },
-          {
-            "keyword": "ev charging station installation",
-            "volume": 5900
-          }
-        ]
-      },
+      "name": "EV Charging",
+      "noun": "EV charging",
+      "description": "Tesla and EV charger installation for homes and businesses.",
       "services": [
-        {
-          "serviceId": 312,
-          "slug": "tesla-and-ev-charger-installation",
-          "planService": "Electric Charging Station",
-          "volume": 12210
-        }
+        "tesla-and-ev-charger-installation"
       ]
     },
     {
-      "number": 9,
-      "name": "Backup Power",
       "slug": "backup-power",
-      "parent": "Cluster 9 — Backup & Standby Power",
-      "parentName": "Backup & Standby Power",
-      "hub": {
-        "id": 202,
-        "title": "10 Best Generator and Backup Power Installation, Repair, Replacement and Service Contractors in Chicago",
-        "keywordCount": 41,
-        "volume": 103960,
-        "kd": 2,
-        "cpc": 3.58,
-        "primaryKeywords": [
-          {
-            "keyword": "generator installation",
-            "volume": 32000
-          },
-          {
-            "keyword": "generator installation near me",
-            "volume": 18000
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "generator repair",
-            "volume": 11000
-          },
-          {
-            "keyword": "home generator installation",
-            "volume": 11000
-          }
-        ]
-      },
+      "name": "Backup Power",
+      "noun": "backup power",
+      "description": "Whole-house generator installation, repair and maintenance.",
       "services": [
-        {
-          "serviceId": 301,
-          "slug": "generator-installation",
-          "planService": "Generator Installation",
-          "volume": 73890
-        },
-        {
-          "serviceId": 304,
-          "slug": "generator-repair",
-          "planService": "Generators",
-          "volume": 24970
-        }
+        "generator-installation",
+        "generator-repair"
       ]
     },
     {
-      "number": 10,
-      "name": "Appliance Circuits",
       "slug": "appliance-circuits",
-      "parent": "Cluster 10 — Appliance & Equipment Circuits",
-      "parentName": "Appliance & Equipment Circuits",
-      "hub": {
-        "id": 206,
-        "title": "10 Best Appliance and Equipment Circuit Installation, Repair and Service Contractors in Chicago",
-        "keywordCount": 36,
-        "volume": 48840,
-        "kd": 7,
-        "cpc": 0.71,
-        "primaryKeywords": [
-          {
-            "keyword": "ceiling fan installation",
-            "volume": 26000
-          },
-          {
-            "keyword": "garbage disposal installation",
-            "volume": 18000
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "bathroom exhaust fan installation",
-            "volume": 1700
-          },
-          {
-            "keyword": "hot tub wiring",
-            "volume": 1200
-          }
-        ]
-      },
+      "name": "Appliance Circuits",
+      "noun": "appliance circuit",
+      "description": "Ceiling fans, garbage disposals and bathroom exhaust fans.",
       "services": [
-        {
-          "serviceId": 303,
-          "slug": "ceiling-fan-installation",
-          "planService": "Ceiling Fan",
-          "volume": 26000
-        },
-        {
-          "serviceId": 307,
-          "slug": "garbage-disposal-wiring",
-          "planService": "Garbage Disposal",
-          "volume": 18350
-        },
-        {
-          "serviceId": 331,
-          "slug": "bathroom-exhaust-fan-installation",
-          "planService": "Bathroom Exhaust Fan",
-          "volume": 1700
-        }
+        "ceiling-fan-installation",
+        "garbage-disposal-wiring",
+        "bathroom-exhaust-fan-installation"
       ]
     },
     {
-      "number": 11,
-      "name": "Low Voltage",
       "slug": "low-voltage",
-      "parent": "Cluster 11 — Low Voltage, Data & AV",
-      "parentName": "Low Voltage, Data & AV",
-      "hub": {
-        "id": 213,
-        "title": "10 Best Low Voltage, Data and AV Installation and Service Contractors in Chicago",
-        "keywordCount": 36,
-        "volume": 10910,
-        "kd": 8,
-        "cpc": 2.32,
-        "primaryKeywords": [
-          {
-            "keyword": "cctv installation",
-            "volume": 1800
-          },
-          {
-            "keyword": "structured cabling installation",
-            "volume": 1800
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "fiber optic cable installation",
-            "volume": 1300
-          },
-          {
-            "keyword": "low voltage wiring",
-            "volume": 1200
-          }
-        ]
-      },
+      "name": "Low Voltage",
+      "noun": "low voltage",
+      "description": "Structured cabling, fiber optics, CCTV and low voltage wiring.",
       "services": [
-        {
-          "serviceId": 321,
-          "slug": "structured-cabling-installation",
-          "planService": "Ethernet",
-          "volume": 3850
-        },
-        {
-          "serviceId": 327,
-          "slug": "low-voltage-wiring-installation",
-          "planService": "Low Voltage",
-          "volume": 2450
-        },
-        {
-          "serviceId": 328,
-          "slug": "cctv-installation",
-          "planService": "Closed Circuit",
-          "volume": 2100
-        },
-        {
-          "serviceId": 337,
-          "slug": "fiber-optic-cable-installation",
-          "planService": "Ethernet",
-          "volume": 1300
-        }
+        "structured-cabling-installation",
+        "low-voltage-wiring-installation",
+        "cctv-installation",
+        "fiber-optic-cable-installation"
       ]
     },
     {
-      "number": 12,
-      "name": "Solar Energy",
       "slug": "energy-efficiency",
-      "parent": "Cluster 12 — Energy Efficiency & Solar",
-      "parentName": "Energy Efficiency & Solar",
-      "hub": {
-        "id": 203,
-        "title": "10 Best Solar and Energy Efficiency Installation, Repair, Maintenance and Service Contractors in Chicago",
-        "keywordCount": 39,
-        "volume": 70370,
-        "kd": 21,
-        "cpc": 1.44,
-        "primaryKeywords": [
-          {
-            "keyword": "solar panel installation",
-            "volume": 31000
-          },
-          {
-            "keyword": "solar panel repair",
-            "volume": 5800
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "commercial solar installation",
-            "volume": 5400
-          },
-          {
-            "keyword": "solar panel maintenance",
-            "volume": 5100
-          }
-        ]
-      },
+      "name": "Solar Energy",
+      "noun": "solar and energy",
+      "description": "Solar panels, solar batteries, energy audits and efficiency upgrades.",
       "services": [
-        {
-          "serviceId": 302,
-          "slug": "solar-panel-installation",
-          "planService": "Solar Panel Installation",
-          "volume": 58500
-        },
-        {
-          "serviceId": 320,
-          "slug": "home-energy-audit",
-          "planService": "Energy Audit",
-          "volume": 4080
-        },
-        {
-          "serviceId": 322,
-          "slug": "solar-battery-installation",
-          "planService": "Solar Panel Installation",
-          "volume": 2800
-        },
-        {
-          "serviceId": 329,
-          "slug": "energy-star-appliances",
-          "planService": "Energy Star",
-          "volume": 2000
-        },
-        {
-          "serviceId": 335,
-          "slug": "energy-efficiency-upgrades",
-          "planService": "Going Green",
-          "volume": 1360
-        },
-        {
-          "serviceId": 340,
-          "slug": "infrared-electrical-inspection",
-          "planService": "Infrared Scanning",
-          "volume": 730
-        }
+        "solar-panel-installation",
+        "home-energy-audit",
+        "solar-battery-installation",
+        "energy-star-appliances",
+        "energy-efficiency-upgrades",
+        "infrared-electrical-inspection"
       ]
     },
     {
-      "number": 13,
-      "name": "Emergency Electrical",
       "slug": "emergency-electrical",
-      "parent": "Cluster 13 — Emergency Response",
-      "parentName": "Emergency Response",
-      "hub": {
-        "id": 204,
-        "title": "10 Best Emergency Electrical Repair and Service Contractors in Chicago",
-        "keywordCount": 47,
-        "volume": 63130,
-        "kd": 7,
-        "cpc": 4.91,
-        "primaryKeywords": [
-          {
-            "keyword": "emergency electrician",
-            "volume": 27000
-          },
-          {
-            "keyword": "emergency electrician near me",
-            "volume": 15000
-          }
-        ],
-        "secondaryKeywords": [
-          {
-            "keyword": "24 hour electrician",
-            "volume": 7100
-          },
-          {
-            "keyword": "emergency electrical service",
-            "volume": 4200
-          }
-        ]
-      },
+      "name": "Emergency Electrical",
+      "noun": "emergency electrical",
+      "description": "Emergency electrical repair.",
       "services": []
     }
   ]

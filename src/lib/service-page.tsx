@@ -5,20 +5,18 @@ import {ServiceLandingPage} from '@/components/service-landing-page'
 import {metadataClient} from '@/sanity/lib/client'
 import {sanityFetch} from '@/sanity/lib/live'
 import {SERVICE_INDEX_QUERY, SERVICE_PAGE_METADATA_QUERY, SERVICE_PAGE_QUERY} from '@/sanity/lib/queries'
-import {PRIMARY_AREA_SLUG, servicePageUrl} from '@/lib/service-urls'
 import type {ServicePageData} from '@/types/content'
+import {PRIMARY_AREA_SLUG, servicePageUrl} from './service-urls'
 
-type Props = {params: Promise<{serviceSlug: string}>}
 type Route = {serviceSlug?: string | null; areaSlug?: string | null}
 type PageMetadata = {title?: string; description?: string; serviceName?: string; areaName?: string} | null
 
-export const revalidate = 3600
-
-export async function generateStaticParams() {
+/** Slugs of every published Chicago service page. */
+export async function publishedServiceSlugs(): Promise<string[]> {
   const routes = (await metadataClient.fetch<Route[]>(SERVICE_INDEX_QUERY)) || []
   return routes
     .filter((route): route is {serviceSlug: string; areaSlug: string} => Boolean(route.serviceSlug && route.areaSlug === PRIMARY_AREA_SLUG))
-    .map(({serviceSlug}) => ({serviceSlug}))
+    .map((route) => route.serviceSlug)
 }
 
 // Public visitors get the published content through the hourly-revalidated
@@ -29,8 +27,7 @@ async function fetchServiceContent<T>(query: string, params: Record<string, stri
   return metadataClient.fetch<T>(query, params)
 }
 
-export async function generateMetadata({params}: Props): Promise<Metadata> {
-  const {serviceSlug} = await params
+export async function serviceMetadata(serviceSlug: string): Promise<Metadata> {
   const queryParams = {serviceSlug, areaSlug: PRIMARY_AREA_SLUG}
   const metadata = await fetchServiceContent<PageMetadata>(SERVICE_PAGE_METADATA_QUERY, queryParams, false)
   if (!metadata) return {}
@@ -43,8 +40,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   }
 }
 
-export default async function ServicePage({params}: Props) {
-  const {serviceSlug} = await params
+export async function renderServicePage(serviceSlug: string) {
   const typed = await fetchServiceContent<ServicePageData>(SERVICE_PAGE_QUERY, {
     serviceSlug,
     areaSlug: PRIMARY_AREA_SLUG,

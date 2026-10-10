@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import {createClient} from 'next-sanity'
-import {PRIMARY_AREA_SLUG} from '../src/lib/service-urls'
+import {chooseServiceHeading, clusterForService, clusterTitle, serviceClusters} from '../src/lib/clusters'
+import {PRIMARY_AREA_SLUG, clusterPagePath, servicePagePath} from '../src/lib/service-urls'
 
 // Expected content comes from the live Sanity dataset (the source of truth once
 // pages are published), not data/source-content.json, which only seeded the
@@ -99,9 +100,18 @@ async function run() {
   }`)
   expect(pages.length > 0, 'Sanity returned no publishable service pages')
   const servicePages = pages.filter((page) => page.areaSlug === PRIMARY_AREA_SLUG)
-  const validServicePaths = new Set(['/services', ...servicePages.map((page) => `/services/${page.serviceSlug}`)])
+  const publishedSlugs = new Set(servicePages.map((page) => page.serviceSlug))
+  // Service groups shown on /services: every cluster with at least one published service.
+  const groups = serviceClusters
+    .map((cluster) => ({cluster, services: cluster.services.filter((service) => publishedSlugs.has(service))}))
+    .filter((group) => group.services.length > 0)
+  const validServicePaths = new Set([
+    '/services',
+    ...groups.map(({cluster}) => clusterPagePath(cluster.slug)),
+    ...servicePages.map((page) => servicePagePath(page.serviceSlug)),
+  ])
 
-  const collection = await testDocument('/services', ['Electrical services built around Chicago', 'Find the right electrical service'])
+  const collection = await testDocument('/services', ['Electrical services built around Chicago', 'Choose a service'])
   for (const href of [
     'https://www.highlightschicago.com/',
     'https://www.highlightschicago.com/about-us',
@@ -121,14 +131,18 @@ async function run() {
   expect(collection.includes('6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'), 'Collection page is not using the exact live header logo')
   expect(collection.includes('class="collection-footer-title"'), 'Collection footer is missing the single-line quote heading')
   expect((collection.match(/class="collection-social-icon"/g) || []).length === 2, 'Collection footer does not render both social icons')
-  expect((collection.match(/class="collection-card"/g) || []).length === pages.length, 'Collection page does not render every Sanity service page')
+  expect((collection.match(/class="collection-card"/g) || []).length === groups.length, 'Collection page does not render one block per service group')
+  for (const {cluster, services} of groups) {
+    expect(anchorHrefs(collection).includes(clusterPagePath(cluster.slug)), `Collection page does not link to the ${cluster.name} group`)
+    expect(visibleText(collection).includes(`${services.length} service${services.length === 1 ? '' : 's'} ${cluster.name}`), `Collection page does not show the ${cluster.name} service count`)
+  }
   const collectionAlts = imageAlts(collection)
-  expect(collectionAlts.length >= pages.length + 3, 'Collection page does not expose its card and chrome imagery as crawlable img elements')
+  expect(collectionAlts.length >= groups.length + 3, 'Collection page does not expose its card and chrome imagery as crawlable img elements')
   expect(collectionAlts.every(Boolean), 'Collection page contains an image without alt text')
   expect(collection.includes('alt="Electrical panel upgrade service by Highlights Chicago"'), 'Collection hero image is missing descriptive alt text')
   const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1].replace(/&amp;/g, '&'))
-  expect(cardImages.length === pages.length, 'Every collection card must have a cover image')
-  expect(new Set(cardImages).size === pages.length, 'Collection cards must use unique cover images')
+  expect(cardImages.length === groups.length, 'Every service group block must have a cover image')
+  expect(new Set(cardImages).size === groups.length, 'Service group blocks must use unique cover images')
   for (const image of cardImages) {
     // Covers are either bundled with the app or, for services added in the Studio, hosted on the Sanity CDN.
     if (image.startsWith('https://cdn.sanity.io/')) {
@@ -151,10 +165,30 @@ async function run() {
   }
   await testDocument('/services/studio', [])
 
+  for (const {cluster, services} of groups) {
+    const pathname = clusterPagePath(cluster.slug)
+    const text = await testDocument(pathname, [clusterTitle(cluster), chooseServiceHeading(cluster)])
+    const cardHrefs = [...text.matchAll(/<a class="collection-card"[^>]*href="([^"]+)"/g)].map((match) => match[1])
+    expect(JSON.stringify(cardHrefs) === JSON.stringify(services.map(servicePagePath)), `${pathname} does not list its services in order: ${cardHrefs.join(', ')}`)
+    expect(imageAlts(text).every(Boolean), `${pathname} contains an image without alt text`)
+    expect(!/content plan|cluster|keyword/i.test(visibleText(text)), `${pathname} shows internal planning wording`)
+    for (const href of anchorHrefs(text).filter((value) => value.startsWith('/'))) {
+      expect(validServicePaths.has(href), `${pathname} has an invalid internal URL ${href}`)
+    }
+  }
+  expect((await fetch(`${baseUrl}/services/emergency-electrical`, {redirect: 'manual'})).status === 404, 'A service group without published services must not be published')
+
   for (const page of servicePages) {
-    const pathname = `/services/${page.serviceSlug}`
+    const pathname = servicePagePath(page.serviceSlug)
+    const group = clusterForService(page.serviceSlug)
     const heading = `${page.h1Prefix} in ${page.areaName}`
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
+    if (group) expect(text.includes(`<a href="${clusterPagePath(group.slug)}">${group.name}</a>`), `${pathname} breadcrumb does not link to its ${group.name} group`)
+    for (const legacy of [`/services/${page.serviceSlug}`, `/services/${page.serviceSlug}/${PRIMARY_AREA_SLUG}`].filter((value) => value !== pathname)) {
+      const response = await fetch(`${baseUrl}${legacy}`, {redirect: 'manual'})
+      const location = response.headers.get('location')
+      expect(response.status === 308 && location && new URL(location, baseUrl).pathname === pathname, `${legacy} should permanently redirect to ${pathname}, got ${response.status} ${location}`)
+    }
     const serviceImageAlts = imageAlts(text)
     expect(serviceImageAlts.length >= 10, `${pathname} does not expose its service photos as crawlable img elements`)
     expect(serviceImageAlts.every(Boolean), `${pathname} contains an image without alt text`)
@@ -225,8 +259,9 @@ async function run() {
   }
 
   for (const [pathname, destination] of [
-    ['/services/circuit-breaker', '/services/circuit-breaker-replacement'],
-    ['/services/amperage-upgrade', '/services/electrical-panel-upgrade'],
+    ['/services/circuit-breaker', servicePagePath('circuit-breaker-replacement')],
+    ['/services/amperage-upgrade', servicePagePath('electrical-panel-upgrade')],
+    ['/services/generators', servicePagePath('generator-installation')],
   ]) {
     const response = await fetch(`${baseUrl}${pathname}`, {redirect: 'manual'})
     expect([307, 308].includes(response.status), `${pathname} did not redirect`)
@@ -264,7 +299,7 @@ async function run() {
     process.exit(1)
   }
 
-  console.log(`Smoke test passed: ${assertions} assertions across ${servicePages.length} service pages.`)
+  console.log(`Smoke test passed: ${assertions} assertions across ${groups.length} service groups and ${servicePages.length} service pages.`)
 }
 
 run().catch((error: unknown) => {
