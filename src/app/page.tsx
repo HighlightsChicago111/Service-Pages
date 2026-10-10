@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- Crawlable local imagery is intentionally rendered without Next's generated image wrapper. */
 import type {Metadata} from 'next'
+import Link from 'next/link'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
 import {CollectionItem, ServiceCollection} from '@/components/service-collection'
 import {sanityFetch} from '@/sanity/lib/live'
@@ -27,6 +28,7 @@ export default async function HomePage() {
               <p>Explore service-specific guidance for safer installations, dependable repairs, and code-conscious electrical work across Chicago homes and businesses.</p>
               <div className="collection-hero-actions">
                 <a href="#service-directory-title">Explore services</a>
+                <Link href="/clusters">Browse by cluster</Link>
                 <a href="https://www.highlightschicago.com/contact-us">Contact us</a>
               </div>
             </div>
