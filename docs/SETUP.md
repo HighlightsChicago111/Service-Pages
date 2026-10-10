@@ -4,10 +4,10 @@
 
 - Sanity project: `5w5623jq`
 - Sanity organization: `onvqoim97`
-- Dataset: `production`
-- The dataset exists, allows public reads, and was empty when checked on 2026-08-27.
-- The embedded Studio is mounted at `/studio`.
-- GitHub repository: `https://github.com/HighlightsChicago111/Service-Pages.git`.
+- Dataset: `production` (public reads). As of 2026-10-10 it holds 40 published service pages, 40 service definitions, one area (Chicago), the site settings and the standard template.
+- The app is served under the `/services` basePath at `https://www.highlightschicago.com/services`; the site root is Webflow.
+- The embedded Studio is mounted at `/services/studio`.
+- GitHub repository: `https://github.com/HighlightsChicago111/Service-Pages.git`. Vercel's Git integration deploys every push to `main` to production.
 
 ## 1. Fill `.env.local`
 
@@ -17,7 +17,7 @@ The repository contains an ignored `.env.local` with placeholders and a committe
 NEXT_SANITY_PROJECT_ID=5w5623jq
 NEXT_SANITY_DATASET=production
 NEXT_SANITY_API_VERSION=2026-03-01
-NEXT_SANITY_STUDIO_URL=/studio
+NEXT_SANITY_STUDIO_URL=/services/studio
 NEXT_SITE_URL=http://localhost:3000
 SANITY_ORGANIZATION_ID=onvqoim97
 SANITY_API_READ_TOKEN=PASTE_SANITY_VIEWER_TOKEN_HERE
@@ -46,17 +46,23 @@ pnpm content:import
 pnpm dev
 ```
 
-The import is deterministic and currently creates/replaces 23 documents: one site settings singleton, one standard template, ten service definitions, one service area, and ten service pages.
+The import builds 63 documents from `data/source-content.json`: one site settings singleton, one standard template, 30 service definitions, one service area, and 30 service pages. Sanity is the source of truth once pages are live (it now has 40 pages, several edited in the Studio), so the import is non-destructive by default:
 
-Do not run `content:import` until the Editor token is present. The script refuses placeholder tokens.
+- `pnpm content:import` only creates documents that are missing from the dataset. Existing documents are left untouched.
+- `pnpm content:import --dry-run` reports what would be created or replaced and writes nothing. It needs no token.
+- `pnpm content:import --overwrite` replaces existing documents with the file's version (the old behaviour). It discards edits made in the Studio, so only use it on a dataset you intend to reset.
+
+A real import needs the Editor token; the script refuses placeholder tokens.
 
 ## 3. Sanity CORS
 
 In **manage.sanity.io → API → CORS origins**, add exact origins and enable credentials where Studio/Visual Editing requires them:
 
 - `http://localhost:3000`
-- Your final production Vercel/custom domain, for example `https://service-pages.example.com`
+- `https://www.highlightschicago.com` (the production domain that serves `/services/studio`)
 - Any stable preview domain you explicitly choose to support
+
+Until the production origin is added, the Studio at `https://www.highlightschicago.com/services/studio` shows Sanity's "Connect this Studio to your project" screen. A project admin can also click **Register Studio** on that screen, which adds the origin. As of 2026-10-10 only `http://localhost:3333` was allowed. Public pages are unaffected because they fetch from the server.
 
 Do not add a wildcard `*.vercel.app` origin with credentials. Add only origins that should be allowed to use the authenticated Studio or preview tooling.
 
@@ -94,7 +100,7 @@ Configure variables separately for Development, Preview, and Production. Redeplo
 | `NEXT_SANITY_PROJECT_ID` | Yes | Recommended | Yes | No | `5w5623jq` |
 | `NEXT_SANITY_DATASET` | Yes | Recommended | Yes | No | `production` |
 | `NEXT_SANITY_API_VERSION` | Yes | Yes | Yes | No | `2026-03-01` |
-| `NEXT_SANITY_STUDIO_URL` | Yes | Yes | Yes | No | `/studio` |
+| `NEXT_SANITY_STUDIO_URL` | Yes | Yes | Yes | No | `/services/studio` |
 | `NEXT_SITE_URL` | Yes | Yes | Yes | No | Use the matching deployed origin; production should use the final canonical domain |
 | `SANITY_API_READ_TOKEN` | Yes | Yes | Yes | Yes | Viewer token; required for drafts/Visual Editing. It remains server-side. |
 | `SANITY_REVALIDATE_SECRET` | Optional | Yes | Yes | Yes | Random 32+ characters; match the webhook secret for that environment |
@@ -134,7 +140,7 @@ Before enabling the form:
 
 ## 6a. GHL/CRM webhook forwarding (optional)
 
-`/api/lead` can also forward every accepted lead to a CRM automation catch hook — currently a Zapier "Catch Hook" that a teammate's GoHighLevel (GHL) Zap listens on — in addition to (never instead of) the Resend email above. It is intentionally best-effort: the webhook call is fired first and its result only ever logged server-side, so a slow or unreachable webhook can never turn a real lead into a failed submission, and never blocks or delays the email path.
+`/api/lead` can also forward every accepted lead to a CRM automation catch hook — currently a Zapier "Catch Hook" that a teammate's GoHighLevel (GHL) Zap listens on — in addition to (never instead of) the Resend email above. It is intentionally best-effort: the webhook call starts at the same time as the email and its result is only ever logged server-side, so a slow or unreachable webhook can never turn a real lead into a failed submission and never delays the email. The response waits for the webhook (up to its 10-second timeout) so the serverless function is not stopped before the forward is sent.
 
 The forwarded JSON body is the same accepted fields (`name`, `phone`, `address`, `buildingType`, `issue`, `service`, `area`; `email` when the form collects it) plus:
 
@@ -159,6 +165,16 @@ Every successful submission — the service-page form and the sitewide footer fo
 - The URL is a public contract (`THANK_YOU_PATH` in `src/lib/service-urls.ts`, guarded by `pnpm test:thank-you`). Changing it silently breaks tracking, so coordinate with whoever owns the conversion goal first.
 - Nothing here touches `/api/lead` or the webhook; a failed submission shows the inline error and stays on the page.
 
+## 6c. Studio preview and visual editing
+
+The Studio's **Presentation** tool previews pages with unpublished drafts and click-to-edit overlays:
+
+1. Presentation opens `/services` in an iframe and calls `/services/api/draft-mode/enable`, which validates the request with `SANITY_API_READ_TOKEN` and turns on Next.js draft mode.
+2. In draft mode, service pages fetch drafts through `sanityFetch` with click-to-edit markers, and the root layout adds `<SanityLive />` (live draft updates), `<VisualEditing />` (overlays) and a "Disable draft mode" button.
+3. Public visitors never enter draft mode: they keep the statically generated pages, which revalidate hourly and on the Sanity webhook, and never open a browser connection to Sanity.
+
+Requirements: `SANITY_API_READ_TOKEN` set in Vercel (it is) and the site origin allowed in Sanity CORS (§3). `pnpm test:preview` guards that the invisible markers never change links, logos, colours, headings or form values.
+
 ## 7. GitHub and Vercel connection
 
 The supplied repository must exist under `HighlightsChicago111` and the GitHub account authenticated in `gh` must have write access. Then:
@@ -177,6 +193,8 @@ In Vercel, import the GitHub repository, select the Next.js preset, keep the def
 - `VERCEL_TOKEN`: a Vercel access token created by the owner of the destination Vercel project.
 - `VERCEL_ORG_ID`: the `orgId` from `.vercel/project.json` after the owner runs `vercel link` against the existing project.
 - `VERCEL_PROJECT_ID`: the `projectId` from that same file.
+
+As of 2026-10-10 the repository has no Actions secrets, so this workflow fails at "Validate deployment credentials". Deployments still happen through Vercel's Git integration.
 
 After the secrets are configured, run **Deploy production to Vercel** from the repository's **Actions** tab. The workflow is intentionally manual because Vercel's Git integration already deploys pushes to `main`; this prevents duplicate production deployments. It pulls the Production environment, performs a Vercel production build, deploys the prebuilt output, and verifies the deployed home page.
 

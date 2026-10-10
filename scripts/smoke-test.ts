@@ -1,15 +1,31 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import {createClient} from 'next-sanity'
+import {PRIMARY_AREA_SLUG} from '../src/lib/service-urls'
 
-type Row = Record<string, string>
-type Source = {equip: Row[]; area: Row[]; page: Row[]}
+// Expected content comes from the live Sanity dataset (the source of truth once
+// pages are published), not data/source-content.json, which only seeded the
+// first import and does not include pages added later in the Studio.
+type SanityPage = {
+  serviceSlug: string
+  areaSlug: string
+  h1Prefix?: string
+  brands?: string[]
+  whyCount?: number
+  pricingHeading?: string
+  areaName?: string
+  subAreaCount?: number
+  reviewQuotes?: string[]
+}
 
 const baseUrl = (process.argv[2] || process.env.SMOKE_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
-const source = JSON.parse(fs.readFileSync(path.resolve('data/source-content.json'), 'utf8')) as Source
-const fullReviews = JSON.parse(fs.readFileSync(path.resolve('data/full-reviews.json'), 'utf8')) as Record<string, string>
-const serviceBySlug = new Map(source.equip.map((row) => [row.slug, row]))
-const areaBySlug = new Map(source.area.map((row) => [row.slug, row]))
-const validServicePaths = new Set(['/services', ...source.page.map((row) => `/services/${row.equipment_slug}`)])
+const sanity = createClient({
+  projectId: process.env.NEXT_SANITY_PROJECT_ID || '5w5623jq',
+  dataset: process.env.NEXT_SANITY_DATASET || 'production',
+  apiVersion: '2026-03-01',
+  useCdn: false,
+  perspective: 'published',
+})
 const failures: string[] = []
 let assertions = 0
 
@@ -22,10 +38,6 @@ async function request(pathname: string, init?: RequestInit) {
   const response = await fetch(`${baseUrl}${pathname}`, init)
   const text = await response.text()
   return {response, text}
-}
-
-function reviewIds(raw = '') {
-  return raw.split('||').map((entry) => entry.split('::').at(-1)?.trim()).filter(Boolean) as string[]
 }
 
 function brandLogoPath(brand: string) {
@@ -71,6 +83,24 @@ async function testDocument(pathname: string, requiredText: string[]) {
 }
 
 async function run() {
+  const {pages, googleReviewCount} = await sanity.fetch<{pages: SanityPage[]; googleReviewCount?: number}>(`{
+    "pages": *[_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)] {
+      "serviceSlug": service->slug.current,
+      "areaSlug": area->slug.current,
+      "h1Prefix": service->h1Prefix,
+      "brands": service->brands,
+      "whyCount": count(service->whyItems),
+      "pricingHeading": service->pricing.heading,
+      "areaName": area->name,
+      "subAreaCount": count(area->subAreas),
+      "reviewQuotes": reviews[].quote
+    },
+    "googleReviewCount": *[_id == "siteSettings"][0].google.reviewCount
+  }`)
+  expect(pages.length > 0, 'Sanity returned no publishable service pages')
+  const servicePages = pages.filter((page) => page.areaSlug === PRIMARY_AREA_SLUG)
+  const validServicePaths = new Set(['/services', ...servicePages.map((page) => `/services/${page.serviceSlug}`)])
+
   const collection = await testDocument('/services', ['Electrical services built around Chicago', 'Find the right electrical service'])
   for (const href of [
     'https://www.highlightschicago.com/',
@@ -91,16 +121,24 @@ async function run() {
   expect(collection.includes('6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'), 'Collection page is not using the exact live header logo')
   expect(collection.includes('class="collection-footer-title"'), 'Collection footer is missing the single-line quote heading')
   expect((collection.match(/class="collection-social-icon"/g) || []).length === 2, 'Collection footer does not render both social icons')
-  expect((collection.match(/class="collection-card"/g) || []).length === source.page.length, 'Collection page does not render every Sanity service page')
+  expect((collection.match(/class="collection-card"/g) || []).length === pages.length, 'Collection page does not render every Sanity service page')
   const collectionAlts = imageAlts(collection)
-  expect(collectionAlts.length >= source.page.length + 3, 'Collection page does not expose its card and chrome imagery as crawlable img elements')
+  expect(collectionAlts.length >= pages.length + 3, 'Collection page does not expose its card and chrome imagery as crawlable img elements')
   expect(collectionAlts.every(Boolean), 'Collection page contains an image without alt text')
   expect(collection.includes('alt="Electrical panel upgrade service by Highlights Chicago"'), 'Collection hero image is missing descriptive alt text')
-  const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1])
-  expect(cardImages.length === source.page.length, 'Every collection card must have a cover image')
-  expect(new Set(cardImages).size === source.page.length, 'Collection cards must use unique cover images')
+  const cardImages = [...collection.matchAll(/data-card-image="([^"]+)"/g)].map((match) => match[1].replace(/&amp;/g, '&'))
+  expect(cardImages.length === pages.length, 'Every collection card must have a cover image')
+  expect(new Set(cardImages).size === pages.length, 'Collection cards must use unique cover images')
   for (const image of cardImages) {
-    expect(image.startsWith('/services/images/services/'), `Collection image is not local: ${image}`)
+    // Covers are either bundled with the app or, for services added in the Studio, hosted on the Sanity CDN.
+    if (image.startsWith('https://cdn.sanity.io/')) {
+      const imageResponse = await fetch(image)
+      expect(imageResponse.status === 200, `Collection image returned ${imageResponse.status}: ${image}`)
+      expect(imageResponse.headers.get('content-type')?.startsWith('image/'), `Collection image has an invalid content type: ${image}`)
+      continue
+    }
+    expect(image.startsWith('/services/images/services/'), `Collection image is neither local nor on the Sanity CDN: ${image}`)
+    if (!image.startsWith('/services/images/services/')) continue
     const imagePath = path.resolve('public', image.replace('/services/', ''))
     expect(fs.existsSync(imagePath), `Collection image file is missing: ${image}`)
     const imageBytes = fs.readFileSync(imagePath)
@@ -113,11 +151,9 @@ async function run() {
   }
   await testDocument('/services/studio', [])
 
-  for (const row of source.page) {
-    const pathname = `/services/${row.equipment_slug}`
-    const service = serviceBySlug.get(row.equipment_slug)
-    const area = areaBySlug.get(row.area_slug)
-    const heading = `${service?.h1_prefix} in ${area?.name}`
+  for (const page of servicePages) {
+    const pathname = `/services/${page.serviceSlug}`
+    const heading = `${page.h1Prefix} in ${page.areaName}`
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
     const serviceImageAlts = imageAlts(text)
     expect(serviceImageAlts.length >= 10, `${pathname} does not expose its service photos as crawlable img elements`)
@@ -142,11 +178,13 @@ async function run() {
     for (const id of ['quote', 'working-in-area']) {
       expect(text.includes(`id="${id}"`), `${pathname} is missing the #${id} target`)
     }
-    for (const sourceId of reviewIds(row.reviews)) {
-      const expected = fullReviews[sourceId] ? visibleText(fullReviews[sourceId]).slice(0, 80) : ''
-      expect(Boolean(expected && renderedText.includes(expected)), `${pathname} is missing full review ${sourceId}`)
+    const reviewQuotes = page.reviewQuotes || []
+    expect(reviewQuotes.length === 4, `${pathname} should have four reviews in Sanity, found ${reviewQuotes.length}`)
+    for (const [index, quote] of reviewQuotes.entries()) {
+      const expected = visibleText(quote || '').trim().slice(0, 80)
+      expect(Boolean(expected && renderedText.includes(expected)), `${pathname} is missing the full text of review ${index + 1}`)
     }
-    expect((text.match(/class="rev-card"/g) || []).length === 4, `${pathname} does not render four review cards`)
+    expect((text.match(/class="rev-card"/g) || []).length === reviewQuotes.length, `${pathname} does not render every review card`)
     expect(text.includes('reviews-grid-equal'), `${pathname} does not use equal-height review cards`)
     expect(!text.includes('class="rev-head"'), `${pathname} still renders the duplicate aggregate rating above reviews`)
     expect(text.indexOf('class="rev-rating"') > text.indexOf('<blockquote>'), `${pathname} does not place the rating after review feedback`)
@@ -158,7 +196,7 @@ async function run() {
     expect(text.indexOf('class="trust-cell google-proof-cell"') > text.lastIndexOf('class="trust-cell"'), `${pathname} does not render Google proof as the fifth trust cell`)
     expect(!text.includes('class="static-stars"'), `${pathname} still renders a duplicate row of Google stars`)
     expect(!text.includes('class="fill"'), `${pathname} still renders an overlapping duplicate star layer`)
-    for (const brand of (service?.brands || '').split('||').filter(Boolean)) {
+    for (const brand of page.brands || []) {
       const logoPath = brandLogoPath(brand)
       const logoSlug = logoPath.slice('/services/images/brands/'.length, -'.png'.length)
       expect(text.includes(logoPath), `${pathname} is missing the ${brand} logo`)
@@ -166,16 +204,16 @@ async function run() {
       expect(fs.existsSync(path.resolve('public', logoPath.replace('/services/', ''))), `Local brand logo is missing: ${logoPath}`)
     }
     const whySection = text.match(/<section class="wrap" id="why-us">([\s\S]*?)<\/section>/)?.[1] || ''
-    expect((whySection.match(/<article class="why-item"/g) || []).length === (service?.why || '').split('||').filter(Boolean).length, `${pathname} does not render every why-us item as always-visible content`)
+    expect((whySection.match(/<article class="why-item"/g) || []).length === page.whyCount, `${pathname} does not render every why-us item as always-visible content`)
     expect(!whySection.includes('<details') && !whySection.includes('why-chevron'), `${pathname} still renders mobile why-us accordion controls`)
-    expect(renderedText.includes(`Read all ${row.google_review_count} reviews`), `${pathname} does not include the live review count in the all-reviews CTA`)
+    expect(renderedText.includes(`Read all ${googleReviewCount} reviews`), `${pathname} does not include the live review count in the all-reviews CTA`)
     expect(text.indexOf('class="cs-gallery-rail"') < text.indexOf('class="cs-gallery-head"'), `${pathname} does not place the crew gallery caption below its images`)
-    expect(renderedText.includes(`Our Works in ${area?.name}`), `${pathname} does not use the updated work-section heading`)
+    expect(renderedText.includes(`Our Works in ${page.areaName}`), `${pathname} does not use the updated work-section heading`)
     expect(text.includes('class="single-line-mobile"'), `${pathname} does not mark the coverage heading as mobile single-line`)
     expect(text.includes('area-rail-single-row'), `${pathname} does not render the single-row horizontal location rail`)
     expect(!text.includes('class="area-grid"'), `${pathname} still renders locations as a wrapping grid`)
     expect(text.indexOf('class="area-map"') < text.indexOf('area-rail-single-row'), `${pathname} does not render the map before the location rail`)
-    expect((text.match(/class="area-chip"/g) || []).length === (area?.sub_areas || '').split('||').filter(Boolean).length, `${pathname} does not render every location in the rail`)
+    expect((text.match(/class="area-chip"/g) || []).length === page.subAreaCount, `${pathname} does not render every location in the rail`)
     expect(text.includes('scroll horizontally to view all columns'), `${pathname} does not expose its mobile pricing table as horizontally scrollable`)
     const faqSection = text.match(/<section class="wrap" id="faq">([\s\S]*?)<\/section>/)?.[1] || ''
     expect((faqSection.match(/class="faq-chevron"/g) || []).length === (faqSection.match(/<details\b/g) || []).length, `${pathname} does not render one FAQ chevron per question`)
@@ -183,7 +221,7 @@ async function run() {
     expect(text.includes('class="cta-heading"'), `${pathname} does not mark the closing CTA heading for responsive sizing`)
     expect(text.includes('class="section-tint library-section"'), `${pathname} does not use shared library section spacing`)
     expect(text.includes('class="collection-footer-form"'), `${pathname} is missing the live-style footer quote form`)
-    expect(renderedText.includes(`${service?.pricing_heading} in ${area?.name}?`), `${pathname} pricing heading is not a question`)
+    expect(renderedText.includes(`${page.pricingHeading} in ${page.areaName}?`), `${pathname} pricing heading is not a question`)
   }
 
   for (const [pathname, destination] of [
@@ -192,7 +230,9 @@ async function run() {
   ]) {
     const response = await fetch(`${baseUrl}${pathname}`, {redirect: 'manual'})
     expect([307, 308].includes(response.status), `${pathname} did not redirect`)
-    expect(response.headers.get('location') === destination, `${pathname} redirected to ${response.headers.get('location')}`)
+    // Hosts differ in returning a relative or an absolute Location, so compare the resolved path.
+    const location = response.headers.get('location')
+    expect(location && new URL(location, baseUrl).pathname === destination, `${pathname} redirected to ${location}`)
   }
 
   const missing = await fetch(`${baseUrl}/services/not-a-service`, {redirect: 'manual'})
@@ -224,7 +264,7 @@ async function run() {
     process.exit(1)
   }
 
-  console.log(`Smoke test passed: ${assertions} assertions across ${source.page.length} service pages.`)
+  console.log(`Smoke test passed: ${assertions} assertions across ${servicePages.length} service pages.`)
 }
 
 run().catch((error: unknown) => {

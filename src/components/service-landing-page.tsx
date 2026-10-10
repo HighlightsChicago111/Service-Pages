@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- Sanity permits arbitrary external image sources; native img keeps alt text crawlable. */
 import type {CSSProperties, ReactNode} from 'react'
 import Link from 'next/link'
+import {stegaClean} from 'next-sanity'
 import type {ExternalImage, Faq, Guide, ServicePageData} from '@/types/content'
 import {GuideTabs} from './guide-tabs'
 import {CenteredAreaRail} from './centered-area-rail'
@@ -16,11 +17,11 @@ type Props = {data: ServicePageData}
 const LIGHT_MARK_ON_DARK_TILE = new Set(['eaton', 'generac', 'siemens', 'sma'])
 
 function imageUrl(image?: ExternalImage): string | undefined {
-  return image?.resolvedUrl || image?.externalUrl
+  return stegaClean(image?.resolvedUrl || image?.externalUrl)
 }
 
 function imageAlt(image: ExternalImage | undefined, fallback: string): string {
-  const alt = image?.alt?.trim()
+  const alt = stegaClean(image?.alt)?.trim()
   const importedPlaceholder = /^[a-z0-9-]+ (?:project|work in [a-z0-9-]+) \d+$/i
   return alt && !importedPlaceholder.test(alt) ? alt : fallback
 }
@@ -30,7 +31,7 @@ function imageCaption(image: ExternalImage | undefined, fallback: string): strin
 }
 
 function brandSlug(brand: string): string {
-  return brand
+  return stegaClean(brand)
     .normalize('NFKD')
     .toLowerCase()
     .replace(/&/g, ' and ')
@@ -122,7 +123,7 @@ function EmptyImageIcon() {
 }
 
 function JsonLd({data}: Props) {
-  const {page, settings} = data
+  const {page, settings} = stegaClean(data)
   if (!page || !settings) return null
   const {service, area} = page
   const canonicalUrl = servicePageUrl(service.slug)
@@ -158,7 +159,7 @@ export function ServiceLandingPage({data}: Props) {
   const localFaqs = page.localFaqOverrides?.length ? page.localFaqOverrides : area.localFaqs
   const rating = settings.google?.rating
   const reviewCount = settings.google?.reviewCount
-  const presentation = page.template?.presentation
+  const presentation = stegaClean(page.template?.presentation)
   const coverageMapFirst = presentation?.coverageMapFirst !== false
   const equalHeightReviews = presentation?.equalHeightReviewCards !== false
   const footerColor = presentation?.footerColor || '#151f2a'
@@ -176,24 +177,28 @@ export function ServiceLandingPage({data}: Props) {
   const equipment = service.types || []
   const brands = service.brands || []
   const trustMetrics = settings.trustMetrics || []
-  const aPlusIndex = trustMetrics.findIndex((metric) => metric.value.trim().toUpperCase() === 'A+' || /\bBBB\b/i.test(metric.label))
+  const aPlusIndex = trustMetrics.findIndex((metric) => stegaClean(metric.value).trim().toUpperCase() === 'A+' || /\bBBB\b/i.test(stegaClean(metric.label)))
   const aPlusMetric = aPlusIndex >= 0 ? trustMetrics[aPlusIndex] : undefined
   const remainingTrustMetrics = trustMetrics.filter((_, index) => index !== aPlusIndex)
   const orderedTrustMetrics = aPlusMetric
     ? [...remainingTrustMetrics.slice(0, 2), aPlusMetric, ...remainingTrustMetrics.slice(2)]
     : trustMetrics
   const guideItems = (page.guides || []).map((guide) => ({title: guide.title, paragraphs: guideText(guide)}))
-  const serviceRoutes = data.serviceRoutes || []
+  const serviceRoutes = stegaClean(data.serviceRoutes || [])
+  const serviceSlug = stegaClean(service.slug)
+  const areaSlug = stegaClean(area.slug)
+  const parentName = stegaClean(service.parentName)
+  const phoneHref = `tel:${stegaClean(settings.phoneE164)}`
   const matchedRelatedServices = (service.otherServices || [])
-    .map((item) => ({...item, href: resolvePublishedServicePath(item.url, item.name, serviceRoutes, area.slug)}))
+    .map((item) => ({...item, href: resolvePublishedServicePath(stegaClean(item.url), stegaClean(item.name), serviceRoutes, areaSlug)}))
     .filter((item): item is typeof item & {href: string} => Boolean(item.href))
   const relatedServices = matchedRelatedServices.filter(
     (item, index, items) => items.findIndex((candidate) => candidate.href === item.href) === index,
   ).slice(0, 4)
   const usedRelatedPaths = new Set(relatedServices.map((item) => item.href))
   const fallbackRoutes = serviceRoutes
-    .filter((route) => route.areaSlug === area.slug && route.serviceSlug !== service.slug)
-    .sort((left, right) => Number(right.parentName === service.parentName) - Number(left.parentName === service.parentName))
+    .filter((route) => route.areaSlug === areaSlug && route.serviceSlug !== serviceSlug)
+    .sort((left, right) => Number(right.parentName === parentName) - Number(left.parentName === parentName))
   for (const route of fallbackRoutes) {
     if (relatedServices.length >= 4) break
     const href = servicePageUrl(route.serviceSlug).replace(PUBLIC_SITE_ORIGIN, '')
@@ -206,12 +211,12 @@ export function ServiceLandingPage({data}: Props) {
     })
     usedRelatedPaths.add(href)
   }
-  const coverageMap = area.mapQuery ? <div className="area-map"><iframe title={`${area.name} service area map`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(area.mapQuery)}&output=embed`} /></div> : null
+  const coverageMap = area.mapQuery ? <div className="area-map"><iframe title={`${area.name} service area map`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(stegaClean(area.mapQuery))}&output=embed`} /></div> : null
   const coverageAreas = <CenteredAreaRail label={`${area.name} service locations`}>{area.subAreas?.map((subArea) => {
     const src = imageUrl(subArea.photo)
     const neighborhoodFallback = `${subArea.name} neighborhood landmark in ${area.name}`
-    const storedAlt = subArea.photo?.alt?.trim()
-    const alt = !storedAlt || storedAlt.toLowerCase() === subArea.name.trim().toLowerCase()
+    const storedAlt = stegaClean(subArea.photo?.alt)?.trim()
+    const alt = !storedAlt || storedAlt.toLowerCase() === stegaClean(subArea.name).trim().toLowerCase()
       ? neighborhoodFallback
       : imageAlt(subArea.photo, neighborhoodFallback)
     return <a className="area-chip" role="listitem" href="#quote" key={subArea._key || subArea.name}><span className="area-img">{src ? <img src={src} alt={alt} title={imageCaption(subArea.photo, subArea.note || subArea.name)} loading="lazy" decoding="async" /> : <EmptyImageIcon />}</span><b>{subArea.name}</b><span>{subArea.note}</span>{subArea.photo?.credit && <small className="area-credit">Photo: {subArea.photo.credit}</small>}</a>
@@ -226,7 +231,7 @@ export function ServiceLandingPage({data}: Props) {
       <header className="hero"><div className="wrap hero-grid"><div>
         <p className="eyebrow">{area.heroEyebrow}</p><h1>{questionHeading(`${service.h1Prefix} in ${area.name}`)}</h1><p className="lede">{service.heroLede}</p>
         <div className="trustbar">{settings.trustLines?.map((line) => <span className="trust-item" key={line}>◆ {line}</span>)}{rating && <Rating rating={rating} count={reviewCount} />}</div>
-        <div className="btn-row"><a className="btn btn-primary" href={`tel:${settings.phoneE164}`}>Call {settings.phoneDisplay}</a><a className="btn btn-secondary" href="#quote">{service.secondaryCta || 'Request service'}</a></div>
+        <div className="btn-row"><a className="btn btn-primary" href={phoneHref}>Call {settings.phoneDisplay}</a><a className="btn btn-secondary" href="#quote">{service.secondaryCta || 'Request service'}</a></div>
         <div className="cs-gallery"><div className="cs-gallery-rail">{page.gallery?.filter((photo) => Boolean(imageUrl(photo))).slice(0, 3).map((photo, index) => {
           const src = imageUrl(photo)
           const fallbacks = [
@@ -237,7 +242,7 @@ export function ServiceLandingPage({data}: Props) {
           const alt = imageAlt(photo, fallbacks[index] || `${service.name} project in ${area.name}`)
           return src && <GalleryPhoto key={photo._key || index} src={src} alt={alt} title={imageCaption(photo, alt)} eager={index === 0} />
         })}</div><div className="cs-gallery-head"><p className="eyebrow">{area.galleryLabel}</p><a href="#working-in-area">See more →</a></div></div>
-      </div><LeadForm service={service.name} area={area.name} issueQuestion={service.issueQuestion} issueOptions={service.issueOptions} buildingTypes={area.buildingTypes} addressPlaceholder={area.addressPlaceholder} subtitle={settings.formSubtitle} note={settings.formNote} /></div></header>
+      </div><LeadForm service={stegaClean(service.name)} area={stegaClean(area.name)} issueQuestion={service.issueQuestion} issueOptions={stegaClean(service.issueOptions)} buildingTypes={stegaClean(area.buildingTypes)} addressPlaceholder={area.addressPlaceholder} subtitle={settings.formSubtitle} note={settings.formNote} /></div></header>
 
       <section className="wrap" id="equipment"><h2>{questionHeading(service.typesHeading)}</h2><p className="lede narrow">{service.typesLede}</p><div className="equip-strip" aria-label={service.typesHeading}><div className="equip-track">{[...equipment, ...equipment].map((item, index) => <div className="equip" key={`${item._key || item.name}-${index}`} aria-hidden={index >= equipment.length || undefined}><EquipmentIcon index={index} /><b>{item.name}</b><span>{item.description}</span></div>)}</div></div>{service.typesFootnote && <p className="small muted section-note">{service.typesFootnote}</p>}</section>
 
@@ -245,11 +250,11 @@ export function ServiceLandingPage({data}: Props) {
 
       <section className="wrap" id="trust"><h2>{questionHeading(settings.trustHeading)}</h2><p className="lede narrow">{settings.trustLede}</p><div className="trust-strip">{orderedTrustMetrics.map((metric) => <div className="trust-cell" key={metric._key || metric.label}><b>{metric.value}</b><span>{metric.label}</span></div>)}{rating && <div className="trust-cell google-proof-cell"><b><Rating rating={rating} largeMark /></b><span>{reviewCount} Google reviews</span></div>}</div><div className="grid grid-3 trust-cards">{settings.trustCards?.map((item) => <article className="card" key={item._key || item.title}><h3>{questionHeading(item.title)}</h3><p className="small">{item.body}</p></article>)}</div></section>
 
-      <section className="section-tint" id="reviews"><div className="wrap"><h2>{questionHeading(settings.reviewsHeading)}</h2><div className={`grid grid-2 reviews-grid${equalHeightReviews ? ' reviews-grid-equal' : ''}`}>{page.reviews?.map((review, index) => <a className="rev-card" href={review.sourceUrl} target="_blank" rel="noreferrer" key={review._key || index}><blockquote>{review.quote}</blockquote>{rating && <div className="rev-rating"><Rating rating={rating} compact /></div>}<footer className="rev-meta"><span><strong>{review.author}</strong>{review.location && <> · {review.location}</>}</span><span className="rev-src">View on Google →</span></footer></a>)}</div>{settings.google?.reviewsUrl && <div className="rev-cta"><a className="rev-cta-btn" href={settings.google.reviewsUrl}>Read all {reviewCount ? `${reviewCount} ` : ''}reviews →</a></div>}{settings.reviewsDisclaimer && <p className="small muted review-note">{settings.reviewsDisclaimer}</p>}</div></section>
+      <section className="section-tint" id="reviews"><div className="wrap"><h2>{questionHeading(settings.reviewsHeading)}</h2><div className={`grid grid-2 reviews-grid${equalHeightReviews ? ' reviews-grid-equal' : ''}`}>{page.reviews?.map((review, index) => <a className="rev-card" href={stegaClean(review.sourceUrl)} target="_blank" rel="noreferrer" key={review._key || index}><blockquote>{review.quote}</blockquote>{rating && <div className="rev-rating"><Rating rating={rating} compact /></div>}<footer className="rev-meta"><span><strong>{review.author}</strong>{review.location && <> · {review.location}</>}</span><span className="rev-src">View on Google →</span></footer></a>)}</div>{settings.google?.reviewsUrl && <div className="rev-cta"><a className="rev-cta-btn" href={stegaClean(settings.google.reviewsUrl)}>Read all {reviewCount ? `${reviewCount} ` : ''}reviews →</a></div>}{settings.reviewsDisclaimer && <p className="small muted review-note">{settings.reviewsDisclaimer}</p>}</div></section>
 
       <section className="wrap" id="why-us"><h2>{questionHeading(service.whyHeading)}</h2><p className="lede narrow">{service.whyLede}</p><div className="why-grid">{service.whyItems?.map((item) => <article className="why-item" key={item._key || item.title}><h3 className="why-title">{questionHeading(item.title)}</h3><p className="why-body">{item.body}</p></article>)}</div></section>
 
-      <section className="section-tint" id="working-in-area"><div className="wrap"><h2>{questionHeading(`Our Works in ${area.name}`)}</h2><p className="lede narrow">{area.workingLede}</p><WorkingPhotoGrid photos={page.workingPhotos} serviceName={service.name} areaName={area.name} /></div></section>
+      <section className="section-tint" id="working-in-area"><div className="wrap"><h2>{questionHeading(`Our Works in ${area.name}`)}</h2><p className="lede narrow">{area.workingLede}</p><WorkingPhotoGrid photos={stegaClean(page.workingPhotos)} serviceName={service.name} areaName={area.name} /></div></section>
 
       <section className="wrap" id="areas"><h2 className="single-line-mobile">{questionHeading(area.areasHeading)}</h2><p className="lede narrow">{area.areasLede}</p><div className="coverage-stack">{coverageMapFirst ? <>{coverageMap}{coverageAreas}</> : <>{coverageAreas}{coverageMap}</>}</div>{area.areasNote && <p className="small muted coverage-note">{area.areasNote}</p>}</section>
 
@@ -259,11 +264,11 @@ export function ServiceLandingPage({data}: Props) {
 
       <section className="wrap" id="faq"><h2>{questionHeading(`${service.name} in ${area.name} — FAQs`)}</h2><div className="faq">{[...(service.faqs || []), ...(localFaqs || [])].map((faq) => <details key={faq._key || faq.question}><summary><span>{faq.question}</span><span className="faq-chevron" aria-hidden="true" /></summary><div className="faq-body"><p>{faq.answer}</p></div></details>)}</div></section>
 
-      <section className="wrap closing-cta-section"><div className="cta-final"><h2 className="cta-heading">{questionHeading(`${service.ctaHeading} in ${area.name}?`)}</h2><p>{service.ctaBody}</p><div className="btn-row centered"><a className="btn btn-primary" href={`tel:${settings.phoneE164}`}>Call {settings.phoneDisplay}</a><a className="btn btn-secondary" href="#quote">{service.secondaryCta}</a></div></div></section>
+      <section className="wrap closing-cta-section"><div className="cta-final"><h2 className="cta-heading">{questionHeading(`${service.ctaHeading} in ${area.name}?`)}</h2><p>{service.ctaBody}</p><div className="btn-row centered"><a className="btn btn-primary" href={phoneHref}>Call {settings.phoneDisplay}</a><a className="btn btn-secondary" href="#quote">{service.secondaryCta}</a></div></div></section>
 
       {guideItems.length > 0 && <section className="section-tint library-section" id="guides"><div className="wrap"><h2>{questionHeading(area.libraryHeading)}</h2><p className="lede narrow">{area.libraryLede}</p><GuideTabs guides={guideItems} /></div></section>}
 
-      <div className="callbar"><a className="c-call" href={`tel:${settings.phoneE164}`}>Call {settings.phoneDisplay}</a><a className="c-form" href="#quote">Book service</a></div>
+      <div className="callbar"><a className="c-call" href={phoneHref}>Call {settings.phoneDisplay}</a><a className="c-form" href="#quote">Book service</a></div>
       <JsonLd data={data} />
       </main>
       <CollectionFooter />
