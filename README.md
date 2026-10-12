@@ -20,6 +20,8 @@ Service pages are moving to a new design (Design System v3). Until that is finis
 
 One rule decides what a URL shows: `/services/<slug>` renders its **published** new-design page when there is one (and the new-design settings exist), otherwise its current page. The sitemap, the `/services` list, related-service links and the old `/<slug>/chicago` redirects all follow the same rule with one entry per URL (`src/lib/design-precedence.ts`). Publishing a new-design page switches its URL to the new design; unpublishing it switches the URL straight back. Drafts only show in Studio Presentation.
 
+Every photo slot in the new design has an optional image field on the page (hero background, each job card and equipment tile, assessment, symptoms, repair box, Why Highlights, category card, cost drivers, handover, related-service cards, guide tabs), plus logo uploads for brands without a built-in logo and the Why Highlights figures. An empty slot falls back to the page's own hero photos or an icon; the Solar reference photos in `src/lib/v3/visuals.ts` only fill Solar's empty slots.
+
 New-design slugs cannot be a redirect source in `next.config.ts` or a reserved path. `src/lib/reserved-slugs.ts` holds that list, and `pnpm test:design` fails if it drifts from `next.config.ts`.
 
 Sanity is the source of truth for published content. `data/source-content.json` is the normalized spreadsheet export that seeded the first import; it does not include the pages added later in the Studio (Sanity has 40 service pages, the file has 30). The original spreadsheet package is preserved locally but ignored by Git.

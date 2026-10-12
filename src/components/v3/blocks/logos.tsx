@@ -22,18 +22,19 @@ const OFFICIAL: Record<string, string> = {
   siemens: 'logo-siemens.svg',
 }
 
-export function brandLogoSrc(brand: string) {
+/** A logo uploaded on the page wins, then the official handoff file, then the shared brand logo folder. */
+export function brandLogoSrc(brand: string, uploaded: Record<string, string> = {}) {
   const key = slug(brand)
-  return OFFICIAL[key] ? `${SERVICES_PATH}/images/v3/logos/${OFFICIAL[key]}` : `${SERVICES_PATH}/images/brands/${key}.png`
+  return uploaded[brand.trim().toLowerCase()] || (OFFICIAL[key] ? `${SERVICES_PATH}/images/v3/logos/${OFFICIAL[key]}` : `${SERVICES_PATH}/images/brands/${key}.png`)
 }
 
-export function LogoTile({brand, compact}: {brand: string; compact?: boolean}) {
-  return <li className={compact ? 'ds-logo-tile ds-logo-tile--compact' : 'ds-logo-tile'}><img src={brandLogoSrc(brand)} alt={`${brand} logo`} loading="lazy" decoding="async" /></li>
+export function LogoTile({brand, compact, uploaded}: {brand: string; compact?: boolean; uploaded?: Record<string, string>}) {
+  return <li className={compact ? 'ds-logo-tile ds-logo-tile--compact' : 'ds-logo-tile'}><img src={brandLogoSrc(brand, uploaded)} alt={`${brand} logo`} loading="lazy" decoding="async" /></li>
 }
 
 /** D6 Logo wall: official full-colour logos on white tiles, a big blue count. */
 export function LogosBlock({ctx}: {ctx: BlockContext}) {
-  const {page, area} = ctx
+  const {page, area, visuals} = ctx
   const brands = page.brands || {}
   const items = brands.items || []
   return (
@@ -45,7 +46,7 @@ export function LogosBlock({ctx}: {ctx: BlockContext}) {
         lede={brands.lede}
         aside={<p className="ds-big-count"><b>{items.length}</b> <span>Brands</span></p>}
       />
-      <ul className="ds-logo-wall">{items.map((brand) => <LogoTile brand={brand} key={brand} />)}</ul>
+      <ul className="ds-logo-wall">{items.map((brand) => <LogoTile brand={brand} uploaded={visuals.brandLogos} key={brand} />)}</ul>
       {brands.note && <div className="ds-note-row"><div className="ds-note-row-main"><IconBadge icon="wrench" tone="green" size={44} /><p>{brands.note}</p></div></div>}
     </div>
   )

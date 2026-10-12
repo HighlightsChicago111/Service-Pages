@@ -5,11 +5,10 @@ import {isIllustrative, photoLabel} from './content'
 /**
  * Photos for the Design System v3 blocks.
  *
- * The V2 content model has no image field per job, equipment tile or block, so
- * the reference build (Solar, playbook Part C) gets its photos from this map.
- * Every other page falls back to its own gallery photos, and blocks with no
- * honest photo render an icon tile instead of a borrowed stock image.
- * TODO: move these into Sanity image fields once the v3 schema lands.
+ * Each block photo comes from the page's own optional image field in Sanity first.
+ * When a field is empty, the reference build (Solar, playbook Part C) still gets its
+ * photos from this map, every other page falls back to its own gallery photos, and
+ * blocks with no honest photo render an icon tile instead of a borrowed stock image.
  */
 /** `position` is a CSS object-position focal point for photos whose subject is off-centre. */
 export type Photo = {src: string; alt: string; illustrative?: boolean; label?: string; credit?: string; position?: string}
@@ -117,10 +116,33 @@ export function fromImg(image: Img | undefined, fallbackAlt: string): Photo | un
 export type ResolvedVisuals = Required<Pick<PageVisuals, 'jobs' | 'equipment' | 'reasonStats' | 'gallery'>> & Omit<PageVisuals, 'jobs' | 'equipment' | 'reasonStats' | 'gallery'> & {
   crew: Array<Photo & {label: string}>
   library: Array<Photo | undefined>
+  /** Uploaded logo URLs by brand name (lower case), for brands without a built-in logo. */
+  brandLogos: Record<string, string>
 }
 
 export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
-  const own = PAGE_VISUALS[page.slug] || {}
+  const mapped = PAGE_VISUALS[page.slug] || {}
+  const alt = (what: string) => `${what}, ${page.name} in ${area.name}`
+  // The page's own image fields win; the reference map fills only what they leave empty.
+  const own: PageVisuals = {
+    ...mapped,
+    hero: fromImg(page.hero?.image, alt('Hero')) || mapped.hero,
+    jobs: page.jobPaths?.items?.some((item) => item.image)
+      ? page.jobPaths.items.map((item, index) => fromImg(item.image, alt(item.title)) || mapped.jobs?.[index]) as Photo[]
+      : mapped.jobs,
+    equipment: page.equipment?.items?.some((item) => item.image)
+      ? page.equipment.items.map((item, index) => fromImg(item.image, alt(item.name)) || mapped.equipment?.[index]) as Photo[]
+      : mapped.equipment,
+    assessment: fromImg(page.assessment?.image, alt('Site assessment')) || mapped.assessment,
+    diagnose: fromImg(page.diagnose?.image, alt('Diagnosis')) || mapped.diagnose,
+    orphan: fromImg(page.diagnose?.orphanImage, alt('Repair')) || mapped.orphan,
+    reasons: fromImg(page.why?.image, alt('Why Highlights')) || mapped.reasons,
+    reasonStats: page.why?.stats?.length ? page.why.stats.map(({value, label}) => ({value, label})) : mapped.reasonStats,
+    category: fromImg(page.otherServices?.featured?.image, alt('Service category')) || mapped.category,
+    drivers: fromImg(page.pricing?.driversImage, alt('Cost drivers')) || mapped.drivers,
+    handover: fromImg(page.included?.handoverImage, alt('Handover')) || mapped.handover,
+    serviceGuide: fromImg(page.serviceGuide?.image, alt('Service guide')) || mapped.serviceGuide,
+  }
   const pagePhotos = [...(page.gallery || []), ...(page.workingPhotos || [])]
     .map((image) => fromImg(image, `${page.name} in ${area.name}`))
     .filter((photo): photo is Photo => Boolean(photo))
@@ -139,8 +161,13 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     ...preferredOrder.map((name) => (area.subAreas || []).find((sub) => sub.name === name)).map((sub) => sub && fromImg(sub.photo, `${sub.name}, ${area.name}`)).filter((photo): photo is Photo => Boolean(photo)),
     ...areaPhotos,
   ]
-  const library = (area.sharedGuides || []).map((_, index) => orderedArea[index])
+  const library = (area.sharedGuides || []).map((guide, index) => fromImg(guide.image, `${guide.title}, ${area.name}`) || orderedArea[index])
   if (page.serviceGuide?.title) library.push(own.serviceGuide || own.hero || pagePhotos[0])
+  const brandLogos = Object.fromEntries(
+    (page.brands?.logos || [])
+      .map((entry) => [entry.brand.trim().toLowerCase(), entry.logo?.resolvedUrl || entry.logo?.externalUrl] as const)
+      .filter((entry): entry is readonly [string, string] => Boolean(entry[0] && entry[1])),
+  )
 
   return {
     ...own,
@@ -151,5 +178,6 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     gallery: own.gallery || pagePhotos,
     crew,
     library,
+    brandLogos,
   }
 }

@@ -1,6 +1,6 @@
 import {defineArrayMember, defineField, defineType, type SlugValue} from 'sanity'
 import {reservedSlugReason} from '../../../lib/reserved-slugs'
-import {PAGE_ANCHORS} from './objects'
+import {PAGE_ANCHORS, photoField} from './objects'
 
 const strings = (name: string, title: string, extra: Record<string, unknown> = {}) =>
   defineField({name, title, type: 'array', of: [defineArrayMember({type: 'string'})], ...extra})
@@ -67,6 +67,7 @@ export const v2ServicePage = defineType({
       defineField({name: 'h1Prefix', title: 'H1 (the page adds "in <Area>")', type: 'string', validation: (rule) => rule.required()}),
       text('lede', 'Lede'),
       str('secondaryCta', 'Booking button text'),
+      photoField('image', 'Hero background photo', 'Optional. Leave empty to use the first hero photo below.'),
     ]),
     defineField({...list('gallery', 'Hero photos (3)', 'v2Image'), group: 'hero', validation: (rule) => rule.max(3)}),
     fold('form', 'Quote form', 'hero', [
@@ -95,6 +96,7 @@ export const v2ServicePage = defineType({
     fold('assessment', 'Fold: What the assessment checks', 'assess', [
       str('heading', 'Heading'), text('lede', 'Lede'), list('checks', 'Checks', 'v2TitledBody'),
       str('routesHeading', 'Decision block heading'), list('routes', 'Decision routes (numbered)', 'v2TitledBody'), text('routesNote', 'Decision block note', 2),
+      photoField('image', 'Assessment photo'),
     ], 'Leave empty to hide the fold.'),
     fold('diagnose', 'Fold: Symptoms and what we check', 'assess', [
       str('heading', 'Heading'), text('lede', 'Lede'),
@@ -102,17 +104,25 @@ export const v2ServicePage = defineType({
       list('rows', 'Symptom rows', 'v2SymptomRow'),
       str('repairTitle', 'Left box title'), text('repairBody', 'Left box text', 4),
       str('orphanTitle', 'Right box title'), text('orphanBody', 'Right box text', 4),
+      photoField('image', 'Symptoms photo'), photoField('orphanImage', 'Right box photo'),
     ], 'Leave empty to hide the fold.'),
 
-    fold('brands', 'Fold: Brands', 'proof', [str('heading', 'Heading'), text('lede', 'Lede'), strings('items', 'Brands'), text('note', 'Note', 2)]),
-    fold('why', 'Fold: Why Highlights', 'proof', [str('heading', 'Heading'), text('lede', 'Lede'), list('items', 'Reason cards', 'v2LinkedCard')]),
+    fold('brands', 'Fold: Brands', 'proof', [
+      str('heading', 'Heading'), text('lede', 'Lede'), strings('items', 'Brands'), text('note', 'Note', 2),
+      list('logos', 'Logo uploads (only for brands without a built-in logo)', 'v2BrandLogo'),
+    ]),
+    fold('why', 'Fold: Why Highlights', 'proof', [
+      str('heading', 'Heading'), text('lede', 'Lede'), list('items', 'Reason cards', 'v2LinkedCard'),
+      list('stats', 'Green stat row (up to 3, figures from this page only)', 'v2TrustMetric', {validation: (rule: {max: (n: number) => unknown}) => rule.max(3)} as Record<string, unknown>),
+      photoField('image', 'Why Highlights photo'),
+    ]),
     defineField({...list('reviews', 'Reviews (4)', 'v2Review'), group: 'proof'}),
     defineField({...list('workingPhotos', 'Our works photos (3)', 'v2Image'), group: 'proof', validation: (rule) => rule.max(3)}),
 
     fold('process', 'Fold: Process, step by step', 'process', [str('heading', 'Heading'), text('lede', 'Lede'), list('steps', 'Steps', 'v2ProcessStep')], 'Leave empty to hide the fold.'),
     defineField({name: 'areasCallout', title: 'Service-specific note in the Areas fold', type: 'text', rows: 3, group: 'process'}),
     fold('otherServices', 'Fold: Other services', 'process', [
-      defineField({name: 'featured', title: 'Featured category card', type: 'object', fields: [str('tag', 'Tag'), str('title', 'Title'), text('description', 'Description', 2)]}),
+      defineField({name: 'featured', title: 'Featured category card', type: 'object', fields: [str('tag', 'Tag'), str('title', 'Title'), text('description', 'Description', 2), photoField('image', 'Card background photo')]}),
       list('items', 'Related services (up to 4)', 'v2LinkedService'),
     ]),
 
@@ -120,6 +130,7 @@ export const v2ServicePage = defineType({
       str('heading', 'Heading'), text('lede', 'Lede'), str('caption', 'Table caption'),
       strings('columns', 'Column headings (3)'), list('rows', 'Rows', 'v2PriceRow'), text('note', 'Note under table', 2),
       str('driversHeading', 'Cost drivers heading'), list('drivers', 'Cost drivers', 'v2CostDriver'), text('incentivesNote', 'Incentives note', 2),
+      photoField('driversImage', 'Cost drivers photo'),
     ]),
     fold('included', "Fold: What's included", 'cost', [
       str('heading', 'Heading'), text('lede', 'Lede'),
@@ -127,6 +138,7 @@ export const v2ServicePage = defineType({
       str('separateHeading', 'Quoted-separately heading'), strings('separate', 'Quoted separately'), text('separateNote', 'Quoted-separately note', 2),
       str('handoverHeading', 'Handover heading'), strings('handover', 'Handover checklist'),
       str('warrantyHeading', 'Warranty heading'), list('warranty', 'Who warrants what', 'v2WarrantyRow'),
+      photoField('handoverImage', 'Handover photo'),
     ], 'Leave empty to hide the fold.'),
 
     defineField({...list('faqs', 'FAQs (service-specific; the area FAQs are added after these)', 'v2Faq'), group: 'close'}),

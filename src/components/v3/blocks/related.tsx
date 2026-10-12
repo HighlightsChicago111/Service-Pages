@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import {Eyebrow, IconTile} from '../atoms'
 import {Icon, pickIcon} from '../icon'
-import {focus, serviceCardPhoto} from '@/lib/v3/visuals'
+import {focus, fromImg, serviceCardPhoto} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
 
@@ -32,7 +32,7 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
         </article>}
         <ul className="ds-service-cards">
           {services.map((service) => {
-            const photo = serviceCardPhoto(service.url)
+            const photo = fromImg(service.image, service.name) || serviceCardPhoto(service.url)
             return (
               <li className="ds-service-card" key={service._key || service.url}>
                 {photo ? <img className="ds-service-media" src={photo.src} alt={photo.alt} loading="lazy" decoding="async" style={focus(photo)} /> : <IconTile icon={pickIcon(service.name, 'zap')} className="ds-service-media" />}

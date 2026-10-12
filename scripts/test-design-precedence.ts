@@ -5,6 +5,7 @@ import nextConfig from '../next.config'
 import {newDesignTitle, preferNewDesign} from '../src/lib/design-precedence'
 import {REDIRECT_SOURCE_SLUGS, RESERVED_PATH_SLUGS, reservedSlugReason} from '../src/lib/reserved-slugs'
 import {toNewDesignPageData} from '../src/lib/v3/page-data'
+import {visualsFor} from '../src/lib/v3/visuals'
 import {schemaTypes} from '../src/sanity/schemaTypes'
 import type {V2Area, V2Page, V2Settings} from '../src/types/v2'
 
@@ -67,11 +68,41 @@ async function main() {
   assert.equal('area' in (data.page || {}), false, 'the area is passed separately, not inside the page')
   assert.deepEqual(data.routes.map((route) => route.name), ['Generator Installation', 'Solar Panel Installation'])
 
+  // 5b. Block photos: the page's own image fields win; the Solar reference map only fills
+  // empty slots; another service never borrows Solar's photos.
+  const photo = (url: string) => ({externalUrl: url, alt: `Photo at ${url}`})
+  const solarPlain = visualsFor({...page, slug: 'solar-panel-installation'}, area)
+  assert.match(solarPlain.hero?.src || '', /gen-hero-rooftop-install/, 'Solar keeps its reference hero when no field is set')
+  assert.equal(solarPlain.jobs.length, 5)
+  assert.equal(solarPlain.reasonStats.length, 3)
+  const withFields = visualsFor({
+    ...page,
+    slug: 'solar-panel-installation',
+    hero: {h1Prefix: 'Solar', image: photo('/hero.webp')},
+    jobPaths: {items: [{title: 'First', image: photo('/job-1.webp')}, {title: 'Second'}]},
+    assessment: {image: photo('/assessment.webp')},
+    why: {stats: [{value: '12', label: 'years'}], image: photo('/why.webp')},
+    brands: {items: ['Acme Solar'], logos: [{brand: 'Acme Solar', logo: photo('/acme.svg')}]},
+    serviceGuide: {title: 'Guide', image: photo('/guide.webp')},
+  }, {...area, sharedGuides: [{title: 'Homes', image: photo('/homes.webp')}]})
+  assert.equal(withFields.hero?.src, '/hero.webp')
+  assert.equal(withFields.jobs[0]?.src, '/job-1.webp', 'a job card photo field wins')
+  assert.match(withFields.jobs[1]?.src || '', /\.webp$/, 'an empty job card keeps the reference photo for its position')
+  assert.equal(withFields.assessment?.src, '/assessment.webp')
+  assert.equal(withFields.reasons?.src, '/why.webp')
+  assert.deepEqual(withFields.reasonStats, [{value: '12', label: 'years'}])
+  assert.equal(withFields.brandLogos['acme solar'], '/acme.svg')
+  assert.deepEqual(withFields.library.map((item) => item?.src), ['/homes.webp', '/guide.webp'])
+  const otherService = visualsFor({...page, slug: 'generator-installation', gallery: [photo('/own-gallery.webp')]}, area)
+  assert.equal(otherService.hero?.src, '/own-gallery.webp', 'another service uses its own photos')
+  assert.deepEqual([otherService.jobs.length, otherService.equipment.length, otherService.reasonStats.length], [0, 0, 0], 'no Solar photos or figures on another service')
+  assert.equal(otherService.assessment, undefined)
+
   // 6. Schema: the current types are untouched and first; every new type starts with "v2" and clashes with none.
   const names = schemaTypes.map((type) => type.name)
   assert.deepEqual(names.slice(0, CURRENT_TYPES.length), CURRENT_TYPES)
   const added = names.slice(CURRENT_TYPES.length)
-  assert.equal(added.length, 22)
+  assert.equal(added.length, 23)
   assert.ok(added.every((name) => name.startsWith('v2')), 'every new-design type name starts with v2')
   assert.equal(new Set(names.map((name) => name.toLowerCase())).size, names.length, 'no two types share a name')
 

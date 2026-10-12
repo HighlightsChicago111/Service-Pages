@@ -7,7 +7,8 @@ export type TitledBody = Keyed & {title: string; body?: string}
 export type LinkedCard = TitledBody & {linkLabel?: string; linkAnchor?: string}
 export type Review = Keyed & {quote: string; author?: string; location?: string; date?: string; sourceUrl?: string; sourceId?: string}
 export type GuideSection = Keyed & {heading?: string; body: string}
-export type Guide = Keyed & {title: string; heading?: string; intro?: string; sections?: GuideSection[]}
+export type Guide = Keyed & {title: string; heading?: string; intro?: string; sections?: GuideSection[]; image?: Img}
+export type Metric = Keyed & {value: string; label: string}
 
 export type V2Settings = {
   companyName: string
@@ -63,7 +64,7 @@ export type V2Page = {
   primaryKeywords?: string[]
   monthlySearchVolume?: number
   secondaryKeywords?: string[]
-  hero: {h1Prefix: string; lede?: string; secondaryCta?: string}
+  hero: {h1Prefix: string; lede?: string; secondaryCta?: string; image?: Img}
   gallery?: Img[]
   form?: {
     issueQuestion?: string
@@ -73,13 +74,13 @@ export type V2Page = {
   jobPaths?: {
     heading?: string
     lede?: string
-    items?: Array<Keyed & {title: string; whoFor?: string; scopeDrivers?: string; firstStep?: string; linkLabel?: string; linkAnchor?: string}>
+    items?: Array<Keyed & {title: string; whoFor?: string; scopeDrivers?: string; firstStep?: string; linkLabel?: string; linkAnchor?: string; image?: Img}>
     note?: string
   }
   equipment?: {
     heading?: string
     lede?: string
-    items?: Array<Keyed & {name: string; description?: string}>
+    items?: Array<Keyed & {name: string; description?: string; image?: Img}>
     footnote?: string
     footnoteLinkLabel?: string
     footnoteLinkAnchor?: string
@@ -93,6 +94,7 @@ export type V2Page = {
     routesHeading?: string
     routes?: TitledBody[]
     routesNote?: string
+    image?: Img
   }
   diagnose?: {
     heading?: string
@@ -103,15 +105,17 @@ export type V2Page = {
     repairBody?: string
     orphanTitle?: string
     orphanBody?: string
+    image?: Img
+    orphanImage?: Img
   }
-  brands?: {heading?: string; lede?: string; items?: string[]; note?: string}
-  why?: {heading?: string; lede?: string; items?: LinkedCard[]}
+  brands?: {heading?: string; lede?: string; items?: string[]; note?: string; logos?: Array<Keyed & {brand: string; logo?: Img}>}
+  why?: {heading?: string; lede?: string; items?: LinkedCard[]; stats?: Metric[]; image?: Img}
   workingPhotos?: Img[]
   process?: {heading?: string; lede?: string; steps?: Array<Keyed & {title: string; body?: string; owners?: ProcessOwner[]}>}
   areasCallout?: string
   otherServices?: {
-    featured?: {tag?: string; title?: string; description?: string}
-    items?: Array<Keyed & {name: string; description?: string; url: string}>
+    featured?: {tag?: string; title?: string; description?: string; image?: Img}
+    items?: Array<Keyed & {name: string; description?: string; url: string; image?: Img}>
   }
   pricing?: {
     heading?: string
@@ -123,6 +127,7 @@ export type V2Page = {
     driversHeading?: string
     drivers?: Array<Keyed & {factor: string; why?: string; when?: string}>
     incentivesNote?: string
+    driversImage?: Img
   }
   included?: {
     heading?: string
@@ -137,6 +142,7 @@ export type V2Page = {
     handover?: string[]
     warrantyHeading?: string
     warranty?: Array<Keyed & {item: string; party: string}>
+    handoverImage?: Img
   }
   faqs?: Faq[]
   cta?: {heading?: string; body?: string; readyHeading?: string; readyItems?: string[]}

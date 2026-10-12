@@ -176,7 +176,19 @@ export const NEW_DESIGN_PAGE_QUERY = defineQuery(`
       "slug": slug.current,
       gallery[]${RESOLVED_IMAGE},
       workingPhotos[]${RESOLVED_IMAGE},
-      "area": area->{..., "slug": slug.current, subAreas[]{..., photo${RESOLVED_IMAGE}}}
+      // Each block's optional photo, resolved to a URL like the galleries.
+      "hero": hero{..., image${RESOLVED_IMAGE}},
+      "jobPaths": jobPaths{..., items[]{..., image${RESOLVED_IMAGE}}},
+      "equipment": equipment{..., items[]{..., image${RESOLVED_IMAGE}}},
+      "assessment": assessment{..., image${RESOLVED_IMAGE}},
+      "diagnose": diagnose{..., image${RESOLVED_IMAGE}, orphanImage${RESOLVED_IMAGE}},
+      "brands": brands{..., logos[]{..., logo${RESOLVED_IMAGE}}},
+      "why": why{..., image${RESOLVED_IMAGE}},
+      "otherServices": otherServices{..., featured{..., image${RESOLVED_IMAGE}}, items[]{..., image${RESOLVED_IMAGE}}},
+      "pricing": pricing{..., driversImage${RESOLVED_IMAGE}},
+      "included": included{..., handoverImage${RESOLVED_IMAGE}},
+      "serviceGuide": serviceGuide{..., image${RESOLVED_IMAGE}},
+      "area": area->{..., "slug": slug.current, subAreas[]{..., photo${RESOLVED_IMAGE}}, sharedGuides[]{..., image${RESOLVED_IMAGE}}}
     },
     "settings": *[_id == "v2-siteSettings"][0]
   }

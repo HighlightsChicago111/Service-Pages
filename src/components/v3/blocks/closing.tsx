@@ -9,7 +9,7 @@ import type {BlockContext} from '../types'
 
 /** D17 Closing CTA: branded photo into navy, proof numerals, "have these ready", brand logos. */
 export function ClosingBlock({ctx}: {ctx: BlockContext}) {
-  const {page, area, settings, tel, phone} = ctx
+  const {page, area, settings, tel, phone, visuals} = ctx
   const cta = page.cta || {}
   const proof = credentials(settings).filter((item) => item.kind !== 'founder')
   const order = ['bbb', 'permits', 'licence', 'other']
@@ -50,7 +50,7 @@ export function ClosingBlock({ctx}: {ctx: BlockContext}) {
 
         {brands.length > 0 && <div className="ds-closing-brands">
           <Eyebrow>{page.brands?.heading}</Eyebrow>
-          <ul>{brands.map((brand) => <LogoTile brand={brand} compact key={brand} />)}</ul>
+          <ul>{brands.map((brand) => <LogoTile brand={brand} compact uploaded={visuals.brandLogos} key={brand} />)}</ul>
         </div>}
       </div>
     </>

@@ -30,6 +30,13 @@ export const LEAD_EXTRA_FIELDS = [
 const anchorField = (name = 'linkAnchor', title = 'Link target on this page') =>
   defineField({name, title, type: 'string', options: {list: PAGE_ANCHORS}})
 
+/**
+ * An optional photo for one slot of the page. When it is empty the page falls back
+ * to its own hero photos, or shows an icon tile; it never borrows another service's photo.
+ */
+export const photoField = (name: string, title: string, description?: string) =>
+  defineField({name, title, type: 'v2Image', description: description || 'Optional. Leave empty to use the page’s own photos or an icon.'})
+
 export const v2Faq = defineType({
   name: 'v2Faq', title: 'FAQ', type: 'object',
   fields: [
@@ -80,8 +87,9 @@ export const v2JobPath = defineType({
     defineField({name: 'firstStep', title: 'First step', type: 'string'}),
     defineField({name: 'linkLabel', title: 'Link text', type: 'string'}),
     anchorField(),
+    photoField('image', 'Card photo'),
   ],
-  preview: {select: {title: 'title', subtitle: 'whoFor'}},
+  preview: {select: {title: 'title', subtitle: 'whoFor', media: 'image.image'}},
 })
 
 export const v2EquipmentItem = defineType({
@@ -89,8 +97,9 @@ export const v2EquipmentItem = defineType({
   fields: [
     defineField({name: 'name', title: 'Name', type: 'string', validation: (rule) => rule.required()}),
     defineField({name: 'description', title: 'Short description', type: 'string'}),
+    photoField('image', 'Tile photo'),
   ],
-  preview: {select: {title: 'name', subtitle: 'description'}},
+  preview: {select: {title: 'name', subtitle: 'description', media: 'image.image'}},
 })
 
 export const v2ComparisonRow = defineType({
@@ -157,8 +166,9 @@ export const v2LinkedService = defineType({
     defineField({name: 'name', title: 'Name', type: 'string', validation: (rule) => rule.required()}),
     defineField({name: 'description', title: 'Description', type: 'text', rows: 2}),
     defineField({name: 'url', title: 'URL', type: 'url', validation: (rule) => rule.required()}),
+    photoField('image', 'Card photo'),
   ],
-  preview: {select: {title: 'name', subtitle: 'url'}},
+  preview: {select: {title: 'name', subtitle: 'url', media: 'image.image'}},
 })
 
 export const v2Review = defineType({
@@ -200,8 +210,18 @@ export const v2Guide = defineType({
     defineField({name: 'heading', title: 'Panel heading', type: 'string'}),
     defineField({name: 'intro', title: 'Intro paragraph', type: 'text', rows: 3}),
     defineField({name: 'sections', title: 'Sections', type: 'array', of: [defineArrayMember({type: 'v2GuideSection'})]}),
+    photoField('image', 'Tab photo'),
   ],
-  preview: {select: {title: 'title', subtitle: 'heading'}},
+  preview: {select: {title: 'title', subtitle: 'heading', media: 'image.image'}},
+})
+
+export const v2BrandLogo = defineType({
+  name: 'v2BrandLogo', title: 'Brand logo', type: 'object',
+  fields: [
+    defineField({name: 'brand', title: 'Brand', description: 'Exactly as written in the Brands list.', type: 'string', validation: (rule) => rule.required()}),
+    defineField({name: 'logo', title: 'Official logo file', type: 'v2Image', validation: (rule) => rule.required()}),
+  ],
+  preview: {select: {title: 'brand', media: 'logo.image'}},
 })
 
 export const v2SubArea = defineType({
@@ -226,5 +246,5 @@ export const v2TrustMetric = defineType({
 export const objectTypes = [
   v2Faq, v2Image, v2TitledBody, v2LinkedCard, v2JobPath, v2EquipmentItem, v2ComparisonRow, v2SymptomRow,
   v2ProcessStep, v2PriceRow, v2CostDriver, v2WarrantyRow, v2LinkedService, v2Review, v2ExtraFormField,
-  v2GuideSection, v2Guide, v2SubArea, v2TrustMetric,
+  v2GuideSection, v2Guide, v2SubArea, v2TrustMetric, v2BrandLogo,
 ]
