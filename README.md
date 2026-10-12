@@ -36,7 +36,7 @@ To seed an empty dataset, run `pnpm source:validate` and then `pnpm content:impo
 
 ## Testing before merging
 
-Every push to `main` deploys straight to production, so run these before merging:
+Every push to `main` deploys straight to production. The **Test** workflow (`.github/workflows/test.yaml`) runs the checks below on every pull request and push to `main`, builds the site, runs the indexing and thank-you tests against that build, and reports parity with production in the run summary. To run them yourself:
 
 ```powershell
 pnpm typecheck

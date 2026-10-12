@@ -1,7 +1,28 @@
 import assert from 'node:assert/strict'
 
 const baseUrl = (process.argv[2] || process.env.INDEXING_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
-const expectedPageCount = Number(process.env.EXPECTED_SERVICE_PAGE_COUNT || 40)
+const projectId = process.env.NEXT_SANITY_PROJECT_ID || '5w5623jq'
+const dataset = process.env.NEXT_SANITY_DATASET || 'production'
+
+// Counted straight from Sanity, independently of the app's own queries, so a page
+// that silently drops out of the sitemap still fails: every published current-design
+// page plus every new-design page that can render, one per URL.
+const PUBLISHED_SERVICE_URLS_QUERY = `count(array::unique(
+  *[_type == "servicePage" && area->slug.current == "chicago" && defined(service->slug.current)].service->slug.current +
+  *[_type == "v2ServicePage" && area->slug.current == "chicago" && defined(slug.current) && defined(*[_id == "v2-siteSettings"][0]._id)].slug.current
+))`
+
+async function expectedServicePageCount(): Promise<number> {
+  if (process.env.EXPECTED_SERVICE_PAGE_COUNT) return Number(process.env.EXPECTED_SERVICE_PAGE_COUNT)
+  const url = new URL(`https://${projectId}.apicdn.sanity.io/v2026-03-01/data/query/${dataset}`)
+  url.searchParams.set('query', PUBLISHED_SERVICE_URLS_QUERY)
+  url.searchParams.set('perspective', 'published')
+  const response = await fetch(url)
+  assert.equal(response.status, 200, 'Sanity must answer the published page count')
+  const {result} = await response.json() as {result: number}
+  assert.ok(Number.isInteger(result) && result > 0, 'Sanity must report at least one published service page')
+  return result
+}
 
 function decodeXml(value: string): string {
   return value.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -21,15 +42,19 @@ function titleFrom(html: string): string {
 }
 
 function serviceLinks(html: string): string[] {
-  return [...html.matchAll(/<a\b[^>]*\bhref="(\/services\/[^"#?]+)"/gi)]
-    .map((match) => match[1])
+  // The new design links related services with absolute URLs on the public host.
+  return [...html.matchAll(/<a\b[^>]*\bhref="(?:https:\/\/www\.highlightschicago\.com)?(\/services\/[^"#?]+)"/gi)]
+    .map((match) => match[1].replace(/\/$/, ''))
     .filter((href) => href.split('/').filter(Boolean).length === 2)
 }
 
 function relatedServiceLinks(html: string): string[] {
-  const section = html.match(/<section\s+class="wrap"\s+id="other-services">([\s\S]*?)<\/section>/i)?.[1] || ''
+  const section = html.match(/<section\b[^>]*\bid="other-services"[^>]*>([\s\S]*?)<\/section>/i)?.[1] || ''
   return serviceLinks(section)
 }
+
+/** Pages in the new design (Design System v3) render inside a .ds wrapper. */
+const isNewDesign = (html: string) => /<div class="ds[ "]/.test(html)
 
 function breadcrumbLists(html: string): Array<{itemListElement?: Array<{position?: number; item?: string}>}> {
   return [...html.matchAll(/<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)]
@@ -44,6 +69,7 @@ function breadcrumbLists(html: string): Array<{itemListElement?: Array<{position
 }
 
 async function run() {
+  const expectedPageCount = await expectedServicePageCount()
   const sitemapResponse = await fetch(`${baseUrl}/services/sitemap.xml`)
   assert.equal(sitemapResponse.status, 200, 'Sitemap must return 200')
   const sitemap = await sitemapResponse.text()
@@ -77,7 +103,13 @@ async function run() {
     assert.equal(breadcrumbs[0].itemListElement?.at(-1)?.item, publicUrl, `${pathname} final breadcrumb must equal its canonical`)
 
     const relatedLinks = relatedServiceLinks(html)
-    assert.equal(new Set(relatedLinks).size, 4, `${pathname} must link to four distinct published related services`)
+    if (isNewDesign(html)) {
+      // The new design shows the page's own related services (up to four), never padded.
+      const distinct = new Set(relatedLinks).size
+      assert.ok(distinct >= 1 && distinct <= 4, `${pathname} must link to one to four distinct related services, found ${distinct}`)
+    } else {
+      assert.equal(new Set(relatedLinks).size, 4, `${pathname} must link to four distinct published related services`)
+    }
     for (const href of relatedLinks) {
       assert.ok(servicePaths.has(href), `${pathname} links to unpublished service route ${href}`)
     }
@@ -89,7 +121,7 @@ async function run() {
     assert.equal(new URL(legacyLocation, baseUrl).pathname, pathname, `${pathname}/chicago must redirect to ${pathname}`)
   }
 
-  console.log(`Indexing regression test passed for ${serviceLocations.length} service pages.`)
+  console.log(`Indexing regression test passed for ${serviceLocations.length} service pages (expected ${expectedPageCount} from Sanity).`)
 }
 
 run().catch((error: unknown) => {
