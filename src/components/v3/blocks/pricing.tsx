@@ -30,7 +30,7 @@ export function PricingBlock({ctx}: {ctx: BlockContext}) {
       <SectionHead eyebrow="Cost & permits" id="pricing-title" title={title} lede={pricing.lede} editorial={editorial} />
       {pricing.caption && <p className="ds-source"><IconBadge icon="cityStar" tone="blue" size={32} /><b>Data source</b><span>{pricing.caption}</span></p>}
 
-      {stats.length > 0 && <ul className="ds-price-stats">
+      {stats.length > 0 && <ul className="ds-price-stats" style={{'--cards': Math.min(3, stats.length)} as CSSProperties}>
         {stats.map((stat, index) => {
           const featured = index === 0
           return (

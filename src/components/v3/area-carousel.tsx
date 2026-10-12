@@ -18,10 +18,11 @@ export function AreaCarousel({areas}: {areas: AreaCard[]}) {
     const first = element?.children[0] as HTMLElement | undefined
     if (!element || !first) return
     const gap = parseFloat(getComputedStyle(element).columnGap || '0') || 0
-    const step = first.offsetWidth + gap
+    // Fractional width: offsetWidth rounds, which made six visible cards count as five.
+    const step = first.getBoundingClientRect().width + gap
     const from = Math.min(areas.length, Math.round(element.scrollLeft / step) + 1)
     // n cards fill n * width + (n - 1) * gap, so add one gap back before dividing.
-    const visible = Math.max(1, Math.floor((element.clientWidth + gap + 1) / step))
+    const visible = Math.max(1, Math.round((element.clientWidth + gap) / step))
     setRange({from, to: Math.min(areas.length, from + visible - 1)})
   }, [areas.length])
 
