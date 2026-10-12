@@ -20,7 +20,9 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('serviceArea').title('Service areas'),
       // A URL shows its published "New design" page when there is one, otherwise its
       // "Current design" page. Publishing or unpublishing a new-design page switches it.
+      // The id keeps the old address (/structure/servicePage) and editors' bookmarks working.
       S.listItem()
+        .id('servicePage')
         .title('Service pages')
         .child(
           S.list()
@@ -28,6 +30,7 @@ export const structure: StructureResolver = (S) =>
             .items([
               S.documentTypeListItem('servicePage').title('Current design'),
               S.listItem()
+                .id('newDesign')
                 .title('New design')
                 .child(
                   S.list()
