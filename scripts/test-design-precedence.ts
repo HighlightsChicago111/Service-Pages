@@ -84,6 +84,11 @@ async function main() {
   const noindex = sources.filter((file) => /noindex|index:\s*false/.test(fs.readFileSync(file, 'utf8')))
   assert.deepEqual(noindex, [], `noindex found in ${noindex.join(', ')}`)
 
+  // 8. One Inter only. A second next/font Inter (e.g. with the opsz axis) registers another
+  // "Inter" for the whole page and visibly changes the current pages' headings.
+  const interLoaders = sources.concat('src/app/layout.tsx').filter((file) => /\bInter\(\s*\{/.test(fs.readFileSync(file, 'utf8')))
+  assert.deepEqual(interLoaders, ['src/app/layout.tsx'], `Inter must only be loaded by the root layout, found in ${interLoaders.join(', ')}`)
+
   console.log('Design precedence test passed: redirect slugs in sync, one page per URL, titles, schema names and indexing are safe.')
 }
 
