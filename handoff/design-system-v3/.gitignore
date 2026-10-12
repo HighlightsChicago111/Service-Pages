@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+.vercel/
+.sanity/
+dist/
+*.log
+*.tsbuildinfo
+
+# Secrets. Only the documented template is committed.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
