@@ -1,0 +1,122 @@
+name: Test
+
+# Runs on every pull request and every push to main. It needs no secrets: the
+# site reads published content from Sanity's public API, and with no Resend key
+# or webhook URL the lead form cannot send a real lead from CI.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+  SANITY_TELEMETRY_DISABLED: '1'
+
+jobs:
+  test:
+    name: Typecheck, lint, tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: |
+          pnpm test:design
+          pnpm test:lead
+          pnpm test:indexing-contract
+          pnpm test:collection-data
+
+      - name: Preview-marker test (reads the live Sanity dataset)
+        run: pnpm test:preview
+
+      - name: Validate the Sanity schema
+        run: pnpm exec sanity schema validate
+
+      - name: Build the site
+        run: pnpm build
+
+      - name: Build the Studio
+        run: pnpm studio:build
+
+      - name: Start the built site
+        shell: bash
+        run: |
+          pnpm start > next-start.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail --output /dev/null http://localhost:3000/services; then
+              echo "Site is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "The built site did not start within 60 seconds" >&2
+          cat next-start.log >&2
+          exit 1
+
+      - name: Indexing test (sitemap, canonicals, titles, breadcrumbs, related links, /chicago redirects)
+        run: pnpm test:indexing http://localhost:3000
+
+      - name: Thank-you page test
+        run: pnpm test:thank-you http://localhost:3000
+
+      # pnpm test:smoke is not run here yet: it currently fails on production too
+      # (46 brand logo files are missing) and it needs SANITY_REVALIDATE_SECRET.
+      # Add it once the logos are fixed.
+
+      # Informational: compares this build with production page by page. Phase 0
+      # must match exactly; later changes that alter pages on purpose will differ,
+      # so a difference is reported here without failing the run.
+      - name: Parity with production (informational)
+        id: parity
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm check:parity http://localhost:3000 2>&1 | tee parity.log
+
+      - name: Report parity result
+        if: always() && steps.parity.outcome != 'skipped'
+        shell: bash
+        run: |
+          {
+            echo "### Parity with production: ${{ steps.parity.outcome == 'success' && 'identical' || 'differences found' }}"
+            echo '```'
+            tail -n 45 parity.log 2>/dev/null || echo "No parity output."
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show the site log on failure
+        if: failure()
+        run: cat next-start.log || true

@@ -54,6 +54,7 @@ async function run() {
   assert.match(email.text, /Email: qa@example.com/)
   assert.match(email.text, /Phone: \(773\) 555-0100/)
   assert.match(email.text, /Request: Quote only/)
+  assert.doesNotMatch(email.text, /Existing system|Symptom|Details/, 'current-design leads carry no new-design lines')
 
   global.fetch = async () => new Response(null, {status: 429})
   const upstreamFailure = await POST(leadRequest({name: 'QA Customer', phone: '7735550100'}))
@@ -83,6 +84,29 @@ async function run() {
   assert.equal(webhookBody.service, 'Generator Installation')
   assert.equal(webhookBody.sourceUrl, 'https://www.highlightschicago.com/services/generator-installation')
   assert.match(webhookBody.submittedAt, /^\d{4}-\d{2}-\d{2}T/)
+  // Current-design leads reach the CRM with exactly the fields they always had.
+  assert.deepEqual(Object.keys(webhookBody).sort(), ['address', 'area', 'buildingType', 'email', 'issue', 'name', 'phone', 'service', 'sourceUrl', 'submittedAt'])
+
+  // The new-design quote form's optional answers reach both the CRM and the email when given.
+  calls.length = 0
+  const newDesignLead = await POST(leadRequest({
+    name: 'QA Customer',
+    phone: '(773) 555-0100',
+    service: 'Solar Panel Installation',
+    area: 'Chicago',
+    existingSystem: 'Yes, panels on the roof',
+    symptom: 'Inverter shows a fault',
+    details: '',
+  }, 'https://www.highlightschicago.com/services/solar-panel-installation'))
+  assert.equal(newDesignLead.status, 200)
+  const newDesignWebhook = JSON.parse(String(calls[0].init?.body)) as Record<string, string>
+  assert.equal(newDesignWebhook.existingSystem, 'Yes, panels on the roof')
+  assert.equal(newDesignWebhook.symptom, 'Inverter shows a fault')
+  assert.equal('details' in newDesignWebhook, false, 'an empty optional answer is left out')
+  const newDesignEmail = JSON.parse(String(calls[1].init?.body)) as {text: string}
+  assert.match(newDesignEmail.text, /Existing system: Yes, panels on the roof/)
+  assert.match(newDesignEmail.text, /Symptom: Inverter shows a fault/)
+  assert.doesNotMatch(newDesignEmail.text, /Details:/)
 
   // A slow webhook must not delay the email: Resend is called while the hook is still pending.
   let releaseWebhook: () => void = () => {}

@@ -1,5 +1,6 @@
 export type CollectionItem = {
   _id?: string | null
+  design?: 'current' | 'new' | null
   title?: string | null
   serviceSlug?: string | null
   areaSlug?: string | null

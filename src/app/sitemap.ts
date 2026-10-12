@@ -1,6 +1,7 @@
 import type {MetadataRoute} from 'next'
 import {metadataClient} from '@/sanity/lib/client'
 import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
+import {preferNewDesign, type ServiceDesign} from '@/lib/design-precedence'
 import {PRIMARY_AREA_SLUG, PUBLIC_SITE_ORIGIN, SERVICES_PATH, servicePageUrl} from '@/lib/service-urls'
 
 // Next serves this at /services/sitemap.xml because basePath is applied to the
@@ -8,10 +9,11 @@ import {PRIMARY_AREA_SLUG, PUBLIC_SITE_ORIGIN, SERVICES_PATH, servicePageUrl} fr
 // canonical host (NEXT_SITE_URL, e.g. https://www.highlightschicago.com).
 export const revalidate = 3600
 
-type Route = {serviceSlug?: string | null; areaSlug?: string | null; _updatedAt?: string | null}
+type Route = {serviceSlug?: string | null; areaSlug?: string | null; _updatedAt?: string | null; design?: ServiceDesign | null}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages = (await metadataClient.fetch<Route[]>(SERVICE_INDEX_QUERY)) || []
+  // Both designs, one entry per URL (a published new-design page wins).
+  const pages = preferNewDesign((await metadataClient.fetch<Route[]>(SERVICE_INDEX_QUERY)) || [])
   const servicePages = pages
     .filter((page): page is Route & {serviceSlug: string; areaSlug: string} => Boolean(page.serviceSlug && page.areaSlug === PRIMARY_AREA_SLUG))
     .map((page) => ({

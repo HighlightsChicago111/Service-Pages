@@ -10,6 +10,10 @@ const serviceContentTypes = new Set([
   'serviceArea',
   'siteSettings',
   'servicePageTemplate',
+  // New design (Design System v3). Publishing one of these switches or refreshes a URL.
+  'v2ServicePage',
+  'v2ServiceArea',
+  'v2SiteSettings',
 ])
 
 export async function POST(request: NextRequest) {
