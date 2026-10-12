@@ -2,6 +2,10 @@ import {randomUUID} from 'node:crypto'
 import {NextResponse} from 'next/server'
 
 const allowedFields = ['name', 'email', 'phone', 'address', 'buildingType', 'issue', 'service', 'area'] as const
+// Extra questions only the new-design quote form asks. They are added to the lead
+// only when answered, so current-design leads reach the CRM exactly as before.
+const optionalFields = ['existingSystem', 'symptom', 'details'] as const
+const optionalFieldLabels: Record<(typeof optionalFields)[number], string> = {existingSystem: 'Existing system', symptom: 'Symptom', details: 'Details'}
 const resendEndpoint = 'https://api.resend.com/emails'
 
 function configured(value: string | undefined) {
@@ -47,17 +51,23 @@ export async function POST(request: Request) {
   if (!payload || payload.website) return NextResponse.json({ok: true})
   const clean = Object.fromEntries(allowedFields.map((field) => [field, cleanField(payload[field])])) as Record<(typeof allowedFields)[number], string>
   if (!clean.name || clean.phone.replace(/\D/g, '').length < 7) return NextResponse.json({message: 'A valid name and phone are required'}, {status: 400})
+  const extras = Object.fromEntries(
+    optionalFields.map((field) => [field, cleanField(payload[field])]).filter(([, value]) => value),
+  ) as Partial<Record<(typeof optionalFields)[number], string>>
 
   // Start the CRM forward without waiting on it, so a slow hook never delays the
   // email. The response still waits for it (bounded by its own timeout) so the
   // serverless function is not frozen before the forward is sent.
-  const webhookDelivery = forwardToLeadWebhook(clean, cleanField(request.headers.get('referer')))
-  const response = await sendLeadEmail(clean)
+  const webhookDelivery = forwardToLeadWebhook({...clean, ...extras}, cleanField(request.headers.get('referer')))
+  const response = await sendLeadEmail(clean, extras)
   await webhookDelivery
   return response
 }
 
-async function sendLeadEmail(clean: Record<(typeof allowedFields)[number], string>) {
+async function sendLeadEmail(
+  clean: Record<(typeof allowedFields)[number], string>,
+  extras: Partial<Record<(typeof optionalFields)[number], string>>,
+) {
   const apiKey = configured(process.env.RESEND_API_KEY)
   const from = configured(process.env.LEAD_FROM_EMAIL)
   const recipients = notificationRecipients(configured(process.env.LEAD_NOTIFICATION_EMAIL))
@@ -73,6 +83,7 @@ async function sendLeadEmail(clean: Record<(typeof allowedFields)[number], strin
     `Address: ${clean.address || 'Not provided'}`,
     `Building type: ${clean.buildingType || 'Not provided'}`,
     `Request: ${clean.issue || 'Not provided'}`,
+    ...optionalFields.flatMap((field) => (extras[field] ? [`${optionalFieldLabels[field]}: ${extras[field]}`] : [])),
     `Service: ${clean.service || 'Not provided'}`,
     `Area: ${clean.area || 'Not provided'}`,
     `Submitted: ${new Date().toISOString()}`,

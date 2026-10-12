@@ -1,16 +1,54 @@
 import {defineQuery} from 'next-sanity'
 
-export const SERVICE_INDEX_QUERY = defineQuery(`
-  *[_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)] | order(service->monthlySearchVolume desc) {
-    _id,
-    _updatedAt,
-    title,
+// Two designs share the service URLs. A new-design (v2ServicePage) page only counts
+// once it can render: it has a slug and an area, and the new design's settings
+// document exists. Callers keep one entry per URL with preferNewDesign().
+const NEW_DESIGN_PAGE = `_type == "v2ServicePage" && defined(slug.current) && defined(area->slug.current) && defined(*[_id == "v2-siteSettings"][0]._id)`
+
+const SERVICE_ROUTES = `
+  *[_type == "servicePage"] {
+    "design": "current",
     "serviceSlug": service->slug.current,
     "areaSlug": area->slug.current,
     "serviceName": service->name,
-    "areaName": area->name,
-    "monthlySearchVolume": service->monthlySearchVolume,
-    "metaDescription": seo.description,
+    "parentName": service->parentName
+  } + *[${NEW_DESIGN_PAGE}] {
+    "design": "new",
+    "serviceSlug": slug.current,
+    "areaSlug": area->slug.current,
+    "serviceName": name,
+    parentName
+  }
+`
+
+const RESOLVED_IMAGE = `{..., "resolvedUrl": coalesce(image.asset->url, externalUrl)}`
+
+export const SERVICE_INDEX_QUERY = defineQuery(`
+  *[
+    (_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)) ||
+    (${NEW_DESIGN_PAGE})
+  ] | order(coalesce(service->monthlySearchVolume, monthlySearchVolume) desc) {
+    _id,
+    _updatedAt,
+    "design": select(_type == "v2ServicePage" => "new", "current"),
+    _type == "servicePage" => {
+      title,
+      "serviceSlug": service->slug.current,
+      "areaSlug": area->slug.current,
+      "serviceName": service->name,
+      "areaName": area->name,
+      "monthlySearchVolume": service->monthlySearchVolume,
+      "metaDescription": seo.description
+    },
+    _type == "v2ServicePage" => {
+      "title": seo.title,
+      "serviceSlug": slug.current,
+      "areaSlug": area->slug.current,
+      "serviceName": name,
+      "areaName": area->name,
+      monthlySearchVolume,
+      "metaDescription": seo.description
+    },
     "cardImage": coalesce(
       gallery[0].image.asset->url,
       gallery[0].externalUrl,
@@ -24,12 +62,7 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
 
 export const SERVICE_PAGE_QUERY = defineQuery(`
   {
-    "serviceRoutes": *[_type == "servicePage"] {
-      "serviceSlug": service->slug.current,
-      "areaSlug": area->slug.current,
-      "serviceName": service->name,
-      "parentName": service->parentName
-    },
+    "serviceRoutes": ${SERVICE_ROUTES},
     "page": *[
       _type == "servicePage" &&
       service->slug.current == $serviceSlug &&
@@ -130,6 +163,30 @@ export const SERVICE_PAGE_METADATA_QUERY = defineQuery(`
     "title": seo.title,
     "description": seo.description,
     "serviceName": service->name,
+    "areaName": area->name
+  }
+`)
+
+/** The new-design page for a URL, with everything the Design System v3 template renders. */
+export const NEW_DESIGN_PAGE_QUERY = defineQuery(`
+  {
+    "serviceRoutes": ${SERVICE_ROUTES},
+    "page": *[${NEW_DESIGN_PAGE} && slug.current == $serviceSlug && area->slug.current == $areaSlug][0] {
+      ...,
+      "slug": slug.current,
+      gallery[]${RESOLVED_IMAGE},
+      workingPhotos[]${RESOLVED_IMAGE},
+      "area": area->{..., "slug": slug.current, subAreas[]{..., photo${RESOLVED_IMAGE}}}
+    },
+    "settings": *[_id == "v2-siteSettings"][0]
+  }
+`)
+
+export const NEW_DESIGN_METADATA_QUERY = defineQuery(`
+  *[${NEW_DESIGN_PAGE} && slug.current == $serviceSlug && area->slug.current == $areaSlug][0] {
+    "title": seo.title,
+    "description": seo.description,
+    "serviceName": name,
     "areaName": area->name
   }
 `)
