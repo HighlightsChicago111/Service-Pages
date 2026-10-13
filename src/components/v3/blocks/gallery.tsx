@@ -20,7 +20,7 @@ export function GalleryBlock({ctx}: {ctx: BlockContext}) {
           const caption = photo.label || (photo.illustrative ? `Illustrative photo of ${page.name.toLowerCase()}` : photo.alt)
           return (
             <li key={`${photo.src}-${index}`}>
-              <PhotoFrame photo={photo} pill={false}>
+              <PhotoFrame photo={photo} pill={false} credit={false}>
                 <figcaption className="ds-gallery-caption"><Icon name="camera" size={16} />{caption}</figcaption>
               </PhotoFrame>
             </li>

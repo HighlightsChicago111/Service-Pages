@@ -143,10 +143,14 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     handover: fromImg(page.included?.handoverImage, alt('Handover')) || mapped.handover,
     serviceGuide: fromImg(page.serviceGuide?.image, alt('Service guide')) || mapped.serviceGuide,
   }
-  const pagePhotos = [...(page.gallery || []), ...(page.workingPhotos || [])]
+  const toPhotos = (images: Img[]) => images
     .map((image) => fromImg(image, `${page.name} in ${area.name}`))
     .filter((photo): photo is Photo => Boolean(photo))
     .filter((photo, index, all) => all.findIndex((other) => other.src === photo.src) === index)
+  const pagePhotos = toPhotos([...(page.gallery || []), ...(page.workingPhotos || [])])
+  // Photo gallery (playbook D10, Part G): Highlights' own job photos first, then the hero photos,
+  // so the five-photo layout never drops a real job for an illustrative one.
+  const workPhotos = toPhotos([...(page.workingPhotos || []), ...(page.gallery || [])])
   const crew = (page.gallery || [])
     .map((image) => {
       const photo = fromImg(image, `${page.name} in ${area.name}`)
@@ -175,7 +179,7 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     jobs: own.jobs || [],
     equipment: own.equipment || [],
     reasonStats: own.reasonStats || [],
-    gallery: own.gallery || pagePhotos,
+    gallery: own.gallery || workPhotos,
     crew,
     library,
     brandLogos,

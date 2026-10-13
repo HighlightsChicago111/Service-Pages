@@ -87,12 +87,14 @@ export function Copy({value, show, as: Tag = 'p', className}: {value?: string; s
 }
 
 /** A photo in a 10px-radius frame; AI or stock images carry the "Illustrative photo" pill (playbook G.2). */
-export function PhotoFrame({photo, className, sizes, eager, pill = true, children}: {
+export function PhotoFrame({photo, className, sizes, eager, pill = true, credit = true, children}: {
   photo?: Photo
   className?: string
   sizes?: string
   eager?: boolean
   pill?: boolean | string
+  /** Show the photo's own credit (e.g. "Photo from Highlights Chicago's Yelp page"); playbook Part G, own photos credited. */
+  credit?: boolean
   children?: ReactNode
 }) {
   if (!photo) return null
@@ -101,6 +103,7 @@ export function PhotoFrame({photo, className, sizes, eager, pill = true, childre
     <figure className={className ? `ds-photo ${className}` : 'ds-photo'}>
       <img src={photo.src} alt={photo.alt} title={photo.label || photo.alt} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : undefined} decoding="async" sizes={sizes} style={focus(photo)} />
       {pill !== false && pillText && <figcaption className="ds-pill-caption">{pillText}</figcaption>}
+      {credit && photo.credit && !(pill !== false && pillText) && <figcaption className="ds-pill-caption ds-pill-caption--credit">{photo.credit}</figcaption>}
       {children}
     </figure>
   )
