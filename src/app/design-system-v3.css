@@ -480,7 +480,7 @@
 .mm-avenue { stroke: #d9dde3; stroke-width: 10; }
 .mm-park { fill: #dcebd3; }
 .mm-lake { fill: #dbe5f0; }
-.mm-lake-label, .mm-road-label { font: 600 8px/1 sans-serif; letter-spacing: .14em; fill: #7a8696; }
+.mm-lake-label, .mm-road-label { font: 600 8px/1 var(--f-body); letter-spacing: .14em; fill: #7a8696; }
 .mm-halo { fill: #223d9026; }
 .mm-pin { fill: var(--c-blue); }
 .mm-pin-dot { fill: #fff; }

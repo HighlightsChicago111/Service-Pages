@@ -55,7 +55,7 @@ export function SymptomsBlock({ctx}: {ctx: BlockContext}) {
           <ConfirmNotes notes={repair.notes} show={editorial} />
         </article>}
         {diagnose.orphanTitle && <article className="ds-info-card ds-info-card--navy">
-          {visuals.orphan && <PhotoFrame photo={visuals.orphan} pill={false} className="ds-info-thumb" />}
+          {visuals.orphan && <PhotoFrame photo={visuals.orphan} className="ds-info-thumb" />}
           <div className="ds-info-head"><IconBadge icon="fileX" tone="navy" /><h3 className="ds-h4">{diagnose.orphanTitle}</h3></div>
           <p>{orphan.text}</p>
           {orphanChips.length > 0 && <ul className="ds-chip-grid">{orphanChips.map((chip) => <li key={chip}><Icon name={pickIcon(chip, 'fileText')} size={18} />{chip}</li>)}</ul>}
