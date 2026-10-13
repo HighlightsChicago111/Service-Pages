@@ -29,6 +29,9 @@ export type V2Settings = {
   reviewsDisclaimer?: string
   formSubtitle?: string
   formNote?: string
+  credentialsImage?: Img
+  faqImage?: Img
+  closingImage?: Img
 }
 
 export type V2Area = {

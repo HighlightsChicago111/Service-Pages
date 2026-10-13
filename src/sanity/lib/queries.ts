@@ -190,7 +190,7 @@ export const NEW_DESIGN_PAGE_QUERY = defineQuery(`
       "serviceGuide": serviceGuide{..., image${RESOLVED_IMAGE}},
       "area": area->{..., "slug": slug.current, subAreas[]{..., photo${RESOLVED_IMAGE}}, sharedGuides[]{..., image${RESOLVED_IMAGE}}}
     },
-    "settings": *[_id == "v2-siteSettings"][0]
+    "settings": *[_id == "v2-siteSettings"][0]{..., credentialsImage${RESOLVED_IMAGE}, faqImage${RESOLVED_IMAGE}, closingImage${RESOLVED_IMAGE}}
   }
 `)
 

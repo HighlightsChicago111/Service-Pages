@@ -211,6 +211,10 @@ export const v2SiteSettings = defineType({
     list('trustMetrics', 'Trust metrics', 'v2TrustMetric'), list('trustCards', 'Trust cards', 'v2TitledBody'),
     str('reviewsHeading', 'Reviews heading'), text('reviewsDisclaimer', 'Reviews note', 2),
     str('formSubtitle', 'Form subtitle'), str('formNote', 'Form note'),
+    // Shared block photos, used on every new-design page (playbook D7, D16, D17). Empty = the design's default photo.
+    photoField('credentialsImage', "08 · Credentials photo (Who you're actually calling?)", 'Optional. A Highlights van or crew photo; empty uses the default van photo.'),
+    photoField('faqImage', '17 · FAQ photo card', 'Optional. Empty uses the default photo.'),
+    photoField('closingImage', '18 · Closing CTA background', 'Optional. A wide branded photo; empty uses the default van and skyline photo.'),
   ],
   preview: {prepare: () => ({title: 'New design settings'})},
 })

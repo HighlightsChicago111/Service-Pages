@@ -1,7 +1,7 @@
 import {Button, ConfirmNotes, Eyebrow, GoogleG, IconBadge, PhotoFrame, Stars} from '../atoms'
 import {Icon} from '../icon'
 import {credentials, splitConfirm} from '@/lib/v3/content'
-import {SHARED_PHOTOS} from '@/lib/v3/visuals'
+import {SHARED_PHOTOS, fromImg} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
 import type {Faq} from '@/types/v2'
 import type {BlockContext} from '../types'
@@ -21,7 +21,7 @@ export function FaqBlock({ctx}: {ctx: BlockContext}) {
       <aside className="ds-faq-rail">
         <Eyebrow>FAQs · {faqs.length} questions</Eyebrow>
         <h2 className="ds-h2" id="faq-title">{questionHeading(`${page.name} in ${area.name} — FAQs`)}</h2>
-        <PhotoFrame photo={SHARED_PHOTOS.techTesting} pill={false} className="ds-faq-photo">
+        <PhotoFrame photo={fromImg(ctx.settings.faqImage, 'Highlights Chicago electrician') || SHARED_PHOTOS.techTesting} pill={false} className="ds-faq-photo">
           <div className="ds-faq-photo-body"><p className="ds-h5">Didn&apos;t find your question?</p><Button href={tel} tone="light" icon="phone" size="m">Call {phone}</Button></div>
         </PhotoFrame>
         <div className="ds-proof-card">
