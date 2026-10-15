@@ -8,8 +8,10 @@ const FOOTER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60
 
 const primaryLinks = [
   {label: 'Home', href: `${LIVE_SITE}/`},
-  {label: 'About Us', href: `${LIVE_SITE}/about-us`},
+  {label: 'About us', href: `${LIVE_SITE}/about-us`},
   {label: 'Services', href: `${LIVE_SITE}/services`},
+  {label: 'Service Areas', href: `${LIVE_SITE}/service-areas`},
+  {label: 'Reviews', href: `${LIVE_SITE}/reviews`},
   {label: 'Blog', href: `${LIVE_SITE}/blog`},
   {label: 'Learning Center', href: `${LIVE_SITE}/learning-center`},
 ]
@@ -46,12 +48,12 @@ export function CollectionHeader() {
           <nav className="collection-desktop-nav" aria-label="Primary navigation">
             {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
           </nav>
-          <a className="collection-contact-button" href={`${LIVE_SITE}/contact-us`}>Contact us</a>
+          <a className="collection-contact-button" href={`${LIVE_SITE}/contact-us`}>Book Now</a>
           <details className="collection-mobile-menu">
             <summary aria-label="Open navigation menu"><span /><span /><span /></summary>
             <nav aria-label="Mobile navigation">
               {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
-              <a href={`${LIVE_SITE}/contact-us`}>Contact us</a>
+              <a href={`${LIVE_SITE}/contact-us`}>Book Now</a>
             </nav>
           </details>
         </div>

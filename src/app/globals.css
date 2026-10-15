@@ -99,6 +99,7 @@ a{color:var(--brand);text-underline-offset:3px}
 .collection-desktop-nav a:hover{color:#9ec837}
 .collection-contact-button{background:#9ec837;border-color:#9ec837;border-radius:30px;color:#181515;font-size:18px;font-weight:500;line-height:1.5;padding:12px 32px;transition:.35s}
 .collection-contact-button:hover{background:#fff;border-color:#9ec837;color:#9ec837}
+@media(max-width:1160px){.collection-desktop-nav,.collection-contact-button{display:none}.collection-mobile-menu{display:block}}
 .collection-socials a{font-size:0}
 .collection-socials svg{fill:currentColor;height:16px;width:16px}
 .collection-footer-grid{grid-template-columns:minmax(0,1.25fr) minmax(500px,.75fr)}

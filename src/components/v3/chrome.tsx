@@ -14,8 +14,10 @@ const NAV = [
   {label: 'Home', href: `${PUBLIC_SITE_ORIGIN}/`},
   {label: 'About us', href: `${PUBLIC_SITE_ORIGIN}/about-us`},
   {label: 'Services', href: '/', current: true},
+  {label: 'Service Areas', href: `${PUBLIC_SITE_ORIGIN}/service-areas`},
+  {label: 'Reviews', href: `${PUBLIC_SITE_ORIGIN}/reviews`},
   {label: 'Blog', href: `${PUBLIC_SITE_ORIGIN}/blog`},
-  {label: 'Learning center', href: `${PUBLIC_SITE_ORIGIN}/learning-center`},
+  {label: 'Learning Center', href: `${PUBLIC_SITE_ORIGIN}/learning-center`},
 ]
 
 function addressLine(settings: V2Settings) {
@@ -52,14 +54,13 @@ export function SiteHeader({settings, routes, tel}: {settings: V2Settings; route
                 </details>
               : <a href={item.href} key={item.label}>{item.label}</a>)}
           </nav>
-          <a className="ds-nav-phone" href={tel}><Icon name="phone" size={18} />{settings.phoneDisplay}</a>
-          <a className="ds-btn ds-btn--primary ds-btn--m ds-nav-cta" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Contact us</span></a>
+          <a className="ds-btn ds-btn--primary ds-btn--m ds-nav-cta" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
           <a className="ds-nav-call" href={tel} aria-label={`Call ${settings.phoneDisplay}`}><Icon name="phone" size={20} /></a>
           <details className="ds-nav-mobile">
             <summary aria-label="Open navigation menu"><span /><span /><span /></summary>
             <nav aria-label="Mobile navigation">
               {NAV.map((item) => <a href={item.current ? '/services' : item.href} key={item.label} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
-              <a className="ds-btn ds-btn--primary ds-btn--block" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Contact us</span></a>
+              <a className="ds-btn ds-btn--primary ds-btn--block" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
             </nav>
           </details>
         </div>

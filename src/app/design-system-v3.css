@@ -210,7 +210,7 @@
 .ds-nav-inner { min-height: 84px; display: flex; align-items: center; gap: 28px; }
 .ds-nav-logo { margin-right: auto; flex: none; }
 .ds-nav-logo img { height: 44px; width: auto; }
-.ds-nav-links { display: flex; align-items: center; gap: 36px; margin-right: 24px; }
+.ds-nav-links { display: flex; align-items: center; gap: 24px; margin-right: 0; }
 .ds-nav-links > a, .ds-nav-menu summary { font: 500 15px/1 var(--f-body); text-transform: uppercase; letter-spacing: .02em; color: var(--c-ink); text-decoration: none; transition: color var(--ease); }
 .ds-nav-links > a:hover, .ds-nav-menu summary:hover { color: var(--c-blue); }
 .ds-nav-menu { position: relative; }
@@ -813,14 +813,11 @@
    ========================================================================== */
 @media (max-width: 1240px) {
   .ds-hero-grid { grid-template-columns: minmax(0, 1fr) 440px; gap: 40px; }
-  .ds-nav-links { gap: 24px; margin-right: 8px; }
+  .ds-nav-links { gap: 18px; }
   .ds-closing-brands ul { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
-@media (max-width: 991px) {
-  .ds { --t-h1: 52px; --l-h1: 58px; --t-h2: 44px; --l-h2: 50px; --t-h3: 32px; --l-h3: 38px; --t-h4: 24px; --l-h4: 30px; --pad: 80px; }
-  .ds-band--trust .ds-h2, .ds-warranties .ds-h2, .ds-checklist-rail .ds-h2 { font-size: var(--t-h2); line-height: var(--l-h2); }
-  .ds-utility-inner > :nth-child(-n+3) { display: none; }
+@media (max-width: 1160px) {
   .ds-nav-links, .ds-nav-phone, .ds-nav-cta { display: none; }
   .ds-nav-call { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--r-full); background: var(--c-blue); color: #fff; }
   .ds-nav-mobile { display: block; position: relative; }
@@ -831,6 +828,12 @@
   .ds-nav-mobile nav a:not(.ds-btn) { padding: 12px; font: 500 15px/1 var(--f-body); text-transform: uppercase; color: var(--c-ink); text-decoration: none; }
   .ds-nav-mobile nav a[aria-current] { color: var(--c-blue); }
   .ds-nav-mobile .ds-btn { margin-top: 8px; }
+}
+
+@media (max-width: 991px) {
+  .ds { --t-h1: 52px; --l-h1: 58px; --t-h2: 44px; --l-h2: 50px; --t-h3: 32px; --l-h3: 38px; --t-h4: 24px; --l-h4: 30px; --pad: 80px; }
+  .ds-band--trust .ds-h2, .ds-warranties .ds-h2, .ds-checklist-rail .ds-h2 { font-size: var(--t-h2); line-height: var(--l-h2); }
+  .ds-utility-inner > :nth-child(-n+3) { display: none; }
 
   .ds-hero-grid { grid-template-columns: 1fr; }
   .ds-hero-copy { max-width: 680px; }
