@@ -90,6 +90,8 @@ a{color:var(--brand);text-underline-offset:3px}
 .collection-utility-inner a:hover{color:#9ec837}
 .collection-utility-inner a>span,.collection-utility-inner span>span{color:#9ec837;font-size:10px;margin-right:8px}
 .collection-utility-icon{fill:#9ec837;flex:0 0 18px;height:18px;margin-right:10px;width:18px}
+/* All four items with their 48px gaps need about 1127px, so the hours drop out until the bar fits. */
+@media(min-width:992px) and (max-width:1159px){.collection-utility-group>span{display:none}}
 .collection-header{background:#fff;border-bottom:1px solid #f6f6f6;padding:15px;position:relative;z-index:auto}
 .collection-nav-shell{gap:0;justify-content:space-between;margin:auto;max-width:80rem;min-height:0;width:100%}
 .collection-logo{margin-right:0}
