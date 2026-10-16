@@ -115,6 +115,13 @@ async function run() {
     assert.ok(menuLinks.length > 0, `${pathname} must have header menu links`)
     assert.deepEqual(repeated, [], `${pathname} header menus must link to each page once, repeated: ${repeated.join(', ')}`)
 
+    if (!isNewDesign(html)) {
+      // "Learn about Highlights Chicago with AI" opens Google AI Mode, not the homepage.
+      const aiHref = html.match(/<a\b[^>]*\bhref="([^"]*)"[^>]*>Learn about Highlights Chicago with AI\b/i)?.[1]?.replace(/&amp;/g, '&') || ''
+      const aiUrl = aiHref.startsWith('https://') ? new URL(aiHref) : null
+      assert.ok(aiUrl?.origin === 'https://www.google.com' && aiUrl.searchParams.get('udm') === '50' && /Highlights Chicago/.test(aiUrl.searchParams.get('q') || ''), `${pathname} footer AI link must open Google AI Mode about Highlights Chicago, found ${aiHref || 'none'}`)
+    }
+
     const relatedLinks = relatedServiceLinks(html)
     if (isNewDesign(html)) {
       // The new design shows the page's own related services (up to four), never padded.

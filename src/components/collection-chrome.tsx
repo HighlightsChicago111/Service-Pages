@@ -6,6 +6,8 @@ import {MobileMenu} from './mobile-menu'
 const LIVE_SITE = 'https://www.highlightschicago.com'
 const HEADER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'
 const FOOTER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/69ffb4d8099654cbee2d7b53_Highlights-Chicago_Logo-white.webp'
+// Google AI Mode (udm=50) with the question already asked; the address pins the business.
+const AI_SUMMARY_URL = `https://www.google.com/search?udm=50&q=${encodeURIComponent('Tell me about Highlights Chicago, the electrical contractor at 5766 N Lincoln Ave, Chicago: its services, service areas, reviews and how to book')}`
 
 const primaryLinks = [
   {label: 'Home', href: `${LIVE_SITE}/`},
@@ -69,7 +71,7 @@ export function CollectionFooter() {
             <img src={FOOTER_LOGO} alt="Highlights Chicago" />
           </a>
           <p className="collection-footer-intro">Highlights Chicago is a full-service, family-owned electrical company that has served the Chicagoland area for over 12 years. From the beginning, the team has focused on high-quality workmanship and superior customer service.</p>
-          <a className="collection-ai-link" href={`${LIVE_SITE}/`}>Learn about Highlights Chicago with AI <span aria-hidden="true">→</span></a>
+          <a className="collection-ai-link" href={AI_SUMMARY_URL} rel="nofollow">Learn about Highlights Chicago with AI <span aria-hidden="true">→</span></a>
           <div className="collection-footer-rule" />
           <div className="collection-footer-links">
             <nav aria-label="Company links">
