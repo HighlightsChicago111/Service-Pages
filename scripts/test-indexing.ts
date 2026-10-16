@@ -53,6 +53,13 @@ function relatedServiceLinks(html: string): string[] {
   return serviceLinks(section)
 }
 
+/** Links inside the site header's menus, in page order. */
+function headerMenuLinks(html: string): string[] {
+  const header = html.match(/<header\b[\s\S]*?<\/header>/i)?.[0] || ''
+  return [...header.matchAll(/<nav\b[\s\S]*?<\/nav>/gi)]
+    .flatMap((nav) => [...nav[0].matchAll(/<a\b[^>]*\bhref="([^"]+)"/gi)].map((match) => match[1].replace(/\/$/, '') || '/'))
+}
+
 /** Pages in the new design (Design System v3) render inside a .ds wrapper. */
 const isNewDesign = (html: string) => /<div class="ds[ "]/.test(html)
 
@@ -101,6 +108,12 @@ async function run() {
     assert.equal(breadcrumbs.length, 1, `${pathname} must have one BreadcrumbList`)
     assert.equal(breadcrumbs[0].itemListElement?.length, 3, `${pathname} breadcrumb schema must have three items`)
     assert.equal(breadcrumbs[0].itemListElement?.at(-1)?.item, publicUrl, `${pathname} final breadcrumb must equal its canonical`)
+
+    // The phone menu repeats the desktop menu, so its links must not be in the page HTML.
+    const menuLinks = headerMenuLinks(html)
+    const repeated = [...new Set(menuLinks.filter((href, index) => menuLinks.indexOf(href) !== index))]
+    assert.ok(menuLinks.length > 0, `${pathname} must have header menu links`)
+    assert.deepEqual(repeated, [], `${pathname} header menus must link to each page once, repeated: ${repeated.join(', ')}`)
 
     const relatedLinks = relatedServiceLinks(html)
     if (isNewDesign(html)) {
