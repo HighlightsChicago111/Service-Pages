@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {FooterLeadForm} from './footer-lead-form'
+import {MobileMenu} from './mobile-menu'
 
 const LIVE_SITE = 'https://www.highlightschicago.com'
 const HEADER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'
@@ -49,13 +50,10 @@ export function CollectionHeader() {
             {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
           </nav>
           <a className="collection-contact-button" href={`${LIVE_SITE}/contact-us`}>Book Now</a>
-          <details className="collection-mobile-menu">
-            <summary aria-label="Open navigation menu"><span /><span /><span /></summary>
-            <nav aria-label="Mobile navigation">
-              {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
-              <a href={`${LIVE_SITE}/contact-us`}>Book Now</a>
-            </nav>
-          </details>
+          <MobileMenu className="collection-mobile-menu">
+            {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+            <a href={`${LIVE_SITE}/contact-us`}>Book Now</a>
+          </MobileMenu>
         </div>
       </header>
     </div>

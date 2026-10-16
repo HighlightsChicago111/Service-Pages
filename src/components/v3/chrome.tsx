@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {Icon} from './icon'
 import {IconBadge} from './atoms'
 import {FooterQuoteForm} from './footer-quote-form'
+import {MobileMenu} from '@/components/mobile-menu'
 import {LOGO, LOGO_WHITE} from '@/lib/v3/visuals'
 import {PUBLIC_SITE_ORIGIN} from '@/lib/service-urls'
 import type {V2PageData, V2Settings} from '@/types/v2'
@@ -56,13 +57,10 @@ export function SiteHeader({settings, routes, tel}: {settings: V2Settings; route
           </nav>
           <a className="ds-btn ds-btn--primary ds-btn--m ds-nav-cta" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
           <a className="ds-nav-call" href={tel} aria-label={`Call ${settings.phoneDisplay}`}><Icon name="phone" size={20} /></a>
-          <details className="ds-nav-mobile">
-            <summary aria-label="Open navigation menu"><span /><span /><span /></summary>
-            <nav aria-label="Mobile navigation">
-              {NAV.map((item) => <a href={item.current ? '/services' : item.href} key={item.label} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
-              <a className="ds-btn ds-btn--primary ds-btn--block" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
-            </nav>
-          </details>
+          <MobileMenu className="ds-nav-mobile">
+            {NAV.map((item) => <a href={item.current ? '/services' : item.href} key={item.label} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
+            <a className="ds-btn ds-btn--primary ds-btn--block" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
+          </MobileMenu>
         </div>
       </header>
     </>
