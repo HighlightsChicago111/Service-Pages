@@ -71,7 +71,7 @@ export function PricingBlock({ctx}: {ctx: BlockContext}) {
               <li key={driver._key || driver.factor}>
                 <span className="ds-numbered-num">{String(index + 1).padStart(2, '0')}</span>
                 <div><h4 className="ds-h6">{driver.factor}</h4>{driver.why && <p>{driver.why}</p>}</div>
-                {driver.when && <span className="ds-when"><Icon name="clock" size={14} />{driver.when}</span>}
+                {driver.when && <div className="ds-when"><Icon name="clock" size={16} /><span><span className="ds-when-label">When you find out</span>{driver.when}</span></div>}
               </li>
             ))}
           </ol>

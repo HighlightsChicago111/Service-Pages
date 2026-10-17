@@ -150,6 +150,13 @@ const nextConfig: NextConfig = {
         permanent: true,
         basePath: false as const,
       })),
+      // The first launch's /<service>/chicago URLs. Declared here rather than in the page so
+      // the response always carries one Location header.
+      {
+        source: '/:service/chicago',
+        destination: '/:service',
+        permanent: true,
+      },
       // While service URLs are flat, a nested /<group>/<service> link goes to the flat page.
       ...(hierarchy.nestedServiceUrls === true ? [] : [...clusterOfService].map(([service, cluster]) => ({
         source: `/${cluster}/${service}`,

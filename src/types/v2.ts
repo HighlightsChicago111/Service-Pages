@@ -1,7 +1,15 @@
 /** Shapes returned by the V2 queries (and stored in data/v2-documents.json). */
 
 export type Keyed = {_key?: string}
-export type Img = Keyed & {externalUrl?: string; resolvedUrl?: string; alt?: string; caption?: string; credit?: string}
+export type Img = Keyed & {
+  externalUrl?: string
+  resolvedUrl?: string
+  alt?: string
+  caption?: string
+  credit?: string
+  /** Studio hotspot of an uploaded photo (0 to 1 from the top left): the point a crop keeps in view. */
+  image?: {hotspot?: {x?: number; y?: number}}
+}
 export type Faq = Keyed & {question: string; answer: string}
 export type TitledBody = Keyed & {title: string; body?: string}
 export type LinkedCard = TitledBody & {linkLabel?: string; linkAnchor?: string}

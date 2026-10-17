@@ -3,7 +3,6 @@ import {ConfirmNotes, Copy, GhostLink, IconBadge, IconTile, PhotoFrame, SectionH
 import {BackupDiagram, TopologyDiagram, backupOf, topologyOf} from '../diagrams'
 import {pickIcon} from '../icon'
 import {splitConfirm} from '@/lib/v3/content'
-import {fromImg} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
 
@@ -19,8 +18,7 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
   const columns = comparison?.columns || []
   const rows = comparison?.rows || []
   const illustrative = items.some((_, index) => visuals.equipment[index]?.illustrative)
-  const optionPhotos = (options?.items || []).map((option) => fromImg(option.image, option.title))
-  const optionsIllustrative = optionPhotos.some((photo) => photo?.illustrative)
+  const optionsIllustrative = visuals.options.some((photo) => photo?.illustrative)
 
   return (
     <div className="ds-wrap">
@@ -32,7 +30,9 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
             const photo = visuals.equipment[index]
             return (
               <li className="ds-tile" key={item._key || item.name}>
-                {photo ? <PhotoFrame photo={photo} pill={false} className="ds-tile-media" /> : <IconTile icon={pickIcon(item.name, 'cpu')} className="ds-tile-media" />}
+                {photo
+                  ? <PhotoFrame photo={photo} pill={false} className="ds-tile-media">{photo.credit && <span className="ds-credit-pill">{photo.credit}</span>}</PhotoFrame>
+                  : <IconTile icon={pickIcon(item.name, 'cpu')} className="ds-tile-media" />}
                 <div className="ds-tile-body"><h3 className="ds-h5">{item.name}</h3>{item.description && <p>{item.description}</p>}</div>
               </li>
             )
@@ -82,11 +82,11 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
         <ul className="ds-options">
           {options?.items?.map((option, index) => {
             const backup = backupOf(option.title)
-            const photo = optionPhotos[index]
+            const photo = visuals.options[index]
             return (
               <li className="ds-option" key={option._key || option.title}>
                 {photo
-                  ? <PhotoFrame photo={photo} pill={false} className="ds-option-media" />
+                  ? <PhotoFrame photo={photo} pill={false} className="ds-option-media">{photo.credit && <span className="ds-credit-pill">{photo.credit}</span>}</PhotoFrame>
                   : <div className="ds-option-art">{backup ? <BackupDiagram kind={backup} /> : <IconBadge icon={pickIcon(option.title, 'battery')} tone="blue" size={56} />}</div>}
                 <h4 className="ds-h5">{option.title}</h4>
                 <Copy value={option.body} show={editorial} />
