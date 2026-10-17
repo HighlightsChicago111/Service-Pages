@@ -3,7 +3,28 @@ import {clusterForService, serviceClusters} from '../src/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, clusterPagePath} from '../src/lib/service-urls'
 
 const baseUrl = (process.argv[2] || process.env.INDEXING_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
-const expectedPageCount = Number(process.env.EXPECTED_SERVICE_PAGE_COUNT || 40)
+const projectId = process.env.NEXT_SANITY_PROJECT_ID || '5w5623jq'
+const dataset = process.env.NEXT_SANITY_DATASET || 'production'
+
+// Counted straight from Sanity, independently of the app's own queries, so a page
+// that silently drops out of the sitemap still fails: every published current-design
+// page plus every new-design page that can render, one per URL.
+const PUBLISHED_SERVICE_URLS_QUERY = `count(array::unique(
+  *[_type == "servicePage" && area->slug.current == "chicago" && defined(service->slug.current)].service->slug.current +
+  *[_type == "v2ServicePage" && area->slug.current == "chicago" && defined(slug.current) && defined(*[_id == "v2-siteSettings"][0]._id)].slug.current
+))`
+
+async function expectedServicePageCount(): Promise<number> {
+  if (process.env.EXPECTED_SERVICE_PAGE_COUNT) return Number(process.env.EXPECTED_SERVICE_PAGE_COUNT)
+  const url = new URL(`https://${projectId}.apicdn.sanity.io/v2026-03-01/data/query/${dataset}`)
+  url.searchParams.set('query', PUBLISHED_SERVICE_URLS_QUERY)
+  url.searchParams.set('perspective', 'published')
+  const response = await fetch(url)
+  assert.equal(response.status, 200, 'Sanity must answer the published page count')
+  const {result} = await response.json() as {result: number}
+  assert.ok(Number.isInteger(result) && result > 0, 'Sanity must report at least one published service page')
+  return result
+}
 
 function decodeXml(value: string): string {
   return value.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -22,10 +43,28 @@ function titleFrom(html: string): string {
   return html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || ''
 }
 
-function relatedServiceLinks(html: string): string[] {
-  const section = html.match(/<section\s+class="wrap"\s+id="other-services">([\s\S]*?)<\/section>/i)?.[1] || ''
-  return [...section.matchAll(/<a\b[^>]*\bhref="(\/services\/[^"#?]+)"/gi)].map((match) => match[1])
+function serviceLinks(html: string): string[] {
+  // The new design links related services with absolute URLs on the public host.
+  return [...html.matchAll(/<a\b[^>]*\bhref="(?:https:\/\/www\.highlightschicago\.com)?(\/services\/[^"#?]+)"/gi)]
+    .map((match) => match[1].replace(/\/$/, ''))
+    // /services/<service> (no group) or /services/<group>/<service>.
+    .filter((href) => [2, 3].includes(href.split('/').filter(Boolean).length))
 }
+
+function relatedServiceLinks(html: string): string[] {
+  const section = html.match(/<section\b[^>]*\bid="other-services"[^>]*>([\s\S]*?)<\/section>/i)?.[1] || ''
+  return serviceLinks(section)
+}
+
+/** Links inside the site header's menus, in page order. */
+function headerMenuLinks(html: string): string[] {
+  const header = html.match(/<header\b[\s\S]*?<\/header>/i)?.[0] || ''
+  return [...header.matchAll(/<nav\b[\s\S]*?<\/nav>/gi)]
+    .flatMap((nav) => [...nav[0].matchAll(/<a\b[^>]*\bhref="([^"]+)"/gi)].map((match) => match[1].replace(/\/$/, '') || '/'))
+}
+
+/** Pages in the new design (Design System v3) render inside a .ds wrapper. */
+const isNewDesign = (html: string) => /<div class="ds[ "]/.test(html)
 
 function breadcrumbLists(html: string): Array<{itemListElement?: Array<{position?: number; name?: string; item?: string}>}> {
   return [...html.matchAll(/<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)]
@@ -48,6 +87,7 @@ async function expectPermanentRedirect(pathname: string, destination: string) {
 }
 
 async function run() {
+  const expectedPageCount = await expectedServicePageCount()
   const sitemapResponse = await fetch(`${baseUrl}/services/sitemap.xml`)
   assert.equal(sitemapResponse.status, 200, 'Sitemap must return 200')
   const sitemap = await sitemapResponse.text()
@@ -100,8 +140,27 @@ async function run() {
     if (cluster) assert.equal(items[2].item, `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`, `${pathname} breadcrumb must include its service group`)
     assert.equal(items.at(-1)?.item, publicUrl, `${pathname} final breadcrumb must equal its canonical`)
 
+    // The phone menu repeats the desktop menu, so its links must not be in the page HTML.
+    const menuLinks = headerMenuLinks(html)
+    const repeated = [...new Set(menuLinks.filter((href, index) => menuLinks.indexOf(href) !== index))]
+    assert.ok(menuLinks.length > 0, `${pathname} must have header menu links`)
+    assert.deepEqual(repeated, [], `${pathname} header menus must link to each page once, repeated: ${repeated.join(', ')}`)
+
+    if (!isNewDesign(html)) {
+      // "Learn about Highlights Chicago with AI" opens Google AI Mode, not the homepage.
+      const aiHref = html.match(/<a\b[^>]*\bhref="([^"]*)"[^>]*>Learn about Highlights Chicago with AI\b/i)?.[1]?.replace(/&amp;/g, '&') || ''
+      const aiUrl = aiHref.startsWith('https://') ? new URL(aiHref) : null
+      assert.ok(aiUrl?.origin === 'https://www.google.com' && aiUrl.searchParams.get('udm') === '50' && /Highlights Chicago/.test(aiUrl.searchParams.get('q') || ''), `${pathname} footer AI link must open Google AI Mode about Highlights Chicago, found ${aiHref || 'none'}`)
+    }
+
     const relatedLinks = relatedServiceLinks(html)
-    assert.equal(new Set(relatedLinks).size, 4, `${pathname} must link to four distinct published related services`)
+    if (isNewDesign(html)) {
+      // The new design shows the page's own related services (up to four), never padded.
+      const distinct = new Set(relatedLinks).size
+      assert.ok(distinct >= 1 && distinct <= 4, `${pathname} must link to one to four distinct related services, found ${distinct}`)
+    } else {
+      assert.equal(new Set(relatedLinks).size, 4, `${pathname} must link to four distinct published related services`)
+    }
     for (const href of relatedLinks) {
       assert.ok(servicePaths.has(href), `${pathname} links to unpublished service route ${href}`)
     }
@@ -111,7 +170,7 @@ async function run() {
     await expectPermanentRedirect(`/services/${serviceSlug}/chicago`, pathname)
   }
 
-  console.log(`Indexing regression test passed for ${clusterLocations.length} service groups and ${serviceLocations.length} service pages.`)
+  console.log(`Indexing regression test passed for ${clusterLocations.length} service groups and ${serviceLocations.length} service pages (expected ${expectedPageCount} from Sanity).`)
 }
 
 run().catch((error: unknown) => {

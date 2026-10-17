@@ -3,6 +3,7 @@ import {notFound, permanentRedirect} from 'next/navigation'
 import {ClusterPage, publishedServices, serviceCardsBySlug} from '@/components/service-clusters'
 import {clusterForService, clusterTitle, findCluster, serviceClusters} from '@/lib/clusters'
 import type {CollectionItem} from '@/lib/collection-items'
+import {preferNewDesign} from '@/lib/design-precedence'
 import {publishedServiceSlugs, renderServicePage, serviceMetadata} from '@/lib/service-page'
 import {PUBLIC_SITE_ORIGIN, clusterPagePath, serviceRoutePath} from '@/lib/service-urls'
 import {metadataClient} from '@/sanity/lib/client'
@@ -38,7 +39,7 @@ export default async function ServiceGroupOrServicePage({params}: Props) {
   const {slug} = await params
   const cluster = findCluster(slug)
   if (cluster) {
-    const cards = serviceCardsBySlug((await metadataClient.fetch<CollectionItem[]>(SERVICE_INDEX_QUERY)) || [])
+    const cards = serviceCardsBySlug(preferNewDesign((await metadataClient.fetch<CollectionItem[]>(SERVICE_INDEX_QUERY)) || []))
     if (!publishedServices(cluster, cards).length) notFound()
     return <ClusterPage cluster={cluster} cards={cards} />
   }

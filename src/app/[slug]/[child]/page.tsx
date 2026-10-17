@@ -4,7 +4,7 @@ import {clusterForService, findCluster} from '@/lib/clusters'
 import {publishedServiceSlugs, renderServicePage, serviceMetadata} from '@/lib/service-page'
 import {PRIMARY_AREA_SLUG, serviceRoutePath} from '@/lib/service-urls'
 import {metadataClient} from '@/sanity/lib/client'
-import {SERVICE_PAGE_METADATA_QUERY} from '@/sanity/lib/queries'
+import {NEW_DESIGN_METADATA_QUERY, SERVICE_PAGE_METADATA_QUERY} from '@/sanity/lib/queries'
 
 type Props = {params: Promise<{slug: string; child: string}>}
 
@@ -33,7 +33,10 @@ export default async function ClusterServicePage({params}: Props) {
   const {slug, child} = await params
   if (isServiceRoute(slug, child)) return renderServicePage(child)
   if (child === PRIMARY_AREA_SLUG && !findCluster(slug)) {
-    const metadata = await metadataClient.fetch(SERVICE_PAGE_METADATA_QUERY, {serviceSlug: slug, areaSlug: PRIMARY_AREA_SLUG})
+    // The old /<slug>/chicago link works for a page in either design.
+    const queryParams = {serviceSlug: slug, areaSlug: PRIMARY_AREA_SLUG}
+    const metadata = await metadataClient.fetch(NEW_DESIGN_METADATA_QUERY, queryParams)
+      || await metadataClient.fetch(SERVICE_PAGE_METADATA_QUERY, queryParams)
     // Redirect destinations are base-relative; Next.js re-adds /services.
     if (metadata) permanentRedirect(serviceRoutePath(slug))
   }

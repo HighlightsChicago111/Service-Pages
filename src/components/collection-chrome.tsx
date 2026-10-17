@@ -1,15 +1,20 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {FooterLeadForm} from './footer-lead-form'
+import {MobileMenu} from './mobile-menu'
 
 const LIVE_SITE = 'https://www.highlightschicago.com'
 const HEADER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'
 const FOOTER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/69ffb4d8099654cbee2d7b53_Highlights-Chicago_Logo-white.webp'
+// Google AI Mode (udm=50) with the question already asked; the address pins the business.
+const AI_SUMMARY_URL = `https://www.google.com/search?udm=50&q=${encodeURIComponent('Tell me about Highlights Chicago, the electrical contractor at 5766 N Lincoln Ave, Chicago: its services, service areas, reviews and how to book')}`
 
 const primaryLinks = [
   {label: 'Home', href: `${LIVE_SITE}/`},
-  {label: 'About Us', href: `${LIVE_SITE}/about-us`},
+  {label: 'About us', href: `${LIVE_SITE}/about-us`},
   {label: 'Services', href: `${LIVE_SITE}/services`},
+  {label: 'Service Areas', href: `${LIVE_SITE}/service-areas`},
+  {label: 'Reviews', href: `${LIVE_SITE}/reviews`},
   {label: 'Blog', href: `${LIVE_SITE}/blog`},
   {label: 'Learning Center', href: `${LIVE_SITE}/learning-center`},
 ]
@@ -46,14 +51,11 @@ export function CollectionHeader() {
           <nav className="collection-desktop-nav" aria-label="Primary navigation">
             {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
           </nav>
-          <a className="collection-contact-button" href={`${LIVE_SITE}/contact-us`}>Contact us</a>
-          <details className="collection-mobile-menu">
-            <summary aria-label="Open navigation menu"><span /><span /><span /></summary>
-            <nav aria-label="Mobile navigation">
-              {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
-              <a href={`${LIVE_SITE}/contact-us`}>Contact us</a>
-            </nav>
-          </details>
+          <a className="collection-contact-button" href={`${LIVE_SITE}/contact-us`}>Book Now</a>
+          <MobileMenu className="collection-mobile-menu">
+            {primaryLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+            <a href={`${LIVE_SITE}/contact-us`}>Book Now</a>
+          </MobileMenu>
         </div>
       </header>
     </div>
@@ -69,7 +71,7 @@ export function CollectionFooter() {
             <img src={FOOTER_LOGO} alt="Highlights Chicago" />
           </a>
           <p className="collection-footer-intro">Highlights Chicago is a full-service, family-owned electrical company that has served the Chicagoland area for over 12 years. From the beginning, the team has focused on high-quality workmanship and superior customer service.</p>
-          <a className="collection-ai-link" href={`${LIVE_SITE}/`}>Learn about Highlights Chicago with AI <span aria-hidden="true">→</span></a>
+          <a className="collection-ai-link" href={AI_SUMMARY_URL} rel="nofollow">Learn about Highlights Chicago with AI <span aria-hidden="true">→</span></a>
           <div className="collection-footer-rule" />
           <div className="collection-footer-links">
             <nav aria-label="Company links">

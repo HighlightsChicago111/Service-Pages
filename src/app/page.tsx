@@ -3,6 +3,7 @@ import type {Metadata} from 'next'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
 import {ClusterDirectory, serviceCardsBySlug} from '@/components/service-clusters'
 import type {CollectionItem} from '@/lib/collection-items'
+import {preferNewDesign} from '@/lib/design-precedence'
 import {sanityFetch} from '@/sanity/lib/live'
 import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
 
@@ -15,7 +16,8 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const {data} = await sanityFetch({query: SERVICE_INDEX_QUERY, stega: false})
-  const pages = (data || []) as CollectionItem[]
+  // Both designs, one card per URL (a published new-design page wins).
+  const pages = preferNewDesign((data || []) as CollectionItem[])
   return (
     <div className="collection-page">
       <CollectionHeader />

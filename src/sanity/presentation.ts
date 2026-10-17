@@ -14,5 +14,18 @@ export const resolve: PresentationPluginOptions['resolve'] = {
           : [],
       }),
     }),
+    // Same URL as a current page with that slug: in preview the new-design draft
+    // wins, so editors see exactly what publishing it would put live.
+    v2ServicePage: defineLocations({
+      select: {
+        title: 'name',
+        slug: 'slug.current',
+      },
+      resolve: (document) => ({
+        locations: document?.slug
+          ? [{title: document.title || 'Service page (new design)', href: `/services/${document.slug}`}]
+          : [],
+      }),
+    }),
   },
 }

@@ -8,6 +8,7 @@ import {CenteredAreaRail} from './centered-area-rail'
 import {LeadForm} from './lead-form'
 import {CollectionFooter, CollectionHeader} from './collection-chrome'
 import {questionHeading} from '@/lib/headings'
+import {preferNewDesign} from '@/lib/design-precedence'
 import {WorkingPhotoGrid} from './working-photo-grid'
 import {GalleryPhoto} from './gallery-photo'
 import {clusterForService} from '@/lib/clusters'
@@ -187,7 +188,8 @@ export function ServiceLandingPage({data}: Props) {
     ? [...remainingTrustMetrics.slice(0, 2), aPlusMetric, ...remainingTrustMetrics.slice(2)]
     : trustMetrics
   const guideItems = (page.guides || []).map((guide) => ({title: guide.title, paragraphs: guideText(guide)}))
-  const serviceRoutes = stegaClean(data.serviceRoutes || [])
+  // Routes in both designs, one per URL, so related links can reach new-design pages.
+  const serviceRoutes = preferNewDesign(stegaClean(data.serviceRoutes || []))
   const serviceSlug = stegaClean(service.slug)
   const cluster = clusterForService(serviceSlug)
   const areaSlug = stegaClean(area.slug)

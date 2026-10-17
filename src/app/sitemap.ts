@@ -2,6 +2,7 @@ import type {MetadataRoute} from 'next'
 import {metadataClient} from '@/sanity/lib/client'
 import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
 import {serviceClusters} from '@/lib/clusters'
+import {preferNewDesign, type ServiceDesign} from '@/lib/design-precedence'
 import {PRIMARY_AREA_SLUG, PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, servicePageUrl} from '@/lib/service-urls'
 
 // Next serves this at /services/sitemap.xml because basePath is applied to the
@@ -9,7 +10,7 @@ import {PRIMARY_AREA_SLUG, PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, s
 // canonical host (NEXT_SITE_URL, e.g. https://www.highlightschicago.com).
 export const revalidate = 3600
 
-type Route = {serviceSlug?: string | null; areaSlug?: string | null; _updatedAt?: string | null}
+type Route = {serviceSlug?: string | null; areaSlug?: string | null; _updatedAt?: string | null; design?: ServiceDesign | null}
 
 const latest = (dates: Array<string | null | undefined>) => dates
   .filter((value): value is string => Boolean(value))
@@ -17,7 +18,8 @@ const latest = (dates: Array<string | null | undefined>) => dates
   .at(-1)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages = (await metadataClient.fetch<Route[]>(SERVICE_INDEX_QUERY)) || []
+  // Both designs, one entry per URL (a published new-design page wins).
+  const pages = preferNewDesign((await metadataClient.fetch<Route[]>(SERVICE_INDEX_QUERY)) || [])
   const published = pages.filter((page): page is Route & {serviceSlug: string; areaSlug: string} => Boolean(page.serviceSlug && page.areaSlug === PRIMARY_AREA_SLUG))
   const updatedAt = new Map(published.map((page) => [page.serviceSlug, page._updatedAt]))
 

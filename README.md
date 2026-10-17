@@ -21,6 +21,19 @@ Services are grouped like `/services/heating/heater-repair/` on the City & Subur
 
 Group names, order, descriptions and membership live in `data/cluster-hierarchy.json`, built from the cluster-level workbook; group slugs are the content plan's slugs. A group with no published service is hidden. Earlier URLs (`/services/<service>`, `/services/<service>/chicago` and the retired Webflow slugs in `next.config.ts`) permanently redirect to the nested service page. A service missing from the file keeps a flat `/services/<service>` URL.
 
+## Two designs during the rollout
+
+Service pages are moving to a new design (Design System v3). Until that is finished, both designs live in Studio under **Service pages**:
+
+- **Current design**: the `servicePage` documents above, rendered by `src/components/service-landing-page.tsx`.
+- **New design**: `v2ServicePage` pages plus two shared documents, "New design settings" (`v2-siteSettings`) and "New design area: Chicago" (`v2-area-chicago`), rendered by `src/components/v3/`. All new-design type names start with `v2`.
+
+One rule decides what a URL shows: a service page URL renders its **published** new-design page when there is one (and the new-design settings exist), otherwise its current page. The sitemap, the `/services` list, related-service links and the old `/<slug>/chicago` redirects all follow the same rule with one entry per URL (`src/lib/design-precedence.ts`). Publishing a new-design page switches its URL to the new design; unpublishing it switches the URL straight back. Drafts only show in Studio Presentation.
+
+Every photo slot in the new design has an optional image field on the page (hero background, each job card and equipment tile, assessment, symptoms, repair box, Why Highlights, category card, cost drivers, handover, related-service cards, guide tabs), plus logo uploads for brands without a built-in logo and the Why Highlights figures. An empty slot falls back to the page's own hero photos or an icon; the Solar reference photos in `src/lib/v3/visuals.ts` only fill Solar's empty slots.
+
+New-design slugs cannot be a redirect source in `next.config.ts` or a reserved path. `src/lib/reserved-slugs.ts` holds that list, and `pnpm test:design` fails if it drifts from `next.config.ts`.
+
 Sanity is the source of truth for published content. `data/source-content.json` is the normalized spreadsheet export that seeded the first import; it does not include the pages added later in the Studio (Sanity has 40 service pages, the file has 30). The original spreadsheet package is preserved locally but ignored by Git.
 
 ## Local setup
@@ -35,7 +48,7 @@ To seed an empty dataset, run `pnpm source:validate` and then `pnpm content:impo
 
 ## Testing before merging
 
-Every push to `main` deploys straight to production, so run these before merging:
+Every push to `main` deploys straight to production. The **Test** workflow (`.github/workflows/test.yaml`) runs the checks below on every pull request and push to `main`, builds the site, runs the indexing and thank-you tests against that build, and reports parity with production in the run summary. To run them yourself:
 
 ```powershell
 pnpm typecheck
@@ -44,10 +57,13 @@ pnpm test:collection-data
 pnpm test:indexing-contract
 pnpm test:lead
 pnpm test:preview
+pnpm test:design
 pnpm build
 ```
 
 Then start the build (`pnpm start`) or use the PR's preview deployment and run the end-to-end checks against it, for example `pnpm test:smoke http://localhost:3000`, `pnpm test:indexing http://localhost:3000` and `pnpm test:thank-you http://localhost:3000`. The smoke and preview tests read the expected content from the live Sanity dataset.
+
+`pnpm check:parity <baseUrl>` compares a build or preview deployment with production: the sitemap, every page's status, title, canonical, robots, JSON-LD and markup, the `/chicago` links and the 78 redirects. It only sends GET requests.
 
 ## Secrets
 
