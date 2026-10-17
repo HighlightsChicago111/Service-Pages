@@ -68,7 +68,7 @@ function JsonLd({ctx}: {ctx: BlockContext}) {
   const {page, area, settings} = ctx
   // Unconfirmed FAQs stay out of the schema until they are resolved.
   const answered = faqsOf(ctx).filter((faq) => !hasConfirm(faq.answer) && !hasConfirm(faq.question))
-  const cluster = clusterForService(page.slug)
+  const cluster = clusterForService(page.slug, page.parentName)
   const graph = [
     {
       '@type': settings.schemaBusinessType || 'Electrician',
@@ -86,7 +86,7 @@ function JsonLd({ctx}: {ctx: BlockContext}) {
       {name: 'Home', item: PUBLIC_SITE_ORIGIN},
       {name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
       ...(cluster ? [{name: cluster.name, item: `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`}] : []),
-      {name: `${page.name} in ${area.name}`, item: servicePageUrl(page.slug)},
+      {name: `${page.name} in ${area.name}`, item: servicePageUrl(page.slug, page.parentName)},
     ].map((crumb, index) => ({'@type': 'ListItem', position: index + 1, ...crumb}))},
     ...(answered.length ? [{'@type': 'FAQPage', mainEntity: answered.map((faq) => ({'@type': 'Question', name: faq.question, acceptedAnswer: {'@type': 'Answer', text: faq.answer}}))}] : []),
   ]
@@ -117,7 +117,7 @@ export function ServiceLandingPage({data, draft, fontClassName}: {data: V2PageDa
   return (
     <div className={fontClassName ? `ds ${fontClassName}` : 'ds'}>
       <a className="ds-skip" href="#main">Skip to content</a>
-      <SiteHeader settings={settings} routes={routes} tel={ctx.tel} />
+      <SiteHeader settings={settings} tel={ctx.tel} />
       <main id="main">
         <HeroQuote ctx={ctx} />
         {blocks.map(({id, band, Block}) => (

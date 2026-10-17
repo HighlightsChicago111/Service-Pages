@@ -10,6 +10,8 @@ import {PRIMARY_AREA_SLUG, clusterPagePath, servicePagePath} from '../src/lib/se
 type SanityPage = {
   serviceSlug: string
   areaSlug: string
+  parentName?: string
+  monthlySearchVolume?: number
   h1Prefix?: string
   brands?: string[]
   whyCount?: number
@@ -17,6 +19,18 @@ type SanityPage = {
   areaName?: string
   subAreaCount?: number
   reviewQuotes?: string[]
+}
+
+// A published new-design page (v2ServicePage) takes over its URL from the current page.
+type NewDesignPage = {
+  serviceSlug: string
+  areaSlug: string
+  parentName?: string
+  monthlySearchVolume?: number
+  name?: string
+  h1Prefix?: string
+  areaName?: string
+  optionPhotoCount?: number
 }
 
 const baseUrl = (process.argv[2] || process.env.SMOKE_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
@@ -84,10 +98,12 @@ async function testDocument(pathname: string, requiredText: string[]) {
 }
 
 async function run() {
-  const {pages, googleReviewCount} = await sanity.fetch<{pages: SanityPage[]; googleReviewCount?: number}>(`{
+  const {pages, newDesignPages, googleReviewCount} = await sanity.fetch<{pages: SanityPage[]; newDesignPages: NewDesignPage[]; googleReviewCount?: number}>(`{
     "pages": *[_type == "servicePage" && defined(service->slug.current) && defined(area->slug.current)] {
       "serviceSlug": service->slug.current,
       "areaSlug": area->slug.current,
+      "parentName": service->parentName,
+      "monthlySearchVolume": service->monthlySearchVolume,
       "h1Prefix": service->h1Prefix,
       "brands": service->brands,
       "whyCount": count(service->whyItems),
@@ -96,19 +112,40 @@ async function run() {
       "subAreaCount": count(area->subAreas),
       "reviewQuotes": reviews[].quote
     },
+    "newDesignPages": *[_type == "v2ServicePage" && defined(slug.current) && defined(area->slug.current) && defined(*[_id == "v2-siteSettings"][0]._id)] {
+      "serviceSlug": slug.current,
+      "areaSlug": area->slug.current,
+      parentName,
+      monthlySearchVolume,
+      name,
+      "h1Prefix": hero.h1Prefix,
+      "areaName": area->name,
+      "optionPhotoCount": count(equipment.options.items[defined(image.image.asset) || defined(image.externalUrl)])
+    },
     "googleReviewCount": *[_id == "siteSettings"][0].google.reviewCount
   }`)
   expect(pages.length > 0, 'Sanity returned no publishable service pages')
-  const servicePages = pages.filter((page) => page.areaSlug === PRIMARY_AREA_SLUG)
-  const publishedSlugs = new Set(servicePages.map((page) => page.serviceSlug))
-  // Service groups shown on /services: every cluster with at least one published service.
+  const newDesign = newDesignPages.filter((page) => page.areaSlug === PRIMARY_AREA_SLUG)
+  const newDesignSlugs = new Set(newDesign.map((page) => page.serviceSlug))
+  // Current-design pages whose URL has not been taken over by a new-design page.
+  const servicePages = pages.filter((page) => page.areaSlug === PRIMARY_AREA_SLUG && !newDesignSlugs.has(page.serviceSlug))
+  const allPages: Array<{serviceSlug: string; parentName?: string; monthlySearchVolume?: number}> = [...servicePages, ...newDesign]
+  const pagePath = (page: {serviceSlug: string; parentName?: string}) => servicePagePath(page.serviceSlug, page.parentName)
+  // Service groups shown on /services: every cluster with at least one published service,
+  // the workbook's services first, then pages that joined by their Sanity cluster name.
   const groups = serviceClusters
-    .map((cluster) => ({cluster, services: cluster.services.filter((service) => publishedSlugs.has(service))}))
+    .map((cluster) => {
+      const listed = cluster.services.map((slug) => allPages.find((page) => page.serviceSlug === slug)).filter((page) => page !== undefined)
+      const added = allPages
+        .filter((page) => !cluster.services.includes(page.serviceSlug) && clusterForService(page.serviceSlug, page.parentName)?.slug === cluster.slug)
+        .sort((left, right) => (right.monthlySearchVolume || 0) - (left.monthlySearchVolume || 0))
+      return {cluster, services: [...listed, ...added]}
+    })
     .filter((group) => group.services.length > 0)
   const validServicePaths = new Set([
     '/services',
     ...groups.map(({cluster}) => clusterPagePath(cluster.slug)),
-    ...servicePages.map((page) => servicePagePath(page.serviceSlug)),
+    ...allPages.map(pagePath),
   ])
 
   const collection = await testDocument('/services', ['Electrical services built around Chicago', 'Choose a service'])
@@ -169,7 +206,7 @@ async function run() {
     const pathname = clusterPagePath(cluster.slug)
     const text = await testDocument(pathname, [clusterTitle(cluster), chooseServiceHeading(cluster)])
     const cardHrefs = [...text.matchAll(/<a class="collection-card"[^>]*href="([^"]+)"/g)].map((match) => match[1])
-    expect(JSON.stringify(cardHrefs) === JSON.stringify(services.map(servicePagePath)), `${pathname} does not list its services in order: ${cardHrefs.join(', ')}`)
+    expect(JSON.stringify(cardHrefs) === JSON.stringify(services.map(pagePath)), `${pathname} does not list its services in order: ${cardHrefs.join(', ')}`)
     expect(imageAlts(text).every(Boolean), `${pathname} contains an image without alt text`)
     expect(!/content plan|cluster|keyword/i.test(visibleText(text)), `${pathname} shows internal planning wording`)
     for (const href of anchorHrefs(text).filter((value) => value.startsWith('/'))) {
@@ -178,9 +215,28 @@ async function run() {
   }
   expect((await fetch(`${baseUrl}/services/emergency-electrical`, {redirect: 'manual'})).status === 404, 'A service group without published services must not be published')
 
+  for (const page of newDesign) {
+    const pathname = pagePath(page)
+    const group = clusterForService(page.serviceSlug, page.parentName)
+    const text = await testDocument(pathname, [`${page.h1Prefix} in ${page.areaName}`, 'id="quote"'])
+    expect(Boolean(group), `${pathname} has no service group: its Sanity cluster name "${page.parentName}" matches none in data/cluster-hierarchy.json`)
+    if (group) expect(text.includes(`<a href="${clusterPagePath(group.slug)}">${group.name}</a>`), `${pathname} breadcrumb does not link to its ${group.name} group`)
+    expect(!text.includes('ds-nav-menu'), `${pathname} still renders the Services dropdown`)
+    expect(text.includes('<a class="ds-nav-current" href="/services">Services</a>'), `${pathname} navbar Services does not link to /services`)
+    expect((text.match(/class="ds-photo ds-option-media"/g) || []).length === (page.optionPhotoCount || 0), `${pathname} does not show every option photo set in Sanity`)
+    for (const legacy of [`/services/${page.serviceSlug}`, `/services/${page.serviceSlug}/${PRIMARY_AREA_SLUG}`].filter((value) => value !== pathname)) {
+      const response = await fetch(`${baseUrl}${legacy}`, {redirect: 'manual'})
+      const location = response.headers.get('location')
+      expect(response.status === 308 && location && new URL(location, baseUrl).pathname === pathname, `${legacy} should permanently redirect to ${pathname}, got ${response.status} ${location}`)
+    }
+    for (const href of anchorHrefs(text).filter((value) => value.startsWith('/') && !value.startsWith('/services/images/'))) {
+      expect(validServicePaths.has(href.replace(/[?#].*$/, '')), `${pathname} has an invalid internal URL ${href}`)
+    }
+  }
+
   for (const page of servicePages) {
-    const pathname = servicePagePath(page.serviceSlug)
-    const group = clusterForService(page.serviceSlug)
+    const pathname = servicePagePath(page.serviceSlug, page.parentName)
+    const group = clusterForService(page.serviceSlug, page.parentName)
     const heading = `${page.h1Prefix} in ${page.areaName}`
     const text = await testDocument(pathname, [heading, 'id="quote"', 'id="reviews"', 'id="faq"', 'id="guides"'])
     if (group) expect(text.includes(`<a href="${clusterPagePath(group.slug)}">${group.name}</a>`), `${pathname} breadcrumb does not link to its ${group.name} group`)
@@ -299,7 +355,7 @@ async function run() {
     process.exit(1)
   }
 
-  console.log(`Smoke test passed: ${assertions} assertions across ${groups.length} service groups and ${servicePages.length} service pages.`)
+  console.log(`Smoke test passed: ${assertions} assertions across ${groups.length} service groups, ${servicePages.length} current-design and ${newDesign.length} new-design service pages.`)
 }
 
 run().catch((error: unknown) => {

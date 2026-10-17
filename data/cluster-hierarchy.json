@@ -1,11 +1,12 @@
 {
-  "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs are the content plan cluster URL slugs; service slugs are the live Sanity slugs.",
+  "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs are the content plan cluster URL slugs; service slugs are the live Sanity slugs. \"parentName\" is the Sanity cluster name (servicePage service->parentName, v2ServicePage parentName): a published page whose slug is not listed joins the group with that name, after the listed services.",
   "clusters": [
     {
       "slug": "power-distribution",
       "name": "Panel Upgrades",
       "noun": "panel upgrade",
       "description": "Electrical panel and service upgrades for more capacity and safer power.",
+      "parentName": "Power Distribution & Service Entry",
       "services": [
         "electrical-panel-upgrade"
       ]
@@ -15,6 +16,7 @@
       "name": "Circuit Protection",
       "noun": "circuit protection",
       "description": "Surge protection, circuit breakers, breaker boxes, grounding and fuse box replacement.",
+      "parentName": "Panels, Circuits & Protection",
       "services": [
         "whole-house-surge-protector",
         "circuit-breaker-replacement",
@@ -28,6 +30,7 @@
       "name": "Electrical Wiring",
       "noun": "electrical wiring",
       "description": "Electrical repairs, wiring, troubleshooting and new installations.",
+      "parentName": "Wiring, Diagnostics & Compliance",
       "services": [
         "electrical-repair",
         "electrical-wiring-and-repair-services",
@@ -40,6 +43,7 @@
       "name": "Electrical Outlets",
       "noun": "outlet and switch",
       "description": "GFCI outlets, new outlets and light switch installation.",
+      "parentName": "Outlets, Switches & Controls",
       "services": [
         "gfci-outlet-installation",
         "electrical-outlet-installation",
@@ -51,6 +55,7 @@
       "name": "Interior Lighting",
       "noun": "interior lighting",
       "description": "Recessed lights, light fixtures, chandeliers and LED upgrades.",
+      "parentName": "Interior Lighting",
       "services": [
         "recessed-lighting-installation",
         "light-fixture-installation-and-replacement",
@@ -63,6 +68,7 @@
       "name": "Outdoor Lighting",
       "noun": "outdoor lighting",
       "description": "Outdoor, landscape, emergency and parking lot lighting.",
+      "parentName": "Exterior, Egress & Commercial Lighting",
       "services": [
         "outdoor-lighting-installation",
         "landscape-lighting-installation",
@@ -75,6 +81,7 @@
       "name": "Life Safety",
       "noun": "life safety",
       "description": "Smoke detectors, carbon monoxide detectors and fire alarms.",
+      "parentName": "Life Safety Detection",
       "services": [
         "fire-alarm-installation",
         "carbon-monoxide-detector-installation",
@@ -86,6 +93,7 @@
       "name": "EV Charging",
       "noun": "EV charging",
       "description": "Tesla and EV charger installation for homes and businesses.",
+      "parentName": "EV Charging",
       "services": [
         "tesla-and-ev-charger-installation"
       ]
@@ -95,6 +103,7 @@
       "name": "Backup Power",
       "noun": "backup power",
       "description": "Whole-house generator installation, repair and maintenance.",
+      "parentName": "Backup & Standby Power",
       "services": [
         "generator-installation",
         "generator-repair"
@@ -105,6 +114,7 @@
       "name": "Appliance Circuits",
       "noun": "appliance circuit",
       "description": "Ceiling fans, garbage disposals and bathroom exhaust fans.",
+      "parentName": "Appliance & Equipment Circuits",
       "services": [
         "ceiling-fan-installation",
         "garbage-disposal-wiring",
@@ -116,6 +126,7 @@
       "name": "Low Voltage",
       "noun": "low voltage",
       "description": "Structured cabling, fiber optics, CCTV and low voltage wiring.",
+      "parentName": "Low Voltage, Data & AV",
       "services": [
         "structured-cabling-installation",
         "low-voltage-wiring-installation",
@@ -128,6 +139,7 @@
       "name": "Solar Energy",
       "noun": "solar and energy",
       "description": "Solar panels, solar batteries, energy audits and efficiency upgrades.",
+      "parentName": "Energy Efficiency & Solar",
       "services": [
         "solar-panel-installation",
         "home-energy-audit",

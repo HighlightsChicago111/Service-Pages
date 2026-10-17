@@ -2,11 +2,9 @@
 import type {Metadata} from 'next'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
 import {ClusterDirectory, serviceCardsBySlug} from '@/components/service-clusters'
-import type {CollectionItem} from '@/lib/collection-items'
-import {preferNewDesign} from '@/lib/design-precedence'
-import {sanityFetch} from '@/sanity/lib/live'
-import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
+import {fetchServiceIndex} from '@/lib/service-page'
 
+// Re-read Sanity at most a minute after a page is published or unpublished.
 export const revalidate = 60
 export const metadata: Metadata = {
   title: 'Electrical Services in Chicago',
@@ -15,9 +13,10 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const {data} = await sanityFetch({query: SERVICE_INDEX_QUERY, stega: false})
-  // Both designs, one card per URL (a published new-design page wins).
-  const pages = preferNewDesign((data || []) as CollectionItem[])
+  // Both designs, one card per URL (a published new-design page wins). Not the live
+  // fetcher: its cache only refreshes while <SanityLive> runs (draft mode), so
+  // visitors would keep the pages from the last deploy.
+  const pages = await fetchServiceIndex()
   return (
     <div className="collection-page">
       <CollectionHeader />

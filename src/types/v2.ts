@@ -85,7 +85,7 @@ export type V2Page = {
     footnoteLinkLabel?: string
     footnoteLinkAnchor?: string
     comparison?: {heading?: string; intro?: string; columns?: string[]; rows?: Array<Keyed & {label: string; values?: string[]}>}
-    options?: {heading?: string; calloutLead?: string; calloutBody?: string; items?: TitledBody[]; note?: string}
+    options?: {heading?: string; calloutLead?: string; calloutBody?: string; items?: Array<TitledBody & {image?: Img}>; note?: string}
   }
   assessment?: {
     heading?: string

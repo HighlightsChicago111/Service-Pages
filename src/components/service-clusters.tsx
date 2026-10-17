@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import {CollectionFooter, CollectionHeader} from './collection-chrome'
 import {prepareCollectionItems, type CollectionItem, type PreparedCollectionItem} from '@/lib/collection-items'
-import {chooseServiceHeading, clusterTitle, formatServiceCount, serviceClusters, type ServiceCluster} from '@/lib/clusters'
+import {chooseServiceHeading, clusterForService, clusterTitle, formatServiceCount, serviceClusters, type ServiceCluster} from '@/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, serviceRoutePath} from '@/lib/service-urls'
 
 export type ServiceCards = Map<string, PreparedCollectionItem>
@@ -12,9 +12,16 @@ export function serviceCardsBySlug(pages: CollectionItem[]): ServiceCards {
   return new Map(prepareCollectionItems(pages).map((page) => [page.serviceSlug, page]))
 }
 
-/** The cluster's live services that are published in Sanity, in cluster order. */
+/**
+ * The cluster's services that are published in Sanity: the workbook's services in
+ * cluster order, then any newer page whose Sanity cluster name matches, by search volume.
+ */
 export function publishedServices(cluster: ServiceCluster, cards: ServiceCards): PreparedCollectionItem[] {
-  return cluster.services.map((slug) => cards.get(slug)).filter((card): card is PreparedCollectionItem => Boolean(card))
+  const listed = cluster.services.map((slug) => cards.get(slug)).filter((card): card is PreparedCollectionItem => Boolean(card))
+  const added = [...cards.values()]
+    .filter((card) => !cluster.services.includes(card.serviceSlug) && clusterForService(card.serviceSlug, card.parentName)?.slug === cluster.slug)
+    .sort((left, right) => (right.monthlySearchVolume || 0) - (left.monthlySearchVolume || 0))
+  return [...listed, ...added]
 }
 
 type CardProps = {
@@ -125,7 +132,7 @@ export function ClusterPage({cluster, cards}: {cluster: ServiceCluster; cards: S
               {services.map((service) => (
                 <ServiceBlock
                   key={service.serviceSlug}
-                  href={serviceRoutePath(service.serviceSlug)}
+                  href={serviceRoutePath(service.serviceSlug, service.parentName)}
                   label={service.areaName}
                   title={service.serviceName}
                   description={service.metaDescription}

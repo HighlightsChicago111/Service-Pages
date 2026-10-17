@@ -36,6 +36,7 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
       "serviceSlug": service->slug.current,
       "areaSlug": area->slug.current,
       "serviceName": service->name,
+      "parentName": service->parentName,
       "areaName": area->name,
       "monthlySearchVolume": service->monthlySearchVolume,
       "metaDescription": seo.description
@@ -45,6 +46,7 @@ export const SERVICE_INDEX_QUERY = defineQuery(`
       "serviceSlug": slug.current,
       "areaSlug": area->slug.current,
       "serviceName": name,
+      parentName,
       "areaName": area->name,
       monthlySearchVolume,
       "metaDescription": seo.description
@@ -179,7 +181,7 @@ export const NEW_DESIGN_PAGE_QUERY = defineQuery(`
       // Each block's optional photo, resolved to a URL like the galleries.
       "hero": hero{..., image${RESOLVED_IMAGE}},
       "jobPaths": jobPaths{..., items[]{..., image${RESOLVED_IMAGE}}},
-      "equipment": equipment{..., items[]{..., image${RESOLVED_IMAGE}}},
+      "equipment": equipment{..., items[]{..., image${RESOLVED_IMAGE}}, options{..., items[]{..., image${RESOLVED_IMAGE}}}},
       "assessment": assessment{..., image${RESOLVED_IMAGE}},
       "diagnose": diagnose{..., image${RESOLVED_IMAGE}, orphanImage${RESOLVED_IMAGE}},
       "brands": brands{..., logos[]{..., logo${RESOLVED_IMAGE}}},

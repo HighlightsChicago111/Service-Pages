@@ -128,8 +128,8 @@ function JsonLd({data}: Props) {
   const {page, settings} = stegaClean(data)
   if (!page || !settings) return null
   const {service, area} = page
-  const canonicalUrl = servicePageUrl(service.slug)
-  const cluster = clusterForService(service.slug)
+  const canonicalUrl = servicePageUrl(service.slug, service.parentName)
+  const cluster = clusterForService(service.slug, service.parentName)
   const faqs: Faq[] = [...(service.faqs || []), ...(page.localFaqOverrides?.length ? page.localFaqOverrides : area.localFaqs || [])]
   const graph = [
     {
@@ -191,9 +191,9 @@ export function ServiceLandingPage({data}: Props) {
   // Routes in both designs, one per URL, so related links can reach new-design pages.
   const serviceRoutes = preferNewDesign(stegaClean(data.serviceRoutes || []))
   const serviceSlug = stegaClean(service.slug)
-  const cluster = clusterForService(serviceSlug)
   const areaSlug = stegaClean(area.slug)
   const parentName = stegaClean(service.parentName)
+  const cluster = clusterForService(serviceSlug, parentName)
   const phoneHref = `tel:${stegaClean(settings.phoneE164)}`
   const matchedRelatedServices = (service.otherServices || [])
     .map((item) => ({...item, href: resolvePublishedServicePath(stegaClean(item.url), stegaClean(item.name), serviceRoutes, areaSlug)}))
@@ -207,12 +207,12 @@ export function ServiceLandingPage({data}: Props) {
     .sort((left, right) => Number(right.parentName === parentName) - Number(left.parentName === parentName))
   for (const route of fallbackRoutes) {
     if (relatedServices.length >= 4) break
-    const href = servicePageUrl(route.serviceSlug).replace(PUBLIC_SITE_ORIGIN, '')
+    const href = servicePageUrl(route.serviceSlug, route.parentName).replace(PUBLIC_SITE_ORIGIN, '')
     if (usedRelatedPaths.has(href)) continue
     relatedServices.push({
       name: route.serviceName || route.serviceSlug,
       description: `Explore ${route.serviceName || 'this electrical service'} from Highlights Chicago.`,
-      url: servicePageUrl(route.serviceSlug),
+      url: servicePageUrl(route.serviceSlug, route.parentName),
       href,
     })
     usedRelatedPaths.add(href)

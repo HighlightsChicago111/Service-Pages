@@ -130,8 +130,10 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     jobs: page.jobPaths?.items?.some((item) => item.image)
       ? page.jobPaths.items.map((item, index) => fromImg(item.image, alt(item.title)) || mapped.jobs?.[index]) as Photo[]
       : mapped.jobs,
+    // Once the page sets its own tile photos, a tile without one shows its icon: the
+    // reference map is matched by position, so its photo would belong to another tile.
     equipment: page.equipment?.items?.some((item) => item.image)
-      ? page.equipment.items.map((item, index) => fromImg(item.image, alt(item.name)) || mapped.equipment?.[index]) as Photo[]
+      ? page.equipment.items.map((item) => fromImg(item.image, alt(item.name))) as Photo[]
       : mapped.equipment,
     assessment: fromImg(page.assessment?.image, alt('Site assessment')) || mapped.assessment,
     diagnose: fromImg(page.diagnose?.image, alt('Diagnosis')) || mapped.diagnose,
@@ -142,11 +144,17 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     drivers: fromImg(page.pricing?.driversImage, alt('Cost drivers')) || mapped.drivers,
     handover: fromImg(page.included?.handoverImage, alt('Handover')) || mapped.handover,
     serviceGuide: fromImg(page.serviceGuide?.image, alt('Service guide')) || mapped.serviceGuide,
+    // A page with its own photos shows them in "Our works", never the reference page's set.
+    gallery: page.workingPhotos?.length || page.gallery?.length ? undefined : mapped.gallery,
   }
-  const pagePhotos = [...(page.gallery || []), ...(page.workingPhotos || [])]
+  const toPhotos = (images: Img[]) => images
     .map((image) => fromImg(image, `${page.name} in ${area.name}`))
     .filter((photo): photo is Photo => Boolean(photo))
     .filter((photo, index, all) => all.findIndex((other) => other.src === photo.src) === index)
+  // Hero photos first: the hero and library fallbacks have no credit slot for a Yelp photo.
+  const pagePhotos = toPhotos([...(page.gallery || []), ...(page.workingPhotos || [])])
+  // "Our works" shows the real job photos (workingPhotos, credited) first, then the hero photos.
+  const worksPhotos = toPhotos([...(page.workingPhotos || []), ...(page.gallery || [])])
   const crew = (page.gallery || [])
     .map((image) => {
       const photo = fromImg(image, `${page.name} in ${area.name}`)
@@ -175,7 +183,7 @@ export function visualsFor(page: V2Page, area: V2Area): ResolvedVisuals {
     jobs: own.jobs || [],
     equipment: own.equipment || [],
     reasonStats: own.reasonStats || [],
-    gallery: own.gallery || pagePhotos,
+    gallery: own.gallery || worksPhotos,
     crew,
     library,
     brandLogos,

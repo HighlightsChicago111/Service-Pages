@@ -5,6 +5,8 @@ export type CollectionItem = {
   serviceSlug?: string | null
   areaSlug?: string | null
   serviceName?: string | null
+  /** Sanity cluster name; places a page the workbook does not list in its service group. */
+  parentName?: string | null
   areaName?: string | null
   monthlySearchVolume?: number | null
   metaDescription?: string | null
