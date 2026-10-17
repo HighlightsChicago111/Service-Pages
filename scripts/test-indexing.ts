@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {clusterForService, serviceClusters} from '../src/lib/clusters'
+import {clusterForService, findCluster, serviceClusters} from '../src/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, clusterPagePath} from '../src/lib/service-urls'
 
 const baseUrl = (process.argv[2] || process.env.INDEXING_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
@@ -118,7 +118,8 @@ async function run() {
   for (const publicUrl of serviceLocations) {
     const pathname = new URL(publicUrl).pathname
     const serviceSlug = pathname.split('/').at(-1) || ''
-    const cluster = clusterForService(serviceSlug)
+    // A page added after the workbook joins its group by its Sanity cluster name, which shows in its URL.
+    const cluster = clusterForService(serviceSlug) || findCluster(pathname.split('/')[2] || '')
     const response = await fetch(`${baseUrl}${pathname}`, {redirect: 'manual'})
     assert.equal(response.status, 200, `${pathname} must return 200 without a redirect`)
     assert.ok(!/no-store/i.test(response.headers.get('cache-control') || ''), `${pathname} must be cacheable`)
