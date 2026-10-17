@@ -223,7 +223,11 @@ async function run() {
     if (group) expect(text.includes(`<a href="${clusterPagePath(group.slug)}">${group.name}</a>`), `${pathname} breadcrumb does not link to its ${group.name} group`)
     expect(!text.includes('ds-nav-menu'), `${pathname} still renders the Services dropdown`)
     expect(text.includes('<a class="ds-nav-current" href="/services">Services</a>'), `${pathname} navbar Services does not link to /services`)
-    expect((text.match(/class="ds-photo ds-option-media"/g) || []).length === (page.optionPhotoCount || 0), `${pathname} does not show every option photo set in Sanity`)
+    // Option cards show their own photo, a diagram, or a matching stand-in photo.
+    expect((text.match(/class="ds-photo ds-option-media"/g) || []).length >= (page.optionPhotoCount || 0), `${pathname} does not show every option photo set in Sanity`)
+    const photoSources = [...text.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gi)].map((match) => match[1].replace(/&amp;/g, '&')).filter((src) => !/logo|\/brands\//i.test(src))
+    const optionSources = [...text.matchAll(/class="ds-photo ds-option-media"><img\b[^>]*\bsrc="([^"]+)"/gi)].map((match) => match[1])
+    for (const src of optionSources) expect(photoSources.filter((other) => other === src).length === 1, `${pathname} shows the option photo ${src} twice`)
     for (const legacy of [`/services/${page.serviceSlug}`, `/services/${page.serviceSlug}/${PRIMARY_AREA_SLUG}`].filter((value) => value !== pathname)) {
       const response = await fetch(`${baseUrl}${legacy}`, {redirect: 'manual'})
       const location = response.headers.get('location')

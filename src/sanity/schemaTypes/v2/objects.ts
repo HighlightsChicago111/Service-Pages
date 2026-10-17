@@ -66,7 +66,7 @@ export const v2TitledBody = defineType({
     // Only the Equipment fold's option cards show a photo; every other list hides the field.
     defineField({
       name: 'image', title: 'Photo', type: 'v2Image',
-      description: 'Optional. A photo of this option; leave empty to show its icon or diagram.',
+      description: 'Optional. A photo of this option. Leave empty and the page shows its diagram, or picks the best-matching Highlights job photo or site photo not already on the page.',
       hidden: ({path}) => !path.includes('options'),
     }),
   ],
