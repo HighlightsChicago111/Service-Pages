@@ -20,7 +20,9 @@ async function main() {
   const permanentSources = redirects
     .filter((redirect) => redirect.permanent)
     .map((redirect) => redirect.source.replace(redirect.basePath === false ? /^\/services\// : /^\//, ''))
-  assert.equal(permanentSources.length, 77, 'next.config.ts should define 77 permanent redirects')
+    // Nested /<group>/<service> redirects (flat service URLs) reserve no slug.
+    .filter((source) => !source.includes('/'))
+  assert.equal(permanentSources.length, 77, 'next.config.ts should define 77 permanent one-segment redirects')
   assert.deepEqual([...REDIRECT_SOURCE_SLUGS].sort(), [...permanentSources].sort(), 'src/lib/reserved-slugs.ts is out of sync with next.config.ts')
 
   // 2. Studio slug validation: redirect sources and reserved paths are refused, live and new slugs are allowed.

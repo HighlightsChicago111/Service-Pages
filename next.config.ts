@@ -104,7 +104,8 @@ const legacyHubRedirectSlugs = ['ejector-pump', 'furnace', 'hvac', 'water-pump']
 const publishedClusters = hierarchy.clusters.filter((cluster) => cluster.services.length > 0)
 const clusterSlugs = new Set(publishedClusters.map((cluster) => cluster.slug))
 const clusterOfService = new Map(publishedClusters.flatMap((cluster) => cluster.services.map((service) => [service, cluster.slug] as const)))
-const servicePath = (service: string) => clusterOfService.has(service) ? `/${clusterOfService.get(service)}/${service}` : `/${service}`
+// Flat /<service> while the live proxy forwards only one segment (data/cluster-hierarchy.json nestedServiceUrls).
+const servicePath = (service: string) => hierarchy.nestedServiceUrls === true && clusterOfService.has(service) ? `/${clusterOfService.get(service)}/${service}` : `/${service}`
 
 const nextConfig: NextConfig = {
   // The app is served under the /services subdirectory of the main site.
@@ -149,6 +150,12 @@ const nextConfig: NextConfig = {
         permanent: true,
         basePath: false as const,
       })),
+      // While service URLs are flat, a nested /<group>/<service> link goes to the flat page.
+      ...(hierarchy.nestedServiceUrls === true ? [] : [...clusterOfService].map(([service, cluster]) => ({
+        source: `/${cluster}/${service}`,
+        destination: `/${service}`,
+        permanent: true,
+      }))),
     ]
   },
 }

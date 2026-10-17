@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {clusterForService, findCluster, serviceClusters} from '../src/lib/clusters'
+import {NESTED_SERVICE_URLS, clusterForService, findCluster, serviceClusters} from '../src/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, clusterPagePath} from '../src/lib/service-urls'
 
 const baseUrl = (process.argv[2] || process.env.INDEXING_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
@@ -127,7 +127,8 @@ async function run() {
     assert.equal(canonicalFrom(html), publicUrl, `${pathname} canonical must exactly match its sitemap URL`)
     assert.ok(!pathname.endsWith('/chicago'), `${pathname} must not contain the area slug`)
     assert.ok(!publicUrl.endsWith('/'), `${pathname} canonical must not have a trailing slash`)
-    if (cluster) assert.equal(pathname, `/services/${cluster.slug}/${serviceSlug}`, `${pathname} must sit under its service group`)
+    if (cluster && NESTED_SERVICE_URLS) assert.equal(pathname, `/services/${cluster.slug}/${serviceSlug}`, `${pathname} must sit under its service group`)
+    if (!NESTED_SERVICE_URLS) assert.equal(pathname, `/services/${serviceSlug}`, `${pathname} must keep its flat URL while nested service URLs are off`)
     const pageTitle = titleFrom(html)
     assert.equal((pageTitle.match(/Highlights/gi) || []).length, 1, `${pathname} title must contain the brand once`)
     assert.ok(!/(?:…|\.\.\.)/.test(pageTitle), `${pathname} title must not contain a truncation ellipsis`)
@@ -136,9 +137,13 @@ async function run() {
     const breadcrumbs = breadcrumbLists(html)
     assert.equal(breadcrumbs.length, 1, `${pathname} must have one BreadcrumbList`)
     const items = breadcrumbs[0].itemListElement || []
-    assert.equal(items.length, cluster ? 4 : 3, `${pathname} breadcrumb schema must list Home, Services${cluster ? ', its group' : ''} and the page`)
+    // A page the workbook lists always shows its group; a newer page shows the group its
+    // Sanity cluster name names, which a flat URL does not reveal.
+    const groupCrumbs = cluster ? [4] : NESTED_SERVICE_URLS ? [3] : [3, 4]
+    assert.ok(groupCrumbs.includes(items.length), `${pathname} breadcrumb schema must list Home, Services${cluster ? ', its group' : ''} and the page`)
     assert.deepEqual(items.map((item) => item.position), items.map((_, index) => index + 1), `${pathname} breadcrumb positions must be sequential`)
     if (cluster) assert.equal(items[2].item, `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`, `${pathname} breadcrumb must include its service group`)
+    if (items.length === 4) assert.ok(clusterUrls.has(String(items[2].item)), `${pathname} breadcrumb group ${items[2].item} is not a service group page`)
     assert.equal(items.at(-1)?.item, publicUrl, `${pathname} final breadcrumb must equal its canonical`)
 
     // The phone menu repeats the desktop menu, so its links must not be in the page HTML.
@@ -166,8 +171,10 @@ async function run() {
       assert.ok(servicePaths.has(href), `${pathname} links to unpublished service route ${href}`)
     }
 
-    // Earlier URLs keep working: the flat launch URL and the /chicago area URL.
-    if (cluster) await expectPermanentRedirect(`/services/${serviceSlug}`, pathname)
+    // Earlier URLs keep working: the flat launch URL (or, while service URLs are flat,
+    // the nested one) and the /chicago area URL.
+    if (cluster && NESTED_SERVICE_URLS) await expectPermanentRedirect(`/services/${serviceSlug}`, pathname)
+    if (cluster && !NESTED_SERVICE_URLS) await expectPermanentRedirect(`/services/${cluster.slug}/${serviceSlug}`, pathname)
     await expectPermanentRedirect(`/services/${serviceSlug}/chicago`, pathname)
   }
 

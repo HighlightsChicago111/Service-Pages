@@ -1,5 +1,7 @@
 {
   "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs are the content plan cluster URL slugs; service slugs are the live Sanity slugs. \"parentName\" is the Sanity cluster name (servicePage service->parentName, v2ServicePage parentName): a published page whose slug is not listed joins the group with that name, after the listed services.",
+  "nestedServiceUrls": false,
+  "nestedServiceUrlsNote": "Service pages live at /services/<service> while the live proxy (Cloudflare) forwards only one path segment under /services to Vercel. Set nestedServiceUrls to true to move them to /services/<group>/<service> once the proxy forwards /services/*/*, and check a nested URL on www.highlightschicago.com first.",
   "clusters": [
     {
       "slug": "power-distribution",

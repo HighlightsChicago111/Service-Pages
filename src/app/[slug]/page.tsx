@@ -1,7 +1,7 @@
 import type {Metadata} from 'next'
 import {notFound, permanentRedirect} from 'next/navigation'
 import {ClusterPage, publishedServices, serviceCardsBySlug} from '@/components/service-clusters'
-import {clusterTitle, findCluster, serviceClusters} from '@/lib/clusters'
+import {NESTED_SERVICE_URLS, clusterTitle, findCluster, serviceClusters} from '@/lib/clusters'
 import {fetchServiceIndex, publishedServiceSlugs, renderServicePage, serviceGroupOf, serviceMetadata} from '@/lib/service-page'
 import {PUBLIC_SITE_ORIGIN, clusterPagePath} from '@/lib/service-urls'
 
@@ -28,7 +28,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
       alternates: {canonical: `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`},
     }
   }
-  if (await serviceGroupOf(slug)) return {}
+  if (NESTED_SERVICE_URLS && await serviceGroupOf(slug)) return {}
   return serviceMetadata(slug)
 }
 
@@ -40,8 +40,9 @@ export default async function ServiceGroupOrServicePage({params}: Props) {
     if (!publishedServices(cluster, cards).length) notFound()
     return <ClusterPage cluster={cluster} cards={cards} />
   }
+  // With nested service URLs on, the flat URL redirects to the nested one.
   // Redirect destinations are base-relative; Next.js re-adds /services.
-  const group = await serviceGroupOf(slug)
+  const group = NESTED_SERVICE_URLS ? await serviceGroupOf(slug) : undefined
   if (group) permanentRedirect(`/${group.slug}/${slug}`)
   return renderServicePage(slug)
 }

@@ -1,4 +1,4 @@
-import {clusterForService} from './clusters'
+import {NESTED_SERVICE_URLS, clusterForService} from './clusters'
 
 export const PUBLIC_SITE_ORIGIN = 'https://www.highlightschicago.com'
 export const SERVICES_PATH = '/services'
@@ -19,7 +19,7 @@ export type ServiceRoute = {
  * workbook gets its group's URL.
  */
 export function serviceRoutePath(serviceSlug: string, parentName?: string | null): string {
-  const cluster = clusterForService(serviceSlug, parentName)
+  const cluster = NESTED_SERVICE_URLS ? clusterForService(serviceSlug, parentName) : undefined
   return cluster ? `/${cluster.slug}/${serviceSlug}` : `/${serviceSlug}`
 }
 
