@@ -631,8 +631,10 @@
 .ds-drivers-list .ds-numbered-num { line-height: 26px; }
 .ds-drivers-list p { margin-top: 4px; color: var(--c-ink-soft); font-size: 16px; line-height: 24px; }
 .ds-drivers-list .ds-h6 { font-size: 17px; }
-.ds-when { display: inline-flex; align-items: flex-start; gap: 8px; justify-self: start; padding: 8px 12px; border-radius: var(--r-sm); background: var(--c-blue-tint); color: var(--c-blue); font: 600 14px/18px var(--f-body); }
-.ds-when .ds-icon { margin-top: 2px; }
+/* Plain text under its column head, not a tinted box: a box with only a time in it read as a placeholder. */
+.ds-when { display: flex; align-items: flex-start; gap: 8px; color: var(--c-ink); font: 500 15px/22px var(--f-body); }
+.ds-when .ds-icon { flex: none; margin-top: 3px; color: var(--c-blue); }
+.ds-when-label { display: none; }
 .ds-callout-light { display: flex; gap: 24px; margin-top: 60px; padding: 32px 36px; border-radius: var(--r-md); border-left: 4px solid var(--c-blue); background: #fff; }
 .ds-band--white .ds-callout-light { border: 1px solid var(--c-line); border-left: 4px solid var(--c-blue); }
 .ds-callout-light .ds-label-head { margin-bottom: 8px; }
@@ -951,7 +953,9 @@
   .ds-price-pill { justify-self: start; }
   .ds-drivers-head { display: none; }
   .ds-drivers-list li { grid-template-columns: 40px minmax(0, 1fr); gap: 10px 12px; }
-  .ds-drivers-list .ds-when { grid-column: 2; }
+  .ds-drivers-list .ds-when { grid-column: 2; margin-top: 4px; padding-top: 12px; border-top: 1px dashed var(--c-line); }
+  /* The column head is hidden on phones, so each time carries its own label. */
+  .ds-when-label { display: block; margin-bottom: 2px; color: var(--c-ink-muted); font: 700 11px/16px var(--f-body); letter-spacing: .08em; text-transform: uppercase; }
   .ds-callout-light { flex-direction: column; padding: 24px 22px; }
 
   .ds-scope { grid-template-columns: 1fr; }
