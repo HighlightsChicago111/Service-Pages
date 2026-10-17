@@ -18,6 +18,13 @@ export type ServiceCluster = {
 
 const allClusters = hierarchy.clusters as ServiceCluster[]
 
+/**
+ * Whether service pages live at /services/<group>/<service> (true) or /services/<service>
+ * (false). The live proxy forwards only one path segment under /services to Vercel, so
+ * nested URLs 404 on www.highlightschicago.com until it forwards /services/*\/* as well.
+ */
+export const NESTED_SERVICE_URLS = hierarchy.nestedServiceUrls === true
+
 /** Clusters that can hold a page; one with no listed service and no Sanity name is not published. */
 export const serviceClusters = allClusters.filter((cluster) => cluster.services.length > 0 || cluster.parentName)
 
