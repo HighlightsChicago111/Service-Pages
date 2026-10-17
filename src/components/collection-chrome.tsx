@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 
-import Link from 'next/link'
 import {FooterLeadForm} from './footer-lead-form'
 import {Icon, XLogo} from './hc-icons'
 import {MobileMenu} from './mobile-menu'
+import {SERVICES_PATH} from '@/lib/service-urls'
 
 const LIVE_SITE = 'https://www.highlightschicago.com'
 const HEADER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'
@@ -12,21 +12,18 @@ const MAPS_URL = 'https://www.google.com/maps/place/Highlights+Chicago+Electrica
 // Google AI Mode (udm=50) with the question already asked; the address pins the business.
 const AI_SUMMARY_URL = `https://www.google.com/search?udm=50&q=${encodeURIComponent('Tell me about Highlights Chicago, the electrical contractor at 5766 N Lincoln Ave, Chicago: its services, service areas, reviews and how to book')}`
 
-// Services is a plain link to the /services collection page (no dropdown); `services`
-// marks it as a route inside this app, so it uses the basePath-aware Link.
+// Services is a plain link to the /services collection page, with no dropdown.
 const primaryLinks: Array<{label: string; href: string; services?: boolean}> = [
   {label: 'Home', href: `${LIVE_SITE}/`},
   {label: 'About Us', href: `${LIVE_SITE}/about-us`},
-  {label: 'Services', href: '/', services: true},
+  {label: 'Services', href: SERVICES_PATH, services: true},
   {label: 'Service Areas', href: `${LIVE_SITE}/service-areas`},
   {label: 'Blog', href: `${LIVE_SITE}/blog`},
   {label: 'Learning Center', href: `${LIVE_SITE}/learning-center`},
 ]
 
 function NavLink({link}: {link: (typeof primaryLinks)[number]}) {
-  return link.services
-    ? <Link href={link.href} aria-current="page">{link.label}</Link>
-    : <a href={link.href}>{link.label}</a>
+  return <a href={link.href} aria-current={link.services ? 'page' : undefined}>{link.label}</a>
 }
 
 /** Utility bar and main navigation (design system SP-00 and SP-01). */
@@ -91,7 +88,7 @@ export function CollectionFooter() {
               <nav aria-label="Company links">
                 <h2>Company</h2>
                 <a href={`${LIVE_SITE}/about-us`}>About Us</a>
-                <Link href="/">Our Services</Link>
+                <a href={SERVICES_PATH}>Our Services</a>
                 <a href={`${LIVE_SITE}/learning-center`}>Learning Center</a>
                 <a href={`${LIVE_SITE}/contact-us`}>Contact Us</a>
               </nav>

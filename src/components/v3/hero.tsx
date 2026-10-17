@@ -6,7 +6,7 @@ import {QuoteForm} from './quote-form'
 import {jobNoun} from '@/lib/v3/content'
 import {focus} from '@/lib/v3/visuals'
 import {clusterForService} from '@/lib/clusters'
-import {PUBLIC_SITE_ORIGIN} from '@/lib/service-urls'
+import {PUBLIC_SITE_ORIGIN, SERVICES_PATH} from '@/lib/service-urls'
 import type {BlockContext} from './types'
 
 /** D1 Hero + quote form (dark photo band). */
@@ -28,7 +28,7 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
           <nav className="ds-crumbs" aria-label="Breadcrumb">
             <ol>
               <li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li>
-              <li><Link href="/">Services</Link></li>
+              <li><a href={SERVICES_PATH}>Services</a></li>
               {cluster && <li><Link href={`/${cluster.slug}`}>{cluster.name}</Link></li>}
               <li aria-current="page">{page.name} in {area.name}</li>
             </ol>

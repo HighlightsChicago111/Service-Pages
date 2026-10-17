@@ -1,10 +1,9 @@
 /* eslint-disable @next/next/no-img-element -- Card photos from /public. */
-import Link from 'next/link'
 import {Eyebrow, IconTile} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {focus, relatedCardPhoto} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
-import {servicePagePath} from '@/lib/service-urls'
+import {SERVICES_PATH, servicePagePath} from '@/lib/service-urls'
 import type {BlockContext} from '../types'
 
 export const hasRelated = ({page}: BlockContext) => Boolean(page.otherServices?.featured?.title || page.otherServices?.items?.length)
@@ -35,7 +34,7 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
             {featured.tag && <p className="ds-glass-chip"><i aria-hidden="true" />{featured.tag}</p>}
             <h3 className="ds-h3">{featured.title}</h3>
             {featured.description && <p>{featured.description}</p>}
-            <Link className="ds-btn ds-btn--light" href="/"><span>View all services</span><Icon name="arrowRight" size={18} /></Link>
+            <a className="ds-btn ds-btn--light" href={SERVICES_PATH}><span>View all services</span><Icon name="arrowRight" size={18} /></a>
           </div>
         </article>}
         <ul className="ds-service-cards">
