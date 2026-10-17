@@ -1,6 +1,6 @@
 import type {Metadata} from 'next'
 import {notFound, permanentRedirect} from 'next/navigation'
-import {clusterForService, findCluster} from '@/lib/clusters'
+import {NESTED_SERVICE_URLS, clusterForService, findCluster} from '@/lib/clusters'
 import {publishedServiceRoutes, renderServicePage, serviceGroupOf, serviceMetadata} from '@/lib/service-page'
 import {PRIMARY_AREA_SLUG, serviceRoutePath} from '@/lib/service-urls'
 import {metadataClient} from '@/sanity/lib/client'
@@ -16,7 +16,7 @@ export async function generateStaticParams() {
   const services = await publishedServiceRoutes()
   return services.flatMap(({serviceSlug, parentName}) => {
     const cluster = clusterForService(serviceSlug, parentName)
-    return [...(cluster ? [{slug: cluster.slug, child: serviceSlug}] : []), {slug: serviceSlug, child: PRIMARY_AREA_SLUG}]
+    return [...(cluster && NESTED_SERVICE_URLS ? [{slug: cluster.slug, child: serviceSlug}] : []), {slug: serviceSlug, child: PRIMARY_AREA_SLUG}]
   })
 }
 
@@ -26,12 +26,16 @@ async function isServiceRoute(slug: string, child: string) {
 
 export async function generateMetadata({params}: Props): Promise<Metadata> {
   const {slug, child} = await params
-  return await isServiceRoute(slug, child) ? serviceMetadata(child) : {}
+  return NESTED_SERVICE_URLS && await isServiceRoute(slug, child) ? serviceMetadata(child) : {}
 }
 
 export default async function ClusterServicePage({params}: Props) {
   const {slug, child} = await params
-  if (await isServiceRoute(slug, child)) return renderServicePage(child)
+  if (await isServiceRoute(slug, child)) {
+    if (NESTED_SERVICE_URLS) return renderServicePage(child)
+    // Service pages live at their flat URL for now (see NESTED_SERVICE_URLS).
+    permanentRedirect(serviceRoutePath(child))
+  }
   if (child === PRIMARY_AREA_SLUG && !findCluster(slug)) {
     // The old /<slug>/chicago link works for a page in either design.
     const queryParams = {serviceSlug: slug, areaSlug: PRIMARY_AREA_SLUG}

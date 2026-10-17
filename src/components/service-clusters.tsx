@@ -29,7 +29,7 @@ type CardProps = {
   label: string
   title: string
   description?: string
-  footer?: string
+  footer: string
   image?: {src?: string; alt: string}
 }
 
@@ -41,15 +41,19 @@ export function ServiceBlock({href, label, title, description, footer, image}: C
         {image?.src && <img className="collection-card-image" src={image.src} alt={image.alt} loading="lazy" decoding="async" />}
         {!image?.src && <span aria-hidden="true">HC</span>}
       </span>
-      <span className="collection-card-arrow" aria-hidden="true">→</span>
       <span className="collection-card-content">
         <span className="collection-card-area">{label}</span>
         <strong>{title}</strong>
         {description && <span className="collection-card-description">{description}</span>}
-        {footer && <span className="collection-card-volume">{footer}</span>}
+        <span className="collection-card-volume collection-card-explore">{footer}<span className="collection-card-arrow" aria-hidden="true">→</span></span>
       </span>
     </Link>
   )
+}
+
+/** Line under the service count on a group page, e.g. "Panel upgrade service across Chicago". */
+function groupPanelNote(cluster: ServiceCluster, count: number): string {
+  return `${cluster.noun.charAt(0).toUpperCase()}${cluster.noun.slice(1)} ${count === 1 ? 'service' : 'services'} across Chicago`
 }
 
 /** "Choose a service" section on /services: one block per service group. */
@@ -95,7 +99,8 @@ export function ClusterPage({cluster, cards}: {cluster: ServiceCluster; cards: S
     <div className="collection-page">
       <CollectionHeader />
       <main>
-        <section className="collection-hero">
+        <section className="collection-hero collection-hero--photo">
+          {services[0]?.cardImage && <img className="collection-hero-bg" src={services[0].cardImage} alt={`${cluster.name} services by Highlights Chicago`} decoding="async" fetchPriority="high" />}
           <div className="collection-wrap">
             <nav className="hierarchy-crumbs" aria-label="Breadcrumb">
               <ol>
@@ -114,8 +119,8 @@ export function ClusterPage({cluster, cards}: {cluster: ServiceCluster; cards: S
             <div className="collection-hero-panel">
               <span>{cluster.name}</span>
               <strong>{services.length}</strong>
-              <p>{services.length === 1 ? 'Service' : 'Services'} in Chicago</p>
-              <a href="tel:7732623333">Talk with an electrician <span aria-hidden="true">→</span></a>
+              <p>{groupPanelNote(cluster, services.length)}</p>
+              <a href="https://www.highlightschicago.com/contact-us">Talk with an electrician <span aria-hidden="true">→</span></a>
             </div>
           </div>
         </section>
@@ -136,6 +141,7 @@ export function ClusterPage({cluster, cards}: {cluster: ServiceCluster; cards: S
                   label={service.areaName}
                   title={service.serviceName}
                   description={service.metaDescription}
+                  footer="View service"
                   image={{src: service.cardImage, alt: service.cardImageAlt}}
                 />
               ))}

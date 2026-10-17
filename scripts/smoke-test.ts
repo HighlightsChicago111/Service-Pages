@@ -94,6 +94,12 @@ async function testDocument(pathname: string, requiredText: string[]) {
   expect(response.status === 200, `${pathname} returned ${response.status}`)
   expect(!/This page couldn.t load|Application error|Internal Server Error/i.test(text), `${pathname} rendered an error page`)
   for (const value of requiredText) expect(text.includes(value), `${pathname} is missing ${JSON.stringify(value)}`)
+  // Every page header: "Services" is a plain link to the /services collection page, with no dropdown.
+  const primaryNav = text.match(/<nav class="(?:hc|ds)-nav-links" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]
+  if (primaryNav) {
+    expect(/<a [^>]*href="\/services"[^>]*>Services<\/a>/.test(primaryNav), `${pathname} header does not link Services to /services`)
+    expect(!/<svg|<details|<ul/.test(primaryNav), `${pathname} header still has a dropdown in the primary navigation`)
+  }
   return text
 }
 
@@ -152,7 +158,8 @@ async function run() {
   for (const href of [
     'https://www.highlightschicago.com/',
     'https://www.highlightschicago.com/about-us',
-    'https://www.highlightschicago.com/services',
+    '/services',
+    'https://www.highlightschicago.com/service-areas',
     'https://www.highlightschicago.com/blog',
     'https://www.highlightschicago.com/learning-center',
     'https://www.highlightschicago.com/contact-us',
@@ -162,12 +169,14 @@ async function run() {
     'tel:773-262-3333',
     'mailto:info@highlightschicago.com',
   ]) expect(anchorHrefs(collection).includes(href), `Collection page is missing live destination ${href}`)
-  expect(collection.includes('class="collection-footer-form"'), 'Collection page is missing the live-style footer quote form')
+  expect(collection.includes('class="hc-footer-form"'), 'Collection page is missing the footer quote form')
   expect(collection.includes('served the Chicagoland area for over 12 years'), 'Collection footer is missing the live company summary')
-  expect(collection.includes('class="collection-utility"'), 'Collection page is missing the live utility bar')
+  expect(collection.includes('class="hc-utility"'), 'Collection page is missing the utility bar')
   expect(collection.includes('6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'), 'Collection page is not using the exact live header logo')
-  expect(collection.includes('class="collection-footer-title"'), 'Collection footer is missing the single-line quote heading')
-  expect((collection.match(/class="collection-social-icon"/g) || []).length === 2, 'Collection footer does not render both social icons')
+  expect(collection.includes('class="hc-footer-title"'), 'Collection footer is missing the single-line quote heading')
+  expect((collection.match(/aria-label="Highlights Chicago on (?:Facebook|X)"/g) || []).length === 2, 'Collection footer does not render both social icons')
+  expect(collection.includes('class="collection-hero collection-hero--photo"'), 'Collection page is missing the photo hero')
+  expect((collection.match(/class="collection-card-volume collection-card-explore">Explore services/g) || []).length === groups.length, 'Every service group block must end in "Explore services" with its arrow')
   expect((collection.match(/class="collection-card"/g) || []).length === groups.length, 'Collection page does not render one block per service group')
   for (const {cluster, services} of groups) {
     expect(anchorHrefs(collection).includes(clusterPagePath(cluster.slug)), `Collection page does not link to the ${cluster.name} group`)
@@ -206,6 +215,9 @@ async function run() {
     const pathname = clusterPagePath(cluster.slug)
     const text = await testDocument(pathname, [clusterTitle(cluster), chooseServiceHeading(cluster)])
     const cardHrefs = [...text.matchAll(/<a class="collection-card"[^>]*href="([^"]+)"/g)].map((match) => match[1])
+    expect(text.includes('class="collection-hero collection-hero--photo"') && text.includes('class="collection-hero-bg"'), `${pathname} is missing the photo hero`)
+    expect(/<nav class="hierarchy-crumbs"[^>]*><ol><li><a href="https:\/\/www\.highlightschicago\.com">Home<\/a><\/li><li><a href="\/services">Services<\/a>/.test(text), `${pathname} breadcrumb does not link Services to /services`)
+    expect((text.match(/class="collection-card-volume collection-card-explore">View service/g) || []).length === services.length, `${pathname} cards must end in "View service" with its arrow`)
     expect(JSON.stringify(cardHrefs) === JSON.stringify(services.map(pagePath)), `${pathname} does not list its services in order: ${cardHrefs.join(', ')}`)
     expect(imageAlts(text).every(Boolean), `${pathname} contains an image without alt text`)
     expect(!/content plan|cluster|keyword/i.test(visibleText(text)), `${pathname} shows internal planning wording`)
@@ -254,9 +266,9 @@ async function run() {
     expect(serviceImageAlts.every(Boolean), `${pathname} contains an image without alt text`)
     expect(!serviceImageAlts.some((alt) => /^[a-z0-9-]+ (?:project|work in [a-z0-9-]+) \d+$/i.test(alt)), `${pathname} still exposes imported placeholder alt text`)
     expect(text.includes('<figcaption>'), `${pathname} does not render captions for completed-work photos`)
-    expect((text.match(/class="collection-header"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
-    expect((text.match(/class="collection-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
-    expect((text.match(/class="collection-utility"/g) || []).length === 1, `${pathname} does not render exactly one utility bar`)
+    expect((text.match(/class="hc-nav"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
+    expect((text.match(/class="hc hc-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
+    expect((text.match(/class="hc-utility"/g) || []).length === 1, `${pathname} does not render exactly one utility bar`)
     const renderedText = visibleText(text)
     for (const pageHeading of headingTexts(text).filter((value) => /^(what|why|who)\b/i.test(value))) {
       expect(pageHeading.endsWith('?'), `${pathname} question heading is missing ?: ${pageHeading}`)
@@ -314,7 +326,7 @@ async function run() {
     expect(text.includes('class="wrap closing-cta-section"'), `${pathname} is missing the compact closing-CTA spacing hook`)
     expect(text.includes('class="cta-heading"'), `${pathname} does not mark the closing CTA heading for responsive sizing`)
     expect(text.includes('class="section-tint library-section"'), `${pathname} does not use shared library section spacing`)
-    expect(text.includes('class="collection-footer-form"'), `${pathname} is missing the live-style footer quote form`)
+    expect(text.includes('class="hc-footer-form"'), `${pathname} is missing the footer quote form`)
     expect(renderedText.includes(`${page.pricingHeading} in ${page.areaName}?`), `${pathname} pricing heading is not a question`)
   }
 
