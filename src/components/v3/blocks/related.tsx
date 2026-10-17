@@ -4,13 +4,21 @@ import {Eyebrow, IconTile} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {focus, fromImg, serviceCardPhoto} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
+import {servicePagePath} from '@/lib/service-urls'
 import type {BlockContext} from '../types'
 
 export const hasRelated = ({page}: BlockContext) => Boolean(page.otherServices?.featured?.title || page.otherServices?.items?.length)
 
+/** Sanity stores flat links (/services/<slug>); a live page's link goes straight to its group URL instead of redirecting. */
+function serviceHref(url: string, routes: BlockContext['routes']) {
+  const slug = url.replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop() || ''
+  const route = routes.find((item) => item.slug === slug)
+  return route ? servicePagePath(route.slug, route.parentName) : url
+}
+
 /** D13 Related services: tall main-category card + 2×2 service cards. */
 export function RelatedBlock({ctx}: {ctx: BlockContext}) {
-  const {page, area, visuals} = ctx
+  const {page, area, visuals, routes} = ctx
   const featured = page.otherServices?.featured
   const services = (page.otherServices?.items || []).slice(0, 4)
   const category = visuals.category
@@ -39,7 +47,7 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
                 <div className="ds-service-body">
                   <h3 className="ds-h6">{service.name}</h3>
                   {service.description && <p>{service.description}</p>}
-                  <a className="ds-ghost ds-ghost--caps" href={service.url}><span>View service</span><Icon name="arrowRight" size={16} /></a>
+                  <a className="ds-ghost ds-ghost--caps" href={serviceHref(service.url, routes)}><span>View service</span><Icon name="arrowRight" size={16} /></a>
                 </div>
               </li>
             )

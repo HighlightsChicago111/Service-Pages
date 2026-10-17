@@ -11,7 +11,8 @@ import {questionHeading} from '@/lib/headings'
 import {preferNewDesign} from '@/lib/design-precedence'
 import {WorkingPhotoGrid} from './working-photo-grid'
 import {GalleryPhoto} from './gallery-photo'
-import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, resolvePublishedServicePath, servicePageUrl} from '@/lib/service-urls'
+import {clusterForService} from '@/lib/clusters'
+import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, resolvePublishedServicePath, servicePageUrl} from '@/lib/service-urls'
 
 type Props = {data: ServicePageData}
 
@@ -127,7 +128,8 @@ function JsonLd({data}: Props) {
   const {page, settings} = stegaClean(data)
   if (!page || !settings) return null
   const {service, area} = page
-  const canonicalUrl = servicePageUrl(service.slug)
+  const canonicalUrl = servicePageUrl(service.slug, service.parentName)
+  const cluster = clusterForService(service.slug, service.parentName)
   const faqs: Faq[] = [...(service.faqs || []), ...(page.localFaqOverrides?.length ? page.localFaqOverrides : area.localFaqs || [])]
   const graph = [
     {
@@ -143,10 +145,11 @@ function JsonLd({data}: Props) {
     },
     {'@type': 'Service', name: `${service.h1Prefix} in ${area.name}`, serviceType: service.name, provider: {'@id': `${PUBLIC_SITE_ORIGIN}/#business`}, areaServed: {'@type': 'City', name: `${area.name}, ${area.state}`}},
     {'@type': 'BreadcrumbList', itemListElement: [
-      {'@type': 'ListItem', position: 1, name: 'Home', item: PUBLIC_SITE_ORIGIN},
-      {'@type': 'ListItem', position: 2, name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
-      {'@type': 'ListItem', position: 3, name: `${service.name} in ${area.name}`, item: canonicalUrl},
-    ]},
+      {name: 'Home', item: PUBLIC_SITE_ORIGIN},
+      {name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
+      ...(cluster ? [{name: cluster.name, item: `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`}] : []),
+      {name: `${service.name} in ${area.name}`, item: canonicalUrl},
+    ].map((crumb, index) => ({'@type': 'ListItem', position: index + 1, ...crumb}))},
     ...(faqs.length ? [{'@type': 'FAQPage', mainEntity: faqs.map((faq) => ({'@type': 'Question', name: faq.question, acceptedAnswer: {'@type': 'Answer', text: faq.answer}}))}] : []),
   ]
   const json = JSON.stringify({'@context': 'https://schema.org', '@graph': graph}).replace(/</g, '\\u003c')
@@ -190,6 +193,7 @@ export function ServiceLandingPage({data}: Props) {
   const serviceSlug = stegaClean(service.slug)
   const areaSlug = stegaClean(area.slug)
   const parentName = stegaClean(service.parentName)
+  const cluster = clusterForService(serviceSlug, parentName)
   const phoneHref = `tel:${stegaClean(settings.phoneE164)}`
   const matchedRelatedServices = (service.otherServices || [])
     .map((item) => ({...item, href: resolvePublishedServicePath(stegaClean(item.url), stegaClean(item.name), serviceRoutes, areaSlug)}))
@@ -203,12 +207,12 @@ export function ServiceLandingPage({data}: Props) {
     .sort((left, right) => Number(right.parentName === parentName) - Number(left.parentName === parentName))
   for (const route of fallbackRoutes) {
     if (relatedServices.length >= 4) break
-    const href = servicePageUrl(route.serviceSlug).replace(PUBLIC_SITE_ORIGIN, '')
+    const href = servicePageUrl(route.serviceSlug, route.parentName).replace(PUBLIC_SITE_ORIGIN, '')
     if (usedRelatedPaths.has(href)) continue
     relatedServices.push({
       name: route.serviceName || route.serviceSlug,
       description: `Explore ${route.serviceName || 'this electrical service'} from Highlights Chicago.`,
-      url: servicePageUrl(route.serviceSlug),
+      url: servicePageUrl(route.serviceSlug, route.parentName),
       href,
     })
     usedRelatedPaths.add(href)
@@ -228,7 +232,7 @@ export function ServiceLandingPage({data}: Props) {
     <div className="site-chrome">
       <CollectionHeader />
       <main className="service-landing" style={brandStyle}>
-      <nav className="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li><li><Link href="/">Services</Link></li><li aria-current="page">{service.name} in {area.name}</li></ol></nav>
+      <nav className="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li><li><Link href="/">Services</Link></li>{cluster && <li><Link href={`/${cluster.slug}`}>{cluster.name}</Link></li>}<li aria-current="page">{service.name} in {area.name}</li></ol></nav>
 
       <header className="hero"><div className="wrap hero-grid"><div>
         <p className="eyebrow">{area.heroEyebrow}</p><h1>{questionHeading(`${service.h1Prefix} in ${area.name}`)}</h1><p className="lede">{service.heroLede}</p>

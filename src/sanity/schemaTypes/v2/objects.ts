@@ -63,8 +63,14 @@ export const v2TitledBody = defineType({
   fields: [
     defineField({name: 'title', title: 'Title', type: 'string', validation: (rule) => rule.required()}),
     defineField({name: 'body', title: 'Text', type: 'text', rows: 3}),
+    // Only the Equipment fold's option cards show a photo; every other list hides the field.
+    defineField({
+      name: 'image', title: 'Photo', type: 'v2Image',
+      description: 'Optional. A photo of this option; leave empty to show its icon or diagram.',
+      hidden: ({path}) => !path.includes('options'),
+    }),
   ],
-  preview: {select: {title: 'title', subtitle: 'body'}},
+  preview: {select: {title: 'title', subtitle: 'body', media: 'image.image'}},
 })
 
 export const v2LinkedCard = defineType({

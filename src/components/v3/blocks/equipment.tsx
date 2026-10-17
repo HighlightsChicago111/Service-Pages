@@ -3,6 +3,7 @@ import {ConfirmNotes, Copy, GhostLink, IconBadge, IconTile, PhotoFrame, SectionH
 import {BackupDiagram, TopologyDiagram, backupOf, topologyOf} from '../diagrams'
 import {pickIcon} from '../icon'
 import {splitConfirm} from '@/lib/v3/content'
+import {fromImg} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
 
@@ -18,6 +19,8 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
   const columns = comparison?.columns || []
   const rows = comparison?.rows || []
   const illustrative = items.some((_, index) => visuals.equipment[index]?.illustrative)
+  const optionPhotos = (options?.items || []).map((option) => fromImg(option.image, option.title))
+  const optionsIllustrative = optionPhotos.some((photo) => photo?.illustrative)
 
   return (
     <div className="ds-wrap">
@@ -77,17 +80,21 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
           <div>{options?.calloutLead && <p className="ds-callout-lead">{options.calloutLead}</p>}<Copy value={options?.calloutBody} show={editorial} /></div>
         </div>}
         <ul className="ds-options">
-          {options?.items?.map((option) => {
+          {options?.items?.map((option, index) => {
             const backup = backupOf(option.title)
+            const photo = optionPhotos[index]
             return (
               <li className="ds-option" key={option._key || option.title}>
-                <div className="ds-option-art">{backup ? <BackupDiagram kind={backup} /> : <IconBadge icon={pickIcon(option.title, 'battery')} tone="blue" size={56} />}</div>
+                {photo
+                  ? <PhotoFrame photo={photo} pill={false} className="ds-option-media" />
+                  : <div className="ds-option-art">{backup ? <BackupDiagram kind={backup} /> : <IconBadge icon={pickIcon(option.title, 'battery')} tone="blue" size={56} />}</div>}
                 <h4 className="ds-h5">{option.title}</h4>
                 <Copy value={option.body} show={editorial} />
               </li>
             )
           })}
         </ul>
+        {optionsIllustrative && <p className="ds-meta ds-meta--end">Illustrative photos</p>}
         {options?.note && <NoteLine value={options.note} editorial={editorial} />}
       </div>}
     </div>

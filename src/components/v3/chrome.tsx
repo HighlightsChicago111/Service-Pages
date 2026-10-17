@@ -6,7 +6,7 @@ import {FooterQuoteForm} from './footer-quote-form'
 import {MobileMenu} from '@/components/mobile-menu'
 import {LOGO, LOGO_WHITE} from '@/lib/v3/visuals'
 import {PUBLIC_SITE_ORIGIN} from '@/lib/service-urls'
-import type {V2PageData, V2Settings} from '@/types/v2'
+import type {V2Settings} from '@/types/v2'
 
 const SHOP_MAPS_URL = 'https://www.google.com/maps/place/Highlights+Chicago+Electrical+Services/@41.986143,-87.700781,15z'
 const HOURS = 'Mon–Fri 08:00 AM – 05:00 PM'
@@ -27,7 +27,7 @@ function addressLine(settings: V2Settings) {
 }
 
 /** D0 + D1: navy utility bar and the white main nav (global blocks). */
-export function SiteHeader({settings, routes, tel}: {settings: V2Settings; routes: V2PageData['routes']; tel: string}) {
+export function SiteHeader({settings, tel}: {settings: V2Settings; tel: string}) {
   return (
     <>
       <div className="ds-utility" aria-label="Business contact information">
@@ -46,13 +46,7 @@ export function SiteHeader({settings, routes, tel}: {settings: V2Settings; route
           <a className="ds-nav-logo" href={`${PUBLIC_SITE_ORIGIN}/`} aria-label={`${settings.companyName} home`}><img src={LOGO} alt="Highlights Chicago Electrical Services" width={180} height={44} /></a>
           <nav className="ds-nav-links" aria-label="Primary navigation">
             {NAV.map((item) => item.current
-              ? <details className="ds-nav-menu" key={item.label}>
-                  <summary aria-current="page">{item.label}<Icon name="chevronDown" size={16} /></summary>
-                  <div className="ds-nav-menu-panel">
-                    <Link href="/">All services</Link>
-                    {routes.map((route) => <Link href={`/${route.slug}`} key={route.slug}>{route.name}</Link>)}
-                  </div>
-                </details>
+              ? <Link className="ds-nav-current" href="/" key={item.label}>{item.label}</Link>
               : <a href={item.href} key={item.label}>{item.label}</a>)}
           </nav>
           <a className="ds-btn ds-btn--primary ds-btn--m ds-nav-cta" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>

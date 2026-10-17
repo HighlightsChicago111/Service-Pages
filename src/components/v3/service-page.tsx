@@ -22,7 +22,8 @@ import {SymptomsBlock, hasSymptoms} from './blocks/symptoms'
 import {AreasBlock, hasAreas} from './blocks/areas'
 import {hasConfirm, vocabularyFrom} from '@/lib/v3/content'
 import {visualsFor} from '@/lib/v3/visuals'
-import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, servicePageUrl} from '@/lib/service-urls'
+import {clusterForService} from '@/lib/clusters'
+import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, servicePageUrl} from '@/lib/service-urls'
 import type {V2PageData} from '@/types/v2'
 import type {Band, BlockContext} from './types'
 
@@ -67,6 +68,7 @@ function JsonLd({ctx}: {ctx: BlockContext}) {
   const {page, area, settings} = ctx
   // Unconfirmed FAQs stay out of the schema until they are resolved.
   const answered = faqsOf(ctx).filter((faq) => !hasConfirm(faq.answer) && !hasConfirm(faq.question))
+  const cluster = clusterForService(page.slug, page.parentName)
   const graph = [
     {
       '@type': settings.schemaBusinessType || 'Electrician',
@@ -81,10 +83,11 @@ function JsonLd({ctx}: {ctx: BlockContext}) {
     },
     {'@type': 'Service', name: `${page.hero.h1Prefix} in ${area.name}`, serviceType: page.name, provider: {'@id': `${PUBLIC_SITE_ORIGIN}/#business`}, areaServed: {'@type': 'City', name: `${area.name}, ${area.state}`}},
     {'@type': 'BreadcrumbList', itemListElement: [
-      {'@type': 'ListItem', position: 1, name: 'Home', item: PUBLIC_SITE_ORIGIN},
-      {'@type': 'ListItem', position: 2, name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
-      {'@type': 'ListItem', position: 3, name: `${page.name} in ${area.name}`, item: servicePageUrl(page.slug)},
-    ]},
+      {name: 'Home', item: PUBLIC_SITE_ORIGIN},
+      {name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
+      ...(cluster ? [{name: cluster.name, item: `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`}] : []),
+      {name: `${page.name} in ${area.name}`, item: servicePageUrl(page.slug, page.parentName)},
+    ].map((crumb, index) => ({'@type': 'ListItem', position: index + 1, ...crumb}))},
     ...(answered.length ? [{'@type': 'FAQPage', mainEntity: answered.map((faq) => ({'@type': 'Question', name: faq.question, acceptedAnswer: {'@type': 'Answer', text: faq.answer}}))}] : []),
   ]
   const json = JSON.stringify({'@context': 'https://schema.org', '@graph': graph}).replace(/</g, '\\u003c')
@@ -114,7 +117,7 @@ export function ServiceLandingPage({data, draft, fontClassName}: {data: V2PageDa
   return (
     <div className={fontClassName ? `ds ${fontClassName}` : 'ds'}>
       <a className="ds-skip" href="#main">Skip to content</a>
-      <SiteHeader settings={settings} routes={routes} tel={ctx.tel} />
+      <SiteHeader settings={settings} tel={ctx.tel} />
       <main id="main">
         <HeroQuote ctx={ctx} />
         {blocks.map(({id, band, Block}) => (

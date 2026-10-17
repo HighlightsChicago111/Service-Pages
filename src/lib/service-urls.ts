@@ -1,3 +1,5 @@
+import {clusterForService} from './clusters'
+
 export const PUBLIC_SITE_ORIGIN = 'https://www.highlightschicago.com'
 export const SERVICES_PATH = '/services'
 export const PRIMARY_AREA_SLUG = 'chicago'
@@ -8,14 +10,29 @@ export const THANK_YOU_PATH = `${SERVICES_PATH}/thank-you`
 export type ServiceRoute = {
   serviceSlug: string
   areaSlug: string
+  parentName?: string | null
 }
 
-export function servicePagePath(serviceSlug: string): string {
-  return `${SERVICES_PATH}/${serviceSlug}`
+/**
+ * Path under the /services basePath: /<cluster>/<service>, or /<service> for a service
+ * outside every cluster. Pass the page's Sanity parentName so a page added after the
+ * workbook gets its group's URL.
+ */
+export function serviceRoutePath(serviceSlug: string, parentName?: string | null): string {
+  const cluster = clusterForService(serviceSlug, parentName)
+  return cluster ? `/${cluster.slug}/${serviceSlug}` : `/${serviceSlug}`
 }
 
-export function servicePageUrl(serviceSlug: string): string {
-  return `${PUBLIC_SITE_ORIGIN}${servicePagePath(serviceSlug)}`
+export function clusterPagePath(clusterSlug: string): string {
+  return `${SERVICES_PATH}/${clusterSlug}`
+}
+
+export function servicePagePath(serviceSlug: string, parentName?: string | null): string {
+  return `${SERVICES_PATH}${serviceRoutePath(serviceSlug, parentName)}`
+}
+
+export function servicePageUrl(serviceSlug: string, parentName?: string | null): string {
+  return `${PUBLIC_SITE_ORIGIN}${servicePagePath(serviceSlug, parentName)}`
 }
 
 function slugify(value: string): string {
@@ -55,7 +72,7 @@ export function resolvePublishedServicePath(
   if (name) candidates.push(slugify(name))
 
   const route = areaRoutes.find((item) => candidates.includes(item.serviceSlug))
-  return route ? servicePagePath(route.serviceSlug) : null
+  return route ? servicePagePath(route.serviceSlug, route.parentName) : null
 }
 
 /** Remove any stored brand suffix so the root metadata template adds it once. */

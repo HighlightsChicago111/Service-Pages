@@ -11,6 +11,16 @@ Next.js 16 and Sanity implementation for data-driven service × area landing pag
 - `siteSettings`: singleton for company, contact, brand, ratings, trust and form defaults.
 - Embedded Sanity Studio: `/services/studio`.
 
+## URL structure
+
+Services are grouped like `/services/heating/heater-repair/` on the City & Suburban site:
+
+- `/services`: one block per service group ("Choose a service").
+- `/services/<group>`: the group's services, e.g. `/services/backup-power`.
+- `/services/<group>/<service>`: the service page, e.g. `/services/backup-power/generator-installation`.
+
+Group names, order, descriptions and membership live in `data/cluster-hierarchy.json`, built from the cluster-level workbook; group slugs are the content plan's slugs. A group with no published service is hidden. Earlier URLs (`/services/<service>`, `/services/<service>/chicago` and the retired Webflow slugs in `next.config.ts`) permanently redirect to the nested service page. A service missing from the file keeps a flat `/services/<service>` URL.
+
 ## Two designs during the rollout
 
 Service pages are moving to a new design (Design System v3). Until that is finished, both designs live in Studio under **Service pages**:
@@ -18,7 +28,7 @@ Service pages are moving to a new design (Design System v3). Until that is finis
 - **Current design**: the `servicePage` documents above, rendered by `src/components/service-landing-page.tsx`.
 - **New design**: `v2ServicePage` pages plus two shared documents, "New design settings" (`v2-siteSettings`) and "New design area: Chicago" (`v2-area-chicago`), rendered by `src/components/v3/`. All new-design type names start with `v2`.
 
-One rule decides what a URL shows: `/services/<slug>` renders its **published** new-design page when there is one (and the new-design settings exist), otherwise its current page. The sitemap, the `/services` list, related-service links and the old `/<slug>/chicago` redirects all follow the same rule with one entry per URL (`src/lib/design-precedence.ts`). Publishing a new-design page switches its URL to the new design; unpublishing it switches the URL straight back. Drafts only show in Studio Presentation.
+One rule decides what a URL shows: a service page URL renders its **published** new-design page when there is one (and the new-design settings exist), otherwise its current page. The sitemap, the `/services` list, related-service links and the old `/<slug>/chicago` redirects all follow the same rule with one entry per URL (`src/lib/design-precedence.ts`). Publishing a new-design page switches its URL to the new design; unpublishing it switches the URL straight back. Drafts only show in Studio Presentation.
 
 Every photo slot in the new design has an optional image field on the page (hero background, each job card and equipment tile, assessment, symptoms, repair box, Why Highlights, category card, cost drivers, handover, related-service cards, guide tabs), plus logo uploads for brands without a built-in logo and the Why Highlights figures. An empty slot falls back to the page's own hero photos or an icon; the Solar reference photos in `src/lib/v3/visuals.ts` only fill Solar's empty slots.
 

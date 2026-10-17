@@ -5,6 +5,7 @@ import {Icon} from './icon'
 import {QuoteForm} from './quote-form'
 import {jobNoun} from '@/lib/v3/content'
 import {focus} from '@/lib/v3/visuals'
+import {clusterForService} from '@/lib/clusters'
 import {PUBLIC_SITE_ORIGIN} from '@/lib/service-urls'
 import type {BlockContext} from './types'
 
@@ -16,6 +17,7 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
   const google = settings.google
   const chips = (settings.trustLines || []).slice(0, google?.rating ? 2 : 3)
   const crewIllustrative = visuals.crew.some((photo) => photo.illustrative)
+  const cluster = clusterForService(page.slug, page.parentName)
 
   return (
     <header className="ds-hero" id="top">
@@ -27,6 +29,7 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
             <ol>
               <li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li>
               <li><Link href="/">Services</Link></li>
+              {cluster && <li><Link href={`/${cluster.slug}`}>{cluster.name}</Link></li>}
               <li aria-current="page">{page.name} in {area.name}</li>
             </ol>
           </nav>

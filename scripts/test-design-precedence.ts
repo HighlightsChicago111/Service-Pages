@@ -15,12 +15,12 @@ const CURRENT_TYPES = [
 ]
 
 async function main() {
-  // 1. The reserved-slug copy matches the 78 permanent redirects in next.config.ts exactly.
+  // 1. The reserved-slug copy matches the 77 permanent redirects in next.config.ts exactly.
   const redirects = (await nextConfig.redirects?.()) || []
   const permanentSources = redirects
     .filter((redirect) => redirect.permanent)
     .map((redirect) => redirect.source.replace(redirect.basePath === false ? /^\/services\// : /^\//, ''))
-  assert.equal(permanentSources.length, 78, 'next.config.ts should define 78 permanent redirects')
+  assert.equal(permanentSources.length, 77, 'next.config.ts should define 77 permanent redirects')
   assert.deepEqual([...REDIRECT_SOURCE_SLUGS].sort(), [...permanentSources].sort(), 'src/lib/reserved-slugs.ts is out of sync with next.config.ts')
 
   // 2. Studio slug validation: redirect sources and reserved paths are refused, live and new slugs are allowed.
@@ -108,9 +108,10 @@ async function main() {
 
   // 7. New-design pages are indexable: nothing on the service-page route or in the
   // ported template sets noindex (the V2 test app did; /thank-you rightly still does).
-  const sources = ['src/app/[serviceSlug]', 'src/components/v3', 'src/lib/v3'].flatMap((dir) =>
+  const sources = ['src/app/[slug]', 'src/components/v3', 'src/lib/v3'].flatMap((dir) =>
     fs.readdirSync(dir, {recursive: true}).map((file) => path.join(dir, String(file))).filter((file) => /\.tsx?$/.test(file)),
   )
+  sources.push('src/lib/service-page.tsx')
   assert.ok(sources.length >= 30, 'the template sources were found')
   const noindex = sources.filter((file) => /noindex|index:\s*false/.test(fs.readFileSync(file, 'utf8')))
   assert.deepEqual(noindex, [], `noindex found in ${noindex.join(', ')}`)

@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element -- Crawlable local imagery is intentionally rendered without Next's generated image wrapper. */
 import type {Metadata} from 'next'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
-import {CollectionItem, ServiceCollection} from '@/components/service-collection'
-import {preferNewDesign} from '@/lib/design-precedence'
-import {sanityFetch} from '@/sanity/lib/live'
-import {SERVICE_INDEX_QUERY} from '@/sanity/lib/queries'
+import {ClusterDirectory, publishedServices, serviceCardsBySlug} from '@/components/service-clusters'
+import {serviceClusters} from '@/lib/clusters'
+import {fetchServiceIndex} from '@/lib/service-page'
 
+// Re-read Sanity at most a minute after a page is published or unpublished.
 export const revalidate = 60
 export const metadata: Metadata = {
   title: 'Electrical Services in Chicago',
@@ -14,14 +14,17 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const {data} = await sanityFetch({query: SERVICE_INDEX_QUERY, stega: false})
-  // Both designs, one card per URL (a published new-design page wins).
-  const pages = preferNewDesign((data || []) as CollectionItem[])
+  // Both designs, one card per URL (a published new-design page wins). Not the live
+  // fetcher: its cache only refreshes while <SanityLive> runs (draft mode), so
+  // visitors would keep the pages from the last deploy.
+  const cards = serviceCardsBySlug(await fetchServiceIndex())
+  const groupCount = serviceClusters.filter((cluster) => publishedServices(cluster, cards).length > 0).length
   return (
     <div className="collection-page">
       <CollectionHeader />
       <main>
-        <section className="collection-hero">
+        <section className="collection-hero collection-hero--photo">
+          <img className="collection-hero-bg" src="/services/images/services/electrical-panel-upgrade.jpg" alt="Electrical panel upgrade service by Highlights Chicago" decoding="async" fetchPriority="high" />
           <div className="collection-wrap collection-hero-grid">
             <div>
               <p className="collection-hero-kicker">Licensed Chicago electricians</p>
@@ -32,16 +35,15 @@ export default async function HomePage() {
                 <a href="https://www.highlightschicago.com/contact-us">Contact us</a>
               </div>
             </div>
-            <div className="collection-hero-panel" aria-label={`${pages.length} available local service pages`}>
-              <img className="collection-hero-panel-image" src="/services/images/services/electrical-panel-upgrade.jpg" alt="Electrical panel upgrade service by Highlights Chicago" decoding="async" />
-              <span>Service library</span>
-              <strong>{pages.length}</strong>
-              <p>Local service pages and growing</p>
-              <a href="tel:7732623333">Talk with an electrician <span aria-hidden="true">→</span></a>
+            <div className="collection-hero-panel" aria-label={`${groupCount} electrical service categories`}>
+              <span>Service categories</span>
+              <strong>{groupCount}</strong>
+              <p>Categories covering {cards.size} electrical services across Chicago</p>
+              <a href="https://www.highlightschicago.com/contact-us">Talk with an electrician <span aria-hidden="true">→</span></a>
             </div>
           </div>
         </section>
-        <ServiceCollection pages={pages} />
+        <ClusterDirectory cards={cards} />
         <section className="collection-trust-band">
           <div className="collection-wrap">
             <p>Why Highlights Chicago</p>

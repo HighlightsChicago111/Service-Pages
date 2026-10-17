@@ -1,0 +1,160 @@
+{
+  "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs are the content plan cluster URL slugs; service slugs are the live Sanity slugs. \"parentName\" is the Sanity cluster name (servicePage service->parentName, v2ServicePage parentName): a published page whose slug is not listed joins the group with that name, after the listed services.",
+  "clusters": [
+    {
+      "slug": "power-distribution",
+      "name": "Panel Upgrades",
+      "noun": "panel upgrade",
+      "description": "Electrical panel and service upgrades for more capacity and safer power.",
+      "parentName": "Power Distribution & Service Entry",
+      "services": [
+        "electrical-panel-upgrade"
+      ]
+    },
+    {
+      "slug": "panels-circuits",
+      "name": "Circuit Protection",
+      "noun": "circuit protection",
+      "description": "Surge protection, circuit breakers, breaker boxes, grounding and fuse box replacement.",
+      "parentName": "Panels, Circuits & Protection",
+      "services": [
+        "whole-house-surge-protector",
+        "circuit-breaker-replacement",
+        "breaker-box-and-panel-repair",
+        "grounding-and-bonding",
+        "fuse-box-replacement"
+      ]
+    },
+    {
+      "slug": "wiring-diagnostics",
+      "name": "Electrical Wiring",
+      "noun": "electrical wiring",
+      "description": "Electrical repairs, wiring, troubleshooting and new installations.",
+      "parentName": "Wiring, Diagnostics & Compliance",
+      "services": [
+        "electrical-repair",
+        "electrical-wiring-and-repair-services",
+        "electrical-troubleshooting",
+        "electrical-installation-services"
+      ]
+    },
+    {
+      "slug": "outlets-switches",
+      "name": "Electrical Outlets",
+      "noun": "outlet and switch",
+      "description": "GFCI outlets, new outlets and light switch installation.",
+      "parentName": "Outlets, Switches & Controls",
+      "services": [
+        "gfci-outlet-installation",
+        "electrical-outlet-installation",
+        "light-switch-replacement-and-installation"
+      ]
+    },
+    {
+      "slug": "interior-lighting",
+      "name": "Interior Lighting",
+      "noun": "interior lighting",
+      "description": "Recessed lights, light fixtures, chandeliers and LED upgrades.",
+      "parentName": "Interior Lighting",
+      "services": [
+        "recessed-lighting-installation",
+        "light-fixture-installation-and-replacement",
+        "led-retrofit",
+        "chandelier-installation"
+      ]
+    },
+    {
+      "slug": "exterior-lighting",
+      "name": "Outdoor Lighting",
+      "noun": "outdoor lighting",
+      "description": "Outdoor, landscape, emergency and parking lot lighting.",
+      "parentName": "Exterior, Egress & Commercial Lighting",
+      "services": [
+        "outdoor-lighting-installation",
+        "landscape-lighting-installation",
+        "emergency-lighting-services-and-maintenance",
+        "parking-lot-lighting-repair-and-installation"
+      ]
+    },
+    {
+      "slug": "life-safety",
+      "name": "Life Safety",
+      "noun": "life safety",
+      "description": "Smoke detectors, carbon monoxide detectors and fire alarms.",
+      "parentName": "Life Safety Detection",
+      "services": [
+        "fire-alarm-installation",
+        "carbon-monoxide-detector-installation",
+        "smoke-detector-installation-and-wiring"
+      ]
+    },
+    {
+      "slug": "ev-charging",
+      "name": "EV Charging",
+      "noun": "EV charging",
+      "description": "Tesla and EV charger installation for homes and businesses.",
+      "parentName": "EV Charging",
+      "services": [
+        "tesla-and-ev-charger-installation"
+      ]
+    },
+    {
+      "slug": "backup-power",
+      "name": "Backup Power",
+      "noun": "backup power",
+      "description": "Whole-house generator installation, repair and maintenance.",
+      "parentName": "Backup & Standby Power",
+      "services": [
+        "generator-installation",
+        "generator-repair"
+      ]
+    },
+    {
+      "slug": "appliance-circuits",
+      "name": "Appliance Circuits",
+      "noun": "appliance circuit",
+      "description": "Ceiling fans, garbage disposals and bathroom exhaust fans.",
+      "parentName": "Appliance & Equipment Circuits",
+      "services": [
+        "ceiling-fan-installation",
+        "garbage-disposal-wiring",
+        "bathroom-exhaust-fan-installation"
+      ]
+    },
+    {
+      "slug": "low-voltage",
+      "name": "Low Voltage",
+      "noun": "low voltage",
+      "description": "Structured cabling, fiber optics, CCTV and low voltage wiring.",
+      "parentName": "Low Voltage, Data & AV",
+      "services": [
+        "structured-cabling-installation",
+        "low-voltage-wiring-installation",
+        "cctv-installation",
+        "fiber-optic-cable-installation"
+      ]
+    },
+    {
+      "slug": "energy-efficiency",
+      "name": "Solar Energy",
+      "noun": "solar and energy",
+      "description": "Solar panels, solar batteries, energy audits and efficiency upgrades.",
+      "parentName": "Energy Efficiency & Solar",
+      "services": [
+        "solar-panel-installation",
+        "home-energy-audit",
+        "solar-battery-installation",
+        "energy-star-appliances",
+        "energy-efficiency-upgrades",
+        "infrared-electrical-inspection"
+      ]
+    },
+    {
+      "slug": "emergency-electrical",
+      "name": "Emergency Electrical",
+      "noun": "emergency electrical",
+      "description": "Emergency electrical repair.",
+      "services": []
+    }
+  ]
+}

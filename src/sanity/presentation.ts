@@ -1,4 +1,5 @@
 import {defineLocations, type PresentationPluginOptions} from 'sanity/presentation'
+import {servicePagePath} from '../lib/service-urls'
 
 export const resolve: PresentationPluginOptions['resolve'] = {
   locations: {
@@ -9,7 +10,7 @@ export const resolve: PresentationPluginOptions['resolve'] = {
       },
       resolve: (document) => ({
         locations: document?.serviceSlug
-          ? [{title: document.title || 'Service page', href: `/services/${document.serviceSlug}`}]
+          ? [{title: document.title || 'Service page', href: servicePagePath(document.serviceSlug)}]
           : [],
       }),
     }),
