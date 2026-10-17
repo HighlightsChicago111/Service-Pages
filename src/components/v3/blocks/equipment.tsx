@@ -77,11 +77,15 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
           <div>{options?.calloutLead && <p className="ds-callout-lead">{options.calloutLead}</p>}<Copy value={options?.calloutBody} show={editorial} /></div>
         </div>}
         <ul className="ds-options">
-          {options?.items?.map((option) => {
+          {options?.items?.map((option, _index, all) => {
             const backup = backupOf(option.title)
+            // Diagrams exist only for backup-scope options; without any, the cards drop the empty art box.
+            const compact = !all.some((item) => backupOf(item.title))
             return (
-              <li className="ds-option" key={option._key || option.title}>
-                <div className="ds-option-art">{backup ? <BackupDiagram kind={backup} /> : <IconBadge icon={pickIcon(option.title, 'battery')} tone="blue" size={56} />}</div>
+              <li className={compact ? 'ds-option ds-option--compact' : 'ds-option'} key={option._key || option.title}>
+                {compact
+                  ? <IconBadge icon={pickIcon(option.title, 'battery')} tone="blue" size={48} />
+                  : <div className="ds-option-art">{backup ? <BackupDiagram kind={backup} /> : <IconBadge icon={pickIcon(option.title, 'battery')} tone="blue" size={56} />}</div>}
                 <h4 className="ds-h5">{option.title}</h4>
                 <Copy value={option.body} show={editorial} />
               </li>

@@ -6,6 +6,7 @@ import {dsFontVariables} from '@/components/v3/fonts'
 import {ServiceLandingPage as NewDesignServicePage} from '@/components/v3/service-page'
 // Design System v3 styles are all scoped under .ds, so they cannot touch the current pages.
 import '../design-system-v3.css'
+import {readToken} from '@/sanity/env'
 import {metadataClient} from '@/sanity/lib/client'
 import {sanityFetch} from '@/sanity/lib/live'
 import {
@@ -39,6 +40,11 @@ export async function generateStaticParams() {
 // click-to-edit markers on the page body, through the live fetcher.
 async function fetchServiceContent<T>(query: string, params: Record<string, string>, stega: boolean): Promise<T> {
   if ((await draftMode()).isEnabled) return (await sanityFetch({query, params, stega})).data as T
+  // Local review of unpublished drafts without the Studio: `PREVIEW_DRAFTS_LOCALLY=1 pnpm dev`.
+  // Never active in a production build.
+  if (process.env.NODE_ENV === 'development' && process.env.PREVIEW_DRAFTS_LOCALLY === '1' && readToken) {
+    return metadataClient.withConfig({token: readToken, useCdn: false, perspective: 'drafts'}).fetch<T>(query, params)
+  }
   return metadataClient.fetch<T>(query, params)
 }
 

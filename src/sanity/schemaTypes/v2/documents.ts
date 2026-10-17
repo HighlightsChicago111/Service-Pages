@@ -23,16 +23,31 @@ export const v2ServicePage = defineType({
   name: 'v2ServicePage',
   title: 'Service page (new design)',
   type: 'document',
+  // One tab per page block, numbered as in the Service Page Playbook, Part C (the standard order the
+  // v3 template renders, src/components/v3/service-page.tsx). Blocks 0, 1 and 20 (utility bar, nav,
+  // footer) and 8 (credentials, "Who you're actually calling?") are shared: they live in
+  // "New design settings", not on the page.
   groups: [
     {name: 'basics', title: 'Basics & SEO', default: true},
-    {name: 'hero', title: 'Hero & form'},
-    {name: 'decide', title: 'Job paths & equipment'},
-    {name: 'assess', title: 'Assessment & diagnosis'},
-    {name: 'proof', title: 'Brands, why, reviews, photos'},
-    {name: 'process', title: 'Process & areas'},
-    {name: 'cost', title: 'Pricing & scope'},
-    {name: 'close', title: 'FAQ, CTA & library'},
+    {name: 'hero', title: '02 · Hero + quote form'},
+    {name: 'jobs', title: '03 · Job selector'},
+    {name: 'equipment', title: '04 · Equipment'},
+    {name: 'assessment', title: '05 · Checklist + decision flow'},
+    {name: 'diagnose', title: '06 · Symptoms'},
+    {name: 'brands', title: '07 · Logo wall'},
+    {name: 'reviews', title: '09 · Google reviews'},
+    {name: 'why', title: '10 · Reasons (why Highlights)'},
+    {name: 'works', title: '11 · Photo gallery'},
+    {name: 'process', title: '12 · Process track'},
+    {name: 'areas', title: '13 · Areas + map'},
+    {name: 'other', title: '14 · Related services'},
+    {name: 'cost', title: '15 · Pricing'},
+    {name: 'included', title: '16 · Scope & handover'},
+    {name: 'faq', title: '17 · FAQ'},
+    {name: 'cta', title: '18 · Closing CTA'},
+    {name: 'library', title: '19 · Library tabs'},
   ],
+
   fields: [
     defineField({name: 'serviceId', title: 'Service ID', type: 'number', group: 'basics', validation: (rule) => rule.required().integer()}),
     defineField({name: 'name', title: 'Service name', type: 'string', group: 'basics', validation: (rule) => rule.required()}),
@@ -63,23 +78,23 @@ export const v2ServicePage = defineType({
     defineField({name: 'monthlySearchVolume', title: 'Monthly search volume', type: 'number', group: 'basics'}),
     defineField({...strings('secondaryKeywords', 'Secondary keywords'), group: 'basics'}),
 
-    fold('hero', 'Hero', 'hero', [
+    fold('hero', '02 · Hero', 'hero', [
       defineField({name: 'h1Prefix', title: 'H1 (the page adds "in <Area>")', type: 'string', validation: (rule) => rule.required()}),
       text('lede', 'Lede'),
       str('secondaryCta', 'Booking button text'),
       photoField('image', 'Hero background photo', 'Optional. Leave empty to use the first hero photo below.'),
     ]),
-    defineField({...list('gallery', 'Hero photos (3)', 'v2Image'), group: 'hero', validation: (rule) => rule.max(3)}),
-    fold('form', 'Quote form', 'hero', [
+    defineField({...list('gallery', '02 · Hero crew photos (3)', 'v2Image'), group: 'hero', validation: (rule) => rule.max(3)}),
+    fold('form', '02 · Quote form', 'hero', [
       str('issueQuestion', 'Job-type question'),
       strings('issueOptions', 'Job-type answers'),
       list('extraFields', 'Extra questions', 'v2ExtraFormField', {validation: (rule: {max: (n: number) => unknown}) => rule.max(3)} as Record<string, unknown>),
     ]),
 
-    fold('jobPaths', 'Fold: Which job is yours?', 'decide', [
+    fold('jobPaths', '03 · Job selector: which job is yours?', 'jobs', [
       str('heading', 'Heading'), text('lede', 'Lede'), list('items', 'Paths', 'v2JobPath'), text('note', 'Note under the cards', 2),
     ], 'Leave empty to hide the fold.'),
-    fold('equipment', 'Fold: Equipment', 'decide', [
+    fold('equipment', '04 · Equipment showcase (+ comparison, + options)', 'equipment', [
       str('heading', 'Heading'), text('lede', 'Lede'), list('items', 'Equipment tiles', 'v2EquipmentItem'),
       text('footnote', 'Note under the tiles', 2), str('footnoteLinkLabel', 'Note link text'),
       defineField({name: 'footnoteLinkAnchor', title: 'Note link target', type: 'string', options: {list: PAGE_ANCHORS}}),
@@ -93,12 +108,12 @@ export const v2ServicePage = defineType({
       }),
     ]),
 
-    fold('assessment', 'Fold: What the assessment checks', 'assess', [
+    fold('assessment', '05 · Checklist + decision flow: what the assessment checks', 'assessment', [
       str('heading', 'Heading'), text('lede', 'Lede'), list('checks', 'Checks', 'v2TitledBody'),
       str('routesHeading', 'Decision block heading'), list('routes', 'Decision routes (numbered)', 'v2TitledBody'), text('routesNote', 'Decision block note', 2),
       photoField('image', 'Assessment photo'),
     ], 'Leave empty to hide the fold.'),
-    fold('diagnose', 'Fold: Symptoms and what we check', 'assess', [
+    fold('diagnose', '06 · Symptom accordion: symptoms and what we check', 'diagnose', [
       str('heading', 'Heading'), text('lede', 'Lede'),
       strings('columns', 'Table column headings (3)'),
       list('rows', 'Symptom rows', 'v2SymptomRow'),
@@ -107,32 +122,32 @@ export const v2ServicePage = defineType({
       photoField('image', 'Symptoms photo'), photoField('orphanImage', 'Right box photo'),
     ], 'Leave empty to hide the fold.'),
 
-    fold('brands', 'Fold: Brands', 'proof', [
+    fold('brands', '07 · Logo wall: brands', 'brands', [
       str('heading', 'Heading'), text('lede', 'Lede'), strings('items', 'Brands'), text('note', 'Note', 2),
       list('logos', 'Logo uploads (only for brands without a built-in logo)', 'v2BrandLogo'),
     ]),
-    fold('why', 'Fold: Why Highlights', 'proof', [
+    defineField({...list('reviews', '09 · Google reviews (4)', 'v2Review'), group: 'reviews'}),
+    fold('why', '10 · Reasons band: why Highlights', 'why', [
       str('heading', 'Heading'), text('lede', 'Lede'), list('items', 'Reason cards', 'v2LinkedCard'),
       list('stats', 'Green stat row (up to 3, figures from this page only)', 'v2TrustMetric', {validation: (rule: {max: (n: number) => unknown}) => rule.max(3)} as Record<string, unknown>),
       photoField('image', 'Why Highlights photo'),
     ]),
-    defineField({...list('reviews', 'Reviews (4)', 'v2Review'), group: 'proof'}),
-    defineField({...list('workingPhotos', 'Our works photos (3)', 'v2Image'), group: 'proof', validation: (rule) => rule.max(3)}),
+    defineField({...list('workingPhotos', '11 · Photo gallery: our work (3 real job photos, shown first)', 'v2Image'), group: 'works', validation: (rule) => rule.max(3)}),
 
-    fold('process', 'Fold: Process, step by step', 'process', [str('heading', 'Heading'), text('lede', 'Lede'), list('steps', 'Steps', 'v2ProcessStep')], 'Leave empty to hide the fold.'),
-    defineField({name: 'areasCallout', title: 'Service-specific note in the Areas fold', type: 'text', rows: 3, group: 'process'}),
-    fold('otherServices', 'Fold: Other services', 'process', [
+    fold('process', '12 · Process track', 'process', [str('heading', 'Heading'), text('lede', 'Lede'), list('steps', 'Steps', 'v2ProcessStep')], 'Leave empty to hide the fold.'),
+    defineField({name: 'areasCallout', title: '13 · Areas + map: service-specific note', type: 'text', rows: 3, group: 'areas'}),
+    fold('otherServices', '14 · Related services', 'other', [
       defineField({name: 'featured', title: 'Featured category card', type: 'object', fields: [str('tag', 'Tag'), str('title', 'Title'), text('description', 'Description', 2), photoField('image', 'Card background photo')]}),
       list('items', 'Related services (up to 4)', 'v2LinkedService'),
     ]),
 
-    fold('pricing', 'Fold: Cost', 'cost', [
+    fold('pricing', '15 · Pricing stats (+ cost drivers, incentives)', 'cost', [
       str('heading', 'Heading'), text('lede', 'Lede'), str('caption', 'Table caption'),
       strings('columns', 'Column headings (3)'), list('rows', 'Rows', 'v2PriceRow'), text('note', 'Note under table', 2),
       str('driversHeading', 'Cost drivers heading'), list('drivers', 'Cost drivers', 'v2CostDriver'), text('incentivesNote', 'Incentives note', 2),
       photoField('driversImage', 'Cost drivers photo'),
     ]),
-    fold('included', "Fold: What's included", 'cost', [
+    fold('included', '16 · Scope & handover (+ warranties)', 'included', [
       str('heading', 'Heading'), text('lede', 'Lede'),
       str('inScopeHeading', 'In-scope heading'), strings('inScope', 'In scope'), text('inScopeNote', 'In-scope note', 2),
       str('separateHeading', 'Quoted-separately heading'), strings('separate', 'Quoted separately'), text('separateNote', 'Quoted-separately note', 2),
@@ -141,9 +156,9 @@ export const v2ServicePage = defineType({
       photoField('handoverImage', 'Handover photo'),
     ], 'Leave empty to hide the fold.'),
 
-    defineField({...list('faqs', 'FAQs (service-specific; the area FAQs are added after these)', 'v2Faq'), group: 'close'}),
-    fold('cta', 'Closing call to action', 'close', [str('heading', 'Heading (the page adds "in <Area>?")'), text('body', 'Text', 2), str('readyHeading', 'Checklist heading'), strings('readyItems', 'Have these ready')]),
-    defineField({name: 'serviceGuide', title: 'Library: service detail tab', type: 'v2Guide', group: 'close'}),
+    defineField({...list('faqs', '17 · FAQ (service-specific; the area FAQs are added after these)', 'v2Faq'), group: 'faq'}),
+    fold('cta', '18 · Closing CTA', 'cta', [str('heading', 'Heading (the page adds "in <Area>?")'), text('body', 'Text', 2), str('readyHeading', 'Checklist heading'), strings('readyItems', 'Have these ready')]),
+    defineField({name: 'serviceGuide', title: '19 · Library tabs: service detail tab', type: 'v2Guide', group: 'library'}),
   ],
   validation: (rule) => rule.custom((doc) => {
     const placeholders = JSON.stringify(doc || {}).match(new RegExp(CONFIRM, 'g'))
@@ -196,6 +211,10 @@ export const v2SiteSettings = defineType({
     list('trustMetrics', 'Trust metrics', 'v2TrustMetric'), list('trustCards', 'Trust cards', 'v2TitledBody'),
     str('reviewsHeading', 'Reviews heading'), text('reviewsDisclaimer', 'Reviews note', 2),
     str('formSubtitle', 'Form subtitle'), str('formNote', 'Form note'),
+    // Shared block photos, used on every new-design page (playbook D7, D16, D17). Empty = the design's default photo.
+    photoField('credentialsImage', "08 · Credentials photo (Who you're actually calling?)", 'Optional. A Highlights van or crew photo; empty uses the default van photo.'),
+    photoField('faqImage', '17 · FAQ photo card', 'Optional. Empty uses the default photo.'),
+    photoField('closingImage', '18 · Closing CTA background', 'Optional. A wide branded photo; empty uses the default van and skyline photo.'),
   ],
   preview: {prepare: () => ({title: 'New design settings'})},
 })

@@ -3,7 +3,7 @@ import {Button, Eyebrow, GoogleG, IconBadge, Stars} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {LogoTile} from './logos'
 import {credentials} from '@/lib/v3/content'
-import {LOGO_WHITE, SHARED_PHOTOS} from '@/lib/v3/visuals'
+import {LOGO_WHITE, SHARED_PHOTOS, fromImg} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
 
@@ -16,7 +16,7 @@ export function ClosingBlock({ctx}: {ctx: BlockContext}) {
   proof.sort((left, right) => order.indexOf(left.kind) - order.indexOf(right.kind))
   const google = settings.google
   const brands = page.brands?.items || []
-  const van = SHARED_PHOTOS.van
+  const van = fromImg(settings.closingImage, '') || SHARED_PHOTOS.van
 
   return (
     <>

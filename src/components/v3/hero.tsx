@@ -27,6 +27,7 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
             <ol>
               <li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li>
               <li><Link href="/">Services</Link></li>
+              {page.parentName && <li>{page.parentName}</li>}
               <li aria-current="page">{page.name} in {area.name}</li>
             </ol>
           </nav>
