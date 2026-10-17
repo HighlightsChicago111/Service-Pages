@@ -6,6 +6,7 @@ import {DisableDraftMode} from '@/components/disable-draft-mode'
 import {siteUrl} from '@/sanity/env'
 import {SanityLive} from '@/sanity/lib/live'
 import './globals.css'
+import './hc.css'
 
 const inter = Inter({subsets: ['latin'], variable: '--font-inter', display: 'swap'})
 

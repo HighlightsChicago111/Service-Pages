@@ -149,7 +149,7 @@ async function run() {
 
     if (!isNewDesign(html)) {
       // "Learn about Highlights Chicago with AI" opens Google AI Mode, not the homepage.
-      const aiHref = html.match(/<a\b[^>]*\bhref="([^"]*)"[^>]*>Learn about Highlights Chicago with AI\b/i)?.[1]?.replace(/&amp;/g, '&') || ''
+      const aiHref = html.match(/<a\b[^>]*\bhref="([^"]*)"[^>]*>(?:(?!<\/a>)[\s\S])*?Learn about Highlights Chicago with AI\b/i)?.[1]?.replace(/&amp;/g, '&') || ''
       const aiUrl = aiHref.startsWith('https://') ? new URL(aiHref) : null
       assert.ok(aiUrl?.origin === 'https://www.google.com' && aiUrl.searchParams.get('udm') === '50' && /Highlights Chicago/.test(aiUrl.searchParams.get('q') || ''), `${pathname} footer AI link must open Google AI Mode about Highlights Chicago, found ${aiHref || 'none'}`)
     }
