@@ -22,6 +22,7 @@
     "test:thank-you": "tsx scripts/test-thank-you-page.ts",
     "test:preview": "tsx scripts/test-preview-markers.tsx",
     "test:design": "tsx scripts/test-design-precedence.ts",
+    "test:worker": "tsx scripts/test-services-worker.ts",
     "check:parity": "tsx scripts/check-phase0-parity.ts",
     "content:import": "tsx scripts/import-content.ts",
     "content:update-template": "tsx scripts/update-service-template.ts",

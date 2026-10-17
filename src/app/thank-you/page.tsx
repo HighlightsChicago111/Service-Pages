@@ -1,5 +1,5 @@
 import type {Metadata} from 'next'
-import Link from 'next/link'
+import {SERVICES_PATH} from '@/lib/service-urls'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
 
 // A confirmation page has no value in search results, and indexing it would let
@@ -30,7 +30,7 @@ export default function ThankYouPage() {
           <p className="thank-you-lede">A Highlights Chicago team member will contact you shortly to discuss your service request.</p>
           <div className="thank-you-actions">
             <a href="tel:773-262-3333">Need us sooner? Call <span className="thank-you-nowrap">773-262-3333</span></a>
-            <Link href="/">Explore more services</Link>
+            <a href={SERVICES_PATH}>Explore more services</a>
           </div>
         </section>
         <section className="thank-you-steps" aria-labelledby="thank-you-steps-title">

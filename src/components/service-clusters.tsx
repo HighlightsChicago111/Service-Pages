@@ -3,7 +3,7 @@ import Link from 'next/link'
 import {CollectionFooter, CollectionHeader} from './collection-chrome'
 import {prepareCollectionItems, type CollectionItem, type PreparedCollectionItem} from '@/lib/collection-items'
 import {chooseServiceHeading, clusterForService, clusterTitle, formatServiceCount, serviceClusters, type ServiceCluster} from '@/lib/clusters'
-import {PUBLIC_SITE_ORIGIN, serviceRoutePath} from '@/lib/service-urls'
+import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, serviceRoutePath} from '@/lib/service-urls'
 
 export type ServiceCards = Map<string, PreparedCollectionItem>
 
@@ -105,7 +105,7 @@ export function ClusterPage({cluster, cards}: {cluster: ServiceCluster; cards: S
             <nav className="hierarchy-crumbs" aria-label="Breadcrumb">
               <ol>
                 <li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li>
-                <li><Link href="/">Services</Link></li>
+                <li><a href={SERVICES_PATH}>Services</a></li>
                 <li aria-current="page">{cluster.name}</li>
               </ol>
             </nav>

@@ -232,7 +232,7 @@ export function ServiceLandingPage({data}: Props) {
     <div className="site-chrome">
       <CollectionHeader />
       <main className="service-landing" style={brandStyle}>
-      <nav className="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li><li><Link href="/">Services</Link></li>{cluster && <li><Link href={`/${cluster.slug}`}>{cluster.name}</Link></li>}<li aria-current="page">{service.name} in {area.name}</li></ol></nav>
+      <nav className="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li><li><a href={SERVICES_PATH}>Services</a></li>{cluster && <li><Link href={`/${cluster.slug}`}>{cluster.name}</Link></li>}<li aria-current="page">{service.name} in {area.name}</li></ol></nav>
 
       <header className="hero"><div className="wrap hero-grid"><div>
         <p className="eyebrow">{area.heroEyebrow}</p><h1>{questionHeading(`${service.h1Prefix} in ${area.name}`)}</h1><p className="lede">{service.heroLede}</p>

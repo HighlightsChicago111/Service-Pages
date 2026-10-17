@@ -1,6 +1,9 @@
 import {NESTED_SERVICE_URLS, clusterForService} from './clusters'
 
 export const PUBLIC_SITE_ORIGIN = 'https://www.highlightschicago.com'
+// Link to the /services page itself with a plain <a href={SERVICES_PATH}>, not next/link. A
+// client-side navigation asks for /services?_rsc=..., and a proxy that hands /services with a
+// query string to Webflow gets Webflow's 301 to /new-services (see cloudflare/services-worker.js).
 export const SERVICES_PATH = '/services'
 export const PRIMARY_AREA_SLUG = 'chicago'
 // Where every successful lead-form submission lands. The team tracks
