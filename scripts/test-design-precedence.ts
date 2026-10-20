@@ -46,6 +46,9 @@ async function main() {
   assert.deepEqual(newDesignTitle('Solar Panel Installation in Chicago | Highlights Chicago', 'x'), {absolute: 'Solar Panel Installation in Chicago | Highlights Chicago'})
   assert.equal(newDesignTitle('Solar Panel Installation & Service in Chicago', 'x'), 'Solar Panel Installation & Service in Chicago')
   assert.equal(newDesignTitle('  ', 'Solar Panel Installation in Chicago'), 'Solar Panel Installation in Chicago')
+  // A cut-off brand at the end is dropped so the template adds the full brand once.
+  assert.equal(newDesignTitle('Smoke Detector Installation in Chicago | Highlights', 'x'), 'Smoke Detector Installation in Chicago')
+  assert.deepEqual(newDesignTitle('Smoke Detector Installation | Highlights Chicago', 'x'), {absolute: 'Smoke Detector Installation | Highlights Chicago'})
 
   // 5. The new design only takes a URL when it can render; otherwise the current page stays.
   const page = {_id: 'v2-page-302', serviceId: 302, name: 'Solar', slug: 'solar-panel-installation', hero: {h1Prefix: 'Solar'}} as V2Page
