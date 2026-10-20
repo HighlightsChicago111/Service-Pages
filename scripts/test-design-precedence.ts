@@ -15,14 +15,14 @@ const CURRENT_TYPES = [
 ]
 
 async function main() {
-  // 1. The reserved-slug copy matches the 77 permanent redirects in next.config.ts exactly.
+  // 1. The reserved-slug copy matches the 82 permanent one-segment redirects in next.config.ts exactly.
   const redirects = (await nextConfig.redirects?.()) || []
   const permanentSources = redirects
     .filter((redirect) => redirect.permanent)
     .map((redirect) => redirect.source.replace(redirect.basePath === false ? /^\/services\// : /^\//, ''))
     // Nested /<group>/<service> redirects (flat service URLs) reserve no slug.
     .filter((source) => !source.includes('/'))
-  assert.equal(permanentSources.length, 77, 'next.config.ts should define 77 permanent one-segment redirects')
+  assert.equal(permanentSources.length, 82, 'next.config.ts should define 82 permanent one-segment redirects')
   assert.deepEqual([...REDIRECT_SOURCE_SLUGS].sort(), [...permanentSources].sort(), 'src/lib/reserved-slugs.ts is out of sync with next.config.ts')
 
   // 2. Studio slug validation: redirect sources and reserved paths are refused, live and new slugs are allowed.
@@ -46,6 +46,9 @@ async function main() {
   assert.deepEqual(newDesignTitle('Solar Panel Installation in Chicago | Highlights Chicago', 'x'), {absolute: 'Solar Panel Installation in Chicago | Highlights Chicago'})
   assert.equal(newDesignTitle('Solar Panel Installation & Service in Chicago', 'x'), 'Solar Panel Installation & Service in Chicago')
   assert.equal(newDesignTitle('  ', 'Solar Panel Installation in Chicago'), 'Solar Panel Installation in Chicago')
+  // A cut-off brand at the end is dropped so the template adds the full brand once.
+  assert.equal(newDesignTitle('Smoke Detector Installation in Chicago | Highlights', 'x'), 'Smoke Detector Installation in Chicago')
+  assert.deepEqual(newDesignTitle('Smoke Detector Installation | Highlights Chicago', 'x'), {absolute: 'Smoke Detector Installation | Highlights Chicago'})
 
   // 5. The new design only takes a URL when it can render; otherwise the current page stays.
   const page = {_id: 'v2-page-302', serviceId: 302, name: 'Solar', slug: 'solar-panel-installation', hero: {h1Prefix: 'Solar'}} as V2Page

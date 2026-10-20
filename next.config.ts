@@ -101,7 +101,7 @@ const legacyHubRedirectSlugs = ['ejector-pump', 'furnace', 'hvac', 'water-pump']
 // Service pages live at /<cluster>/<service>, so redirects point straight at
 // that path instead of chaining through the old flat URL. A retired slug that
 // is now a service-group page (e.g. /low-voltage) is served, not redirected.
-const publishedClusters = hierarchy.clusters.filter((cluster) => cluster.services.length > 0)
+const publishedClusters = (hierarchy.clusters as {slug: string; formerSlugs?: string[]; services: string[]}[]).filter((cluster) => cluster.services.length > 0)
 const clusterSlugs = new Set(publishedClusters.map((cluster) => cluster.slug))
 const clusterOfService = new Map(publishedClusters.flatMap((cluster) => cluster.services.map((service) => [service, cluster.slug] as const)))
 // Flat /<service> while the live proxy forwards only one segment (data/cluster-hierarchy.json nestedServiceUrls).
@@ -150,8 +150,20 @@ const nextConfig: NextConfig = {
         permanent: true,
         basePath: false as const,
       })),
+      // A group renamed to match its name on the site (data/cluster-hierarchy.json formerSlugs):
+      // its old group URL and old /<old-group>/<service> URLs go to the new ones.
+      ...publishedClusters.flatMap((cluster) => (cluster.formerSlugs || []).flatMap((former) => [
+        {source: `/${former}`, destination: `/${cluster.slug}`, permanent: true},
+        ...cluster.services.map((service) => ({source: `/${former}/${service}`, destination: servicePath(service), permanent: true})),
+      ])),
       // The first launch's /<service>/chicago URLs. Declared here rather than in the page so
-      // the response always carries one Location header.
+      // the response always carries one Location header. A grouped service goes straight to
+      // its nested URL rather than chaining through the flat one.
+      ...(hierarchy.nestedServiceUrls === true ? [...clusterOfService.keys()].map((service) => ({
+        source: `/${service}/chicago`,
+        destination: servicePath(service),
+        permanent: true,
+      })) : []),
       {
         source: '/:service/chicago',
         destination: '/:service',

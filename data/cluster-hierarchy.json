@@ -1,10 +1,13 @@
 {
-  "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs are the content plan cluster URL slugs; service slugs are the live Sanity slugs. \"parentName\" is the Sanity cluster name (servicePage service->parentName, v2ServicePage parentName): a published page whose slug is not listed joins the group with that name, after the listed services.",
-  "nestedServiceUrls": false,
+  "source": "Cluster names, order and service membership from \"Highlights Chicago - Cluster Level (40 pages).xlsx\" (built 2026-10-10 from the Highlights Chicago content plan). Slugs match the group names shown on the site (the content plan slugs they replaced are kept in \"formerSlugs\" and redirect to the new URL); service slugs are the live Sanity slugs. \"parentName\" is the Sanity cluster name (servicePage service->parentName, v2ServicePage parentName): a published page whose slug is not listed joins the group with that name, after the listed services.",
+  "nestedServiceUrls": true,
   "nestedServiceUrlsNote": "Service pages live at /services/<service> while the live proxy (Cloudflare) forwards only one path segment under /services to Vercel. Set nestedServiceUrls to true to move them to /services/<group>/<service> once the proxy forwards /services/*/*, and check a nested URL on www.highlightschicago.com first.",
   "clusters": [
     {
-      "slug": "power-distribution",
+      "slug": "panel-upgrades",
+      "formerSlugs": [
+        "power-distribution"
+      ],
       "name": "Panel Upgrades",
       "noun": "panel upgrade",
       "description": "Electrical panel and service upgrades for more capacity and safer power.",
@@ -14,7 +17,10 @@
       ]
     },
     {
-      "slug": "panels-circuits",
+      "slug": "circuit-protection",
+      "formerSlugs": [
+        "panels-circuits"
+      ],
       "name": "Circuit Protection",
       "noun": "circuit protection",
       "description": "Surge protection, circuit breakers, breaker boxes, grounding and fuse box replacement.",
@@ -28,7 +34,10 @@
       ]
     },
     {
-      "slug": "wiring-diagnostics",
+      "slug": "electrical-wiring",
+      "formerSlugs": [
+        "wiring-diagnostics"
+      ],
       "name": "Electrical Wiring",
       "noun": "electrical wiring",
       "description": "Electrical repairs, wiring, troubleshooting and new installations.",
@@ -41,7 +50,10 @@
       ]
     },
     {
-      "slug": "outlets-switches",
+      "slug": "electrical-outlets",
+      "formerSlugs": [
+        "outlets-switches"
+      ],
       "name": "Electrical Outlets",
       "noun": "outlet and switch",
       "description": "GFCI outlets, new outlets and light switch installation.",
@@ -49,7 +61,8 @@
       "services": [
         "gfci-outlet-installation",
         "electrical-outlet-installation",
-        "light-switch-replacement-and-installation"
+        "light-switch-replacement-and-installation",
+        "dimmer-switch-installation-and-replacement"
       ]
     },
     {
@@ -66,7 +79,10 @@
       ]
     },
     {
-      "slug": "exterior-lighting",
+      "slug": "outdoor-lighting",
+      "formerSlugs": [
+        "exterior-lighting"
+      ],
       "name": "Outdoor Lighting",
       "noun": "outdoor lighting",
       "description": "Outdoor, landscape, emergency and parking lot lighting.",
@@ -120,7 +136,8 @@
       "services": [
         "ceiling-fan-installation",
         "garbage-disposal-wiring",
-        "bathroom-exhaust-fan-installation"
+        "bathroom-exhaust-fan-installation",
+        "well-pump-wiring"
       ]
     },
     {
@@ -133,11 +150,15 @@
         "structured-cabling-installation",
         "low-voltage-wiring-installation",
         "cctv-installation",
-        "fiber-optic-cable-installation"
+        "fiber-optic-cable-installation",
+        "av-installation-services"
       ]
     },
     {
-      "slug": "energy-efficiency",
+      "slug": "solar-energy",
+      "formerSlugs": [
+        "energy-efficiency"
+      ],
       "name": "Solar Energy",
       "noun": "solar and energy",
       "description": "Solar panels, solar batteries, energy audits and efficiency upgrades.",
@@ -148,7 +169,8 @@
         "solar-battery-installation",
         "energy-star-appliances",
         "energy-efficiency-upgrades",
-        "infrared-electrical-inspection"
+        "infrared-electrical-inspection",
+        "solar-inverter-installation"
       ]
     },
     {

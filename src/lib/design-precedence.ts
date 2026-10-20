@@ -24,10 +24,11 @@ export function preferNewDesign<T extends DesignRoute>(routes: T[]): T[] {
 /**
  * The current pages store full titles ("… | Highlights Chicago"), so they are used
  * exactly as written. New-design titles may leave the brand out, and the root
- * layout's title template then adds it once.
+ * layout's title template then adds it once. A title that ends in a cut-off brand
+ * ("… | Highlights") loses that stub, so the template's full brand is not doubled.
  */
 export function newDesignTitle(stored: string | null | undefined, fallback: string): string | {absolute: string} {
-  const title = (stored || '').trim()
+  const title = (stored || '').trim().replace(/\s*[|\-–—]\s*Highlights\s*$/i, '')
   if (!title) return fallback
   return /\bHighlights Chicago\b/i.test(title) ? {absolute: title} : title
 }
