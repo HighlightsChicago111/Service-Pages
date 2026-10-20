@@ -3,6 +3,7 @@ import {Icon} from './icon'
 import {IconBadge} from './atoms'
 import {FooterQuoteForm} from './footer-quote-form'
 import {MobileMenu} from '@/components/mobile-menu'
+import {LEGAL_LINKS} from '@/lib/legal-links'
 import {LOGO, LOGO_WHITE} from '@/lib/v3/visuals'
 import {PUBLIC_SITE_ORIGIN, SERVICES_PATH} from '@/lib/service-urls'
 import type {V2Settings} from '@/types/v2'
@@ -99,7 +100,12 @@ export function SiteFooter({settings, tel}: {settings: V2Settings; tel: string})
         </aside>
       </div>
       <div className="ds-wrap ds-footer-bottom">
-        <span>Copyright © {new Date().getFullYear()} Highlights Chicago</span>
+        <div className="ds-footer-copy">
+          <span>Copyright © {new Date().getFullYear()} Highlights Chicago</span>
+          <nav className="ds-footer-legal" aria-label="Legal">
+            {LEGAL_LINKS.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+          </nav>
+        </div>
         <div className="ds-socials">
           <a href="https://www.facebook.com/HighlightsChicago" aria-label="Highlights Chicago on Facebook"><Icon name="facebook" size={18} /></a>
           <a href="https://x.com/wedoit4life" aria-label="Highlights Chicago on X"><Icon name="x" size={16} /></a>

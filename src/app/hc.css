@@ -94,7 +94,13 @@
 .hc-footer-call{grid-column:1/-1;margin:0;text-align:center;font-size:var(--text-small);font-weight:600;color:#fff}
 .hc-footer-call a{margin-left:6px;padding-bottom:1px;border-bottom:1px solid var(--color-green);text-decoration:none;color:#fff}
 .hc-footer-error{grid-column:1/-1;margin:0;font-size:13px;color:#FFB4AA}
-.hc-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:56px;padding-top:28px;border-top:1px solid var(--color-navy-line);font-size:var(--text-small);color:var(--color-on-navy-muted)}
+.hc-footer-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-top:56px;padding-top:28px;border-top:1px solid var(--color-navy-line);font-size:var(--text-small);color:var(--color-on-navy-muted)}
+.hc-footer-copy{display:flex;flex-direction:column;gap:var(--spacing-2xs)}
+.hc-footer-copy>span{line-height:1.2}
+.hc-footer-legal{display:flex;flex-wrap:wrap;gap:0 24px}
+.hc-footer-legal a{padding-block:var(--spacing-xs);font-weight:400;line-height:1.2;text-decoration:none;color:inherit;transition:color .3s}
+.hc-footer-legal a:hover{color:var(--color-green)}
+.hc-footer-legal a:focus-visible{outline-color:#fff}
 .hc-footer-socials{display:flex;gap:12px}
 .hc-footer-socials a{display:grid;place-items:center;width:40px;height:40px;border-radius:var(--radius-full);border:1px solid #FFFFFF33;color:var(--color-green)}
 .hc-footer-socials .hc-icon{width:16px;height:16px}
