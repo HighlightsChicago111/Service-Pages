@@ -28,10 +28,10 @@ assert.equal(clusterPagePath('electrical-outlets'), '/services/electrical-outlet
 // A service outside every group keeps a flat URL.
 assert.equal(servicePagePath('ev-charger-installation'), '/services/ev-charger-installation')
 // A page published after the workbook joins the group its Sanity cluster name names.
-assert.equal(clusterForService('solar-inverter-installation', 'Energy Efficiency & Solar')?.slug, 'solar-energy')
-assert.equal(clusterForService('well-pump-wiring', ' appliance & equipment circuits ')?.slug, 'appliance-circuits')
-assert.equal(servicePagePath('solar-inverter-installation', 'Energy Efficiency & Solar'), `/services${servicePathIn('solar-energy', 'solar-inverter-installation')}`)
-assert.equal(servicePagePath('solar-inverter-installation', 'Not A Cluster'), '/services/solar-inverter-installation')
+assert.equal(clusterForService('solar-carport-installation', 'Energy Efficiency & Solar')?.slug, 'solar-energy')
+assert.equal(clusterForService('sump-pump-wiring', ' appliance & equipment circuits ')?.slug, 'appliance-circuits')
+assert.equal(servicePagePath('solar-carport-installation', 'Energy Efficiency & Solar'), `/services${servicePathIn('solar-energy', 'solar-carport-installation')}`)
+assert.equal(servicePagePath('solar-carport-installation', 'Not A Cluster'), '/services/solar-carport-installation')
 // The workbook's group wins over a page's cluster name, so listed pages never change group.
 assert.equal(clusterForService('gfci-outlet-installation', 'Interior Lighting')?.slug, 'electrical-outlets')
 

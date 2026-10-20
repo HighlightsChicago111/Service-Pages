@@ -157,7 +157,13 @@ const nextConfig: NextConfig = {
         ...cluster.services.map((service) => ({source: `/${former}/${service}`, destination: servicePath(service), permanent: true})),
       ])),
       // The first launch's /<service>/chicago URLs. Declared here rather than in the page so
-      // the response always carries one Location header.
+      // the response always carries one Location header. A grouped service goes straight to
+      // its nested URL rather than chaining through the flat one.
+      ...(hierarchy.nestedServiceUrls === true ? [...clusterOfService.keys()].map((service) => ({
+        source: `/${service}/chicago`,
+        destination: servicePath(service),
+        permanent: true,
+      })) : []),
       {
         source: '/:service/chicago',
         destination: '/:service',
