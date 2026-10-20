@@ -3,6 +3,7 @@
 import {FooterLeadForm} from './footer-lead-form'
 import {Icon, XLogo} from './hc-icons'
 import {MobileMenu} from './mobile-menu'
+import {LEGAL_LINKS} from '@/lib/legal-links'
 import {SERVICES_PATH} from '@/lib/service-urls'
 
 const LIVE_SITE = 'https://www.highlightschicago.com'
@@ -122,7 +123,12 @@ export function CollectionFooter() {
           </aside>
         </div>
         <div className="hc-footer-bottom">
-          <span>Copyright © {new Date().getFullYear()} Highlights Chicago</span>
+          <div className="hc-footer-copy">
+            <span>Copyright © {new Date().getFullYear()} Highlights Chicago</span>
+            <nav className="hc-footer-legal" aria-label="Legal">
+              {LEGAL_LINKS.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+            </nav>
+          </div>
           <div className="hc-footer-socials">
             <a href="https://www.facebook.com/HighlightsChicago" aria-label="Highlights Chicago on Facebook"><Icon name="facebook" size={16} /></a>
             <a href="https://x.com/wedoit4life" aria-label="Highlights Chicago on X"><XLogo /></a>
