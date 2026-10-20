@@ -18,22 +18,22 @@ const routes = [
 // Service pages sit under their group (/services/<cluster>/<service>) only when
 // NESTED_SERVICE_URLS is on; otherwise every service page keeps its flat URL.
 const servicePathIn = (group: string, service: string) => (NESTED_SERVICE_URLS ? `/${group}/${service}` : `/${service}`)
-assert.equal(serviceRoutePath('gfci-outlet-installation'), servicePathIn('outlets-switches', 'gfci-outlet-installation'))
-assert.equal(servicePagePath('gfci-outlet-installation'), `/services${servicePathIn('outlets-switches', 'gfci-outlet-installation')}`)
+assert.equal(serviceRoutePath('gfci-outlet-installation'), servicePathIn('electrical-outlets', 'gfci-outlet-installation'))
+assert.equal(servicePagePath('gfci-outlet-installation'), `/services${servicePathIn('electrical-outlets', 'gfci-outlet-installation')}`)
 assert.equal(
   servicePageUrl('gfci-outlet-installation'),
-  `${PUBLIC_SITE_ORIGIN}/services${servicePathIn('outlets-switches', 'gfci-outlet-installation')}`,
+  `${PUBLIC_SITE_ORIGIN}/services${servicePathIn('electrical-outlets', 'gfci-outlet-installation')}`,
 )
-assert.equal(clusterPagePath('outlets-switches'), '/services/outlets-switches')
+assert.equal(clusterPagePath('electrical-outlets'), '/services/electrical-outlets')
 // A service outside every group keeps a flat URL.
 assert.equal(servicePagePath('ev-charger-installation'), '/services/ev-charger-installation')
 // A page published after the workbook joins the group its Sanity cluster name names.
-assert.equal(clusterForService('solar-inverter-installation', 'Energy Efficiency & Solar')?.slug, 'energy-efficiency')
+assert.equal(clusterForService('solar-inverter-installation', 'Energy Efficiency & Solar')?.slug, 'solar-energy')
 assert.equal(clusterForService('well-pump-wiring', ' appliance & equipment circuits ')?.slug, 'appliance-circuits')
-assert.equal(servicePagePath('solar-inverter-installation', 'Energy Efficiency & Solar'), `/services${servicePathIn('energy-efficiency', 'solar-inverter-installation')}`)
+assert.equal(servicePagePath('solar-inverter-installation', 'Energy Efficiency & Solar'), `/services${servicePathIn('solar-energy', 'solar-inverter-installation')}`)
 assert.equal(servicePagePath('solar-inverter-installation', 'Not A Cluster'), '/services/solar-inverter-installation')
 // The workbook's group wins over a page's cluster name, so listed pages never change group.
-assert.equal(clusterForService('gfci-outlet-installation', 'Interior Lighting')?.slug, 'outlets-switches')
+assert.equal(clusterForService('gfci-outlet-installation', 'Interior Lighting')?.slug, 'electrical-outlets')
 
 assert.equal(
   resolvePublishedServicePath(
@@ -42,7 +42,7 @@ assert.equal(
     routes,
     'chicago',
   ),
-  `/services${servicePathIn('outlets-switches', 'gfci-outlet-installation')}`,
+  `/services${servicePathIn('electrical-outlets', 'gfci-outlet-installation')}`,
 )
 assert.equal(
   resolvePublishedServicePath('/services/residential-electrical-services/', 'Residential electrical services', routes, 'chicago'),
@@ -60,5 +60,8 @@ assert.equal(new Set(parentNames).size, parentNames.length, 'two groups must not
 assert.equal(new Set(services).size, services.length, 'a service must not appear in two groups')
 assert.ok(services.every((service) => clusterForService(service)), 'every grouped service must resolve to its group')
 assert.ok(!serviceClusters.some((cluster) => services.includes(cluster.slug)), 'a group slug must not equal a service slug')
+// A group's URL slug is its name on the site (Panel Upgrades -> /services/panel-upgrades).
+const slugOf = (name: string) => name.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+for (const cluster of serviceClusters) assert.equal(cluster.slug, slugOf(cluster.name), `${cluster.name} should live at /services/${slugOf(cluster.name)}`)
 
 console.log('Service URL contract passed: nested service paths, group paths, flat fallback, titles and related-link normalization are stable.')

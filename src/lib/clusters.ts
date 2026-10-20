@@ -6,6 +6,8 @@ import hierarchy from '../../data/cluster-hierarchy.json'
 // group through the cluster name stored on it in Sanity (parentName).
 export type ServiceCluster = {
   slug: string
+  /** Earlier URL slugs of this group; they redirect to /services/<slug> (next.config.ts). */
+  formerSlugs?: string[]
   name: string
   /** Lower-case phrase used in sentences, e.g. "backup power". */
   noun: string

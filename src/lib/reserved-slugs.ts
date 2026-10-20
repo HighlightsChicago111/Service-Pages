@@ -3,7 +3,7 @@ import {serviceClusters} from './clusters'
 /**
  * Slugs a new-design service page may never use, checked by Studio validation.
  *
- * REDIRECT_SOURCE_SLUGS mirrors the 77 permanent redirects in next.config.ts. That
+ * REDIRECT_SOURCE_SLUGS mirrors the 82 permanent one-segment redirects in next.config.ts. That
  * file is deliberately left untouched, so this is a copy; `pnpm test:design` fails
  * if the two ever drift apart. A page published on one of these slugs would be
  * unreachable, because the redirect runs before any page renders.
@@ -22,11 +22,13 @@ export const REDIRECT_SOURCE_SLUGS = [
   'garden-lights', 'generators', 'gfci-receptacles', 'going-green', 'ground-fault-safety', 'heat-detectors',
   'home-theater-wiring', 'industrial-electrical-services', 'infrared-scanning', 'intercom-system', 'junction-box',
   'led-lighting', 'light-fixtures', 'lighting-upgrades', 'low-voltage-lighting', 'microwave', 'multimedia',
-  'outdoor-lighting', 'outlets-and-switches', 'overhead-electrical-services', 'parking-garage-lighting', 'pendant',
+  'outlets-and-switches', 'overhead-electrical-services', 'parking-garage-lighting', 'pendant',
   'phone-jacks', 'recessed-lighting', 'refrigerator', 'residential-electrical-services', 'rewiring', 'riser', 'sconces',
   'smoke-detectors', 'solar-photovoltaic', 'surge-protectors', 'switchgear-installation', 'temporary-power',
   'track-lighting', 'transformers', 'under-cabinet', 'underground-electrical-services', 'voice', 'voltage-120-220',
   'voltage-120-240', 'washer-dryer', 'ejector-pump', 'furnace', 'hvac', 'water-pump',
+  // Former service-group slugs (data/cluster-hierarchy.json formerSlugs).
+  'power-distribution', 'panels-circuits', 'wiring-diagnostics', 'outlets-switches', 'exterior-lighting', 'energy-efficiency',
 ] as const
 
 const reservedPaths = new Set<string>(RESERVED_PATH_SLUGS)
