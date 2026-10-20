@@ -51,9 +51,12 @@ function serviceLinks(html: string): string[] {
     .filter((href) => [2, 3].includes(href.split('/').filter(Boolean).length))
 }
 
+const groupPagePaths = new Set(serviceClusters.map((cluster) => clusterPagePath(cluster.slug)))
+
+/** Service cards in the related block; the category card's link to the service group page is not one. */
 function relatedServiceLinks(html: string): string[] {
   const section = html.match(/<section\b[^>]*\bid="other-services"[^>]*>([\s\S]*?)<\/section>/i)?.[1] || ''
-  return serviceLinks(section)
+  return serviceLinks(section).filter((href) => !groupPagePaths.has(href))
 }
 
 /** Links inside the site header's menus, in page order. */
