@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- Sanity permits arbitrary external image sources; native img keeps alt text crawlable. */
 import type {CSSProperties, ReactNode} from 'react'
+import {ReviewRatings} from './review-ratings'
 import Link from 'next/link'
 import {stegaClean} from 'next-sanity'
 import type {ExternalImage, Faq, Guide, ServicePageData} from '@/types/content'
@@ -235,8 +236,8 @@ export function ServiceLandingPage({data}: Props) {
       <nav className="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href={PUBLIC_SITE_ORIGIN}>Home</a></li><li><a href={SERVICES_PATH}>Services</a></li>{cluster && <li><Link href={`/${cluster.slug}`}>{cluster.name}</Link></li>}<li aria-current="page">{service.name} in {area.name}</li></ol></nav>
 
       <header className="hero"><div className="wrap hero-grid"><div>
-        <p className="eyebrow">{area.heroEyebrow}</p><h1>{questionHeading(`${service.h1Prefix} in ${area.name}`)}</h1><p className="lede">{service.heroLede}</p>
-        <div className="trustbar">{settings.trustLines?.map((line) => <span className="trust-item" key={line}>◆ {line}</span>)}{rating && <Rating rating={rating} count={reviewCount} />}</div>
+        <p className="eyebrow">{area.heroEyebrow}</p><ReviewRatings googleRating={rating} googleCount={reviewCount} tone="light" /><h1>{questionHeading(`${service.h1Prefix} in ${area.name}`)}</h1><p className="lede">{service.heroLede}</p>
+        <div className="trustbar">{settings.trustLines?.map((line) => <span className="trust-item" key={line}>◆ {line}</span>)}</div>
         <div className="btn-row"><a className="btn btn-primary" href={phoneHref}>Call {settings.phoneDisplay}</a><a className="btn btn-secondary" href="#quote">{service.secondaryCta || 'Request service'}</a></div>
         <div className="cs-gallery"><div className="cs-gallery-rail">{page.gallery?.filter((photo) => Boolean(imageUrl(photo))).slice(0, 3).map((photo, index) => {
           const src = imageUrl(photo)

@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- Full-bleed hero photo; native img keeps it crawlable and lets it load eagerly. */
 import Link from 'next/link'
-import {Button, Copy, Eyebrow, GoogleG, PhotoFrame, Stars} from './atoms'
+import {Button, Copy, Eyebrow, PhotoFrame} from './atoms'
+import {ReviewRatings} from '../review-ratings'
 import {Icon} from './icon'
 import {QuoteForm} from './quote-form'
 import {jobNoun} from '@/lib/v3/content'
@@ -15,7 +16,7 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
   const hero = visuals.hero
   const noun = jobNoun(page.jobPaths?.heading)
   const google = settings.google
-  const chips = (settings.trustLines || []).slice(0, google?.rating ? 2 : 3)
+  const chips = (settings.trustLines || []).slice(0, 3)
   const crewIllustrative = visuals.crew.some((photo) => photo.illustrative)
   const cluster = clusterForService(page.slug, page.parentName)
 
@@ -34,11 +35,11 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
             </ol>
           </nav>
           {area.heroEyebrow && <Eyebrow className="ds-eyebrow--light">{area.heroEyebrow}</Eyebrow>}
+          <ReviewRatings googleRating={google?.rating} googleCount={google?.reviewCount} />
           <h1 className="ds-h1">{page.hero.h1Prefix} in {area.name}</h1>
           <Copy value={page.hero.lede} show={editorial} className="ds-hero-lede" />
           <ul className="ds-trust-chips" aria-label="Credentials">
             {chips.map((line, index) => <li key={line}><Icon name={index === 0 ? 'shieldCheck' : 'circleCheck'} size={16} />{line}</li>)}
-            {google?.rating && <li className="ds-trust-chip--google"><GoogleG size={20} /><b>{google.rating}</b><span className="ds-out">/5</span><Stars size={14} /><span>{google.reviewCount} reviews</span></li>}
           </ul>
           <div className="ds-cta-row">
             <Button href={tel} tone="light" icon="phone">Call {phone}</Button>
