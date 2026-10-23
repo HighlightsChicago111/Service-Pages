@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- Official logo files (SVG/PNG) from /public. */
-import {IconBadge, SectionHead} from '../atoms'
+import {Copy, IconBadge, SectionHead} from '../atoms'
 import {SERVICES_PATH} from '@/lib/service-urls'
 import {questionHeading} from '@/lib/headings'
+import {splitConfirm} from '@/lib/v3/content'
 import type {BlockContext} from '../types'
 
 export const hasLogos = ({page}: BlockContext) => Boolean(page.brands?.items?.length)
@@ -34,7 +35,7 @@ export function LogoTile({brand, compact, uploaded}: {brand: string; compact?: b
 
 /** D6 Logo wall: official full-colour logos on white tiles, a big blue count. */
 export function LogosBlock({ctx}: {ctx: BlockContext}) {
-  const {page, area, visuals} = ctx
+  const {page, area, visuals, editorial} = ctx
   const brands = page.brands || {}
   const items = brands.items || []
   return (
@@ -47,7 +48,7 @@ export function LogosBlock({ctx}: {ctx: BlockContext}) {
         aside={<p className="ds-big-count"><b>{items.length}</b> <span>Brands</span></p>}
       />
       <ul className="ds-logo-wall">{items.map((brand) => <LogoTile brand={brand} uploaded={visuals.brandLogos} key={brand} />)}</ul>
-      {brands.note && <div className="ds-note-row"><div className="ds-note-row-main"><IconBadge icon="wrench" tone="green" size={44} /><p>{brands.note}</p></div></div>}
+      {(editorial || splitConfirm(brands.note).text) && <div className="ds-note-row"><div className="ds-note-row-main"><IconBadge icon="wrench" tone="green" size={44} /><Copy value={brands.note} show={editorial} /></div></div>}
     </div>
   )
 }

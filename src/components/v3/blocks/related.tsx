@@ -3,7 +3,8 @@ import {Eyebrow, IconTile} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {focus, relatedCardPhoto} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
-import {SERVICES_PATH, servicePagePath} from '@/lib/service-urls'
+import {NESTED_SERVICE_URLS, clusterForService, clusterTitle} from '@/lib/clusters'
+import {SERVICES_PATH, clusterPagePath, servicePagePath} from '@/lib/service-urls'
 import type {BlockContext} from '../types'
 
 export const hasRelated = ({page}: BlockContext) => Boolean(page.otherServices?.featured?.title || page.otherServices?.items?.length)
@@ -21,6 +22,11 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
   const featured = page.otherServices?.featured
   const services = (page.otherServices?.items || []).slice(0, 4)
   const category = visuals.category
+  // The card stands for the page's service group: name it and link it the way the breadcrumb does,
+  // not by the Sanity cluster name stored in featured.title.
+  const cluster = NESTED_SERVICE_URLS ? clusterForService(page.slug, page.parentName) : undefined
+  const categoryTitle = cluster ? clusterTitle(cluster) : featured?.title
+  const categoryHref = cluster ? clusterPagePath(cluster.slug) : SERVICES_PATH
 
   return (
     <div className="ds-wrap">
@@ -32,9 +38,9 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
           {category?.illustrative && <span className="ds-pill-caption ds-category-pill">Illustrative photo</span>}
           <div className="ds-category-body">
             {featured.tag && <p className="ds-glass-chip"><i aria-hidden="true" />{featured.tag}</p>}
-            <h3 className="ds-h3">{featured.title}</h3>
+            <h3 className="ds-h3">{categoryTitle}</h3>
             {featured.description && <p>{featured.description}</p>}
-            <a className="ds-btn ds-btn--light" href={SERVICES_PATH}><span>View all services</span><Icon name="arrowRight" size={18} /></a>
+            <a className="ds-btn ds-btn--light" href={categoryHref}><span>{cluster ? `View all ${cluster.noun} services` : 'View all services'}</span><Icon name="arrowRight" size={18} /></a>
           </div>
         </article>}
         <ul className="ds-service-cards">
