@@ -3,6 +3,7 @@ import {Inter} from 'next/font/google'
 import {draftMode} from 'next/headers'
 import {VisualEditing} from 'next-sanity/visual-editing'
 import {DisableDraftMode} from '@/components/disable-draft-mode'
+import {GoogleTagManager, GoogleTagManagerNoScript} from '@/components/google-tag-manager'
 import {siteUrl} from '@/sanity/env'
 import {SanityLive} from '@/sanity/lib/live'
 import './globals.css'
@@ -31,10 +32,14 @@ export default async function RootLayout({children}: Readonly<{children: React.R
   // through the Studio. Public visitors keep the static pages and never open a
   // browser connection to Sanity.
   const {isEnabled: isDraftMode} = await draftMode()
+  // Tags fire only on the live site: not locally, not on preview deployments, not for editors.
+  const gtm = process.env.VERCEL_ENV === 'production' && !isDraftMode
   return (
     <html lang="en">
       <body className={inter.variable}>
+        {gtm && <GoogleTagManagerNoScript />}
         {children}
+        {gtm && <GoogleTagManager />}
         {isDraftMode && (
           <>
             <SanityLive />
