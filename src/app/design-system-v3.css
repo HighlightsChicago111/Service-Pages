@@ -576,7 +576,9 @@
 .ds-category-bg { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
 .ds-category-scrim { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #15202a33 0%, #15202ad9 55%, #15202af2 100%); }
 .ds-category-pill { left: auto; right: 16px; top: 16px; bottom: auto; }
-.ds-category-body { display: grid; gap: 18px; justify-items: start; padding: 40px; }
+/* min-width: 0 lets the body shrink to the card; the button wraps instead of setting the body's width. */
+.ds-category-body { display: grid; gap: 18px; justify-items: start; min-width: 0; padding: 40px; }
+.ds-category-body .ds-btn { max-width: 100%; white-space: normal; text-align: center; }
 .ds-category-body p:not(.ds-glass-chip) { font-size: 18px; line-height: 28px; font-weight: 300; color: #ffffffcc; }
 .ds-service-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .ds-service-card { display: flex; flex-direction: column; overflow: hidden; border-radius: var(--r-md); border: 1px solid var(--c-line); background: #fff; transition: border-color var(--ease); }
