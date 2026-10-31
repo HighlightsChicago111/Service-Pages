@@ -1,5 +1,6 @@
 import {preferNewDesign, type ServiceDesign} from '@/lib/design-precedence'
-import {PRIMARY_AREA_SLUG} from '@/lib/service-urls'
+import {stegaClean} from 'next-sanity'
+import {PRIMARY_AREA_SLUG, resolvePublishedServicePath} from '@/lib/service-urls'
 import type {V2Area, V2Page, V2PageData, V2Settings} from '@/types/v2'
 
 type Route = {design?: ServiceDesign | null; serviceSlug?: string | null; areaSlug?: string | null; serviceName?: string | null; parentName?: string | null}
@@ -24,5 +25,13 @@ export function toNewDesignPageData(result: NewDesignQueryResult | null | undefi
     .filter((route): route is Route & {serviceSlug: string} => Boolean(route.serviceSlug && route.areaSlug === PRIMARY_AREA_SLUG))
     .map((route) => ({slug: route.serviceSlug, name: route.serviceName || route.serviceSlug, parentName: route.parentName || undefined}))
     .sort((left, right) => left.name.localeCompare(right.name))
-  return {page: page as V2Page, area, settings: result.settings, routes}
+  // Related service cards link only to live pages, the same rule as the current design: a page
+  // can be unpublished at any time, and its card then disappears instead of linking to a 404.
+  const liveRoutes = routes.map((route) => ({serviceSlug: route.slug, areaSlug: PRIMARY_AREA_SLUG, parentName: route.parentName}))
+  const v2Page = page as V2Page
+  const otherServices = v2Page.otherServices && {
+    ...v2Page.otherServices,
+    items: v2Page.otherServices.items?.filter((item) => resolvePublishedServicePath(stegaClean(item.url), undefined, liveRoutes, PRIMARY_AREA_SLUG)),
+  }
+  return {page: otherServices ? {...v2Page, otherServices} : v2Page, area, settings: result.settings, routes}
 }
