@@ -58,6 +58,7 @@ jobs:
           pnpm test:indexing-contract
           pnpm test:collection-data
           pnpm test:footer-legal
+          pnpm test:sheet
 
       - name: Preview-marker test (reads the live Sanity dataset)
         run: pnpm test:preview

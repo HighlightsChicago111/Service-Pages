@@ -73,6 +73,27 @@ async function main() {
   assert.equal('area' in (data.page || {}), false, 'the area is passed separately, not inside the page')
   assert.deepEqual(data.routes.map((route) => route.name), ['Generator Installation', 'Solar Panel Installation'])
 
+  // 5a. Related service cards link only to live pages: a page can be unpublished at any time,
+  // and its card must then disappear instead of linking to a 404.
+  const related = toNewDesignPageData({
+    page: {
+      ...page,
+      area,
+      otherServices: {items: [
+        {_key: 'a', name: 'Generator Installation', url: 'https://www.highlightschicago.com/services/generator-installation'},
+        {_key: 'b', name: 'Low Voltage Wiring', url: 'https://www.highlightschicago.com/services/low-voltage-wiring-installation'},
+        {_key: 'c', name: 'Solar Panel Installation', url: '/services/solar-panel-installation/'},
+      ]},
+    },
+    settings,
+    serviceRoutes: [
+      {design: 'current', serviceSlug: 'generator-installation', areaSlug: 'chicago', serviceName: 'Generator Installation'},
+      {design: 'new', serviceSlug: 'solar-panel-installation', areaSlug: 'chicago', serviceName: 'Solar Panel Installation'},
+      {design: 'current', serviceSlug: 'low-voltage-wiring-installation', areaSlug: 'evanston', serviceName: 'Low Voltage (Evanston only)'},
+    ],
+  })
+  assert.deepEqual(related?.page?.otherServices?.items?.map((item) => item._key), ['a', 'c'], 'a card for an unpublished page is left out')
+
   // 5b. Block photos: the page's own image fields win; the Solar reference map only fills
   // empty slots; another service never borrows Solar's photos.
   const photo = (url: string) => ({externalUrl: url, alt: `Photo at ${url}`})

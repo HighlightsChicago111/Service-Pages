@@ -25,3 +25,6 @@ mmm/
 Thumbs.db
 .idea/
 .vscode/
+
+# Google Sheet CSV exports (pnpm sheet:export)
+exports/
