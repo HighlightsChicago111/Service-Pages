@@ -7,7 +7,10 @@
  * service area and brand service page tabs of the same spreadsheet are never touched.
  *
  * A row edited in the sheet (or a new row for a page not in Sanity yet) is kept as it is, never
- * overwritten; bring it into Sanity with `pnpm sheet:import` (drafts only).
+ * overwritten. "Check selected rows" lists what is not ready and what differs from Sanity;
+ * "Push selected rows to Sanity as drafts" writes them as DRAFTS after a Yes that names the
+ * project, with each person's own Sanity token (Set my Sanity token). Nothing is ever published
+ * from the sheet. The same rules as `pnpm sheet:import`.
  *
  * Install: Extensions > Apps Script, add this file, run servicePagesInstall once and allow access.
  * Source of truth: the repo's google-apps-script/service-pages.gs. The block between the
@@ -20,6 +23,22 @@
 const SP_CONFIG = {
  "tab": "Service Pages",
  "queryUrl": "https://5w5623jq.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query=*%5B_type%20%3D%3D%20%22v2ServicePage%22%20%26%26%20!(_id%20in%20path(%22drafts.**%22))%5D",
+ "sanity": {
+  "projectId": "5w5623jq",
+  "dataset": "production",
+  "apiVersion": "2025-02-19",
+  "pageType": "v2ServicePage",
+  "studioUrl": "https://www.highlightschicago.com/services/studio"
+ },
+ "required": [
+  "serviceId",
+  "name",
+  "slug",
+  "area",
+  "seo.title",
+  "seo.description",
+  "hero.h1Prefix"
+ ],
  "origin": "https://www.highlightschicago.com",
  "nested": true,
  "groups": {
@@ -165,6 +184,7 @@ const SP_CONFIG = {
     {
      "n": "image",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -196,6 +216,7 @@ const SP_CONFIG = {
    "i": {
     "n": "",
     "k": "object",
+    "t": "v2Image",
     "f": [
      {
       "n": "image",
@@ -242,6 +263,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2ExtraFormField",
       "f": [
        {
         "n": "fieldName",
@@ -282,6 +304,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2JobPath",
       "f": [
        {
         "n": "title",
@@ -310,6 +333,7 @@ const SP_CONFIG = {
        {
         "n": "image",
         "k": "object",
+        "t": "v2Image",
         "f": [
          {
           "n": "image",
@@ -360,6 +384,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2EquipmentItem",
       "f": [
        {
         "n": "name",
@@ -372,6 +397,7 @@ const SP_CONFIG = {
        {
         "n": "image",
         "k": "object",
+        "t": "v2Image",
         "f": [
          {
           "n": "image",
@@ -436,6 +462,7 @@ const SP_CONFIG = {
        "i": {
         "n": "",
         "k": "object",
+        "t": "v2ComparisonRow",
         "f": [
          {
           "n": "label",
@@ -476,6 +503,7 @@ const SP_CONFIG = {
        "i": {
         "n": "",
         "k": "object",
+        "t": "v2TitledBody",
         "f": [
          {
           "n": "title",
@@ -488,6 +516,7 @@ const SP_CONFIG = {
          {
           "n": "image",
           "k": "object",
+          "t": "v2Image",
           "f": [
            {
             "n": "image",
@@ -540,6 +569,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2TitledBody",
       "f": [
        {
         "n": "title",
@@ -552,6 +582,7 @@ const SP_CONFIG = {
        {
         "n": "image",
         "k": "object",
+        "t": "v2Image",
         "f": [
          {
           "n": "image",
@@ -588,6 +619,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2TitledBody",
       "f": [
        {
         "n": "title",
@@ -600,6 +632,7 @@ const SP_CONFIG = {
        {
         "n": "image",
         "k": "object",
+        "t": "v2Image",
         "f": [
          {
           "n": "image",
@@ -633,6 +666,7 @@ const SP_CONFIG = {
     {
      "n": "image",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -684,6 +718,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2SymptomRow",
       "f": [
        {
         "n": "symptom",
@@ -719,6 +754,7 @@ const SP_CONFIG = {
     {
      "n": "image",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -745,6 +781,7 @@ const SP_CONFIG = {
     {
      "n": "orphanImage",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -800,6 +837,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2BrandLogo",
       "f": [
        {
         "n": "brand",
@@ -808,6 +846,7 @@ const SP_CONFIG = {
        {
         "n": "logo",
         "k": "object",
+        "t": "v2Image",
         "f": [
          {
           "n": "image",
@@ -854,6 +893,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2LinkedCard",
       "f": [
        {
         "n": "title",
@@ -880,6 +920,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2TrustMetric",
       "f": [
        {
         "n": "value",
@@ -895,6 +936,7 @@ const SP_CONFIG = {
     {
      "n": "image",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -926,6 +968,7 @@ const SP_CONFIG = {
    "i": {
     "n": "",
     "k": "object",
+    "t": "v2Review",
     "f": [
      {
       "n": "quote",
@@ -960,6 +1003,7 @@ const SP_CONFIG = {
    "i": {
     "n": "",
     "k": "object",
+    "t": "v2Image",
     "f": [
      {
       "n": "image",
@@ -1002,6 +1046,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2ProcessStep",
       "f": [
        {
         "n": "title",
@@ -1051,6 +1096,7 @@ const SP_CONFIG = {
       {
        "n": "image",
        "k": "object",
+       "t": "v2Image",
        "f": [
         {
          "n": "image",
@@ -1082,6 +1128,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2LinkedService",
       "f": [
        {
         "n": "name",
@@ -1098,6 +1145,7 @@ const SP_CONFIG = {
        {
         "n": "image",
         "k": "object",
+        "t": "v2Image",
         "f": [
          {
           "n": "image",
@@ -1156,6 +1204,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2PriceRow",
       "f": [
        {
         "n": "job",
@@ -1186,6 +1235,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2CostDriver",
       "f": [
        {
         "n": "factor",
@@ -1209,6 +1259,7 @@ const SP_CONFIG = {
     {
      "n": "driversImage",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -1300,6 +1351,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2WarrantyRow",
       "f": [
        {
         "n": "item",
@@ -1315,6 +1367,7 @@ const SP_CONFIG = {
     {
      "n": "handoverImage",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -1346,6 +1399,7 @@ const SP_CONFIG = {
    "i": {
     "n": "",
     "k": "object",
+    "t": "v2Faq",
     "f": [
      {
       "n": "question",
@@ -1387,6 +1441,7 @@ const SP_CONFIG = {
   {
    "n": "serviceGuide",
    "k": "object",
+   "t": "v2Guide",
    "f": [
     {
      "n": "title",
@@ -1406,6 +1461,7 @@ const SP_CONFIG = {
      "i": {
       "n": "",
       "k": "object",
+      "t": "v2GuideSection",
       "f": [
        {
         "n": "heading",
@@ -1421,6 +1477,7 @@ const SP_CONFIG = {
     {
      "n": "image",
      "k": "object",
+     "t": "v2Image",
      "f": [
       {
        "n": "image",
@@ -1463,7 +1520,143 @@ function servicePagesInstall() {
 }
 
 function servicePagesMenu() {
-  SpreadsheetApp.getUi().createMenu('Service pages').addItem('Refresh from Sanity', 'servicePagesRefresh').addToUi()
+  SpreadsheetApp.getUi().createMenu('Service pages')
+    .addItem('Check selected rows', 'servicePagesCheck')
+    .addItem('Push selected rows to Sanity as drafts', 'servicePagesPush')
+    .addSeparator()
+    .addItem('Refresh from Sanity', 'servicePagesRefresh')
+    .addItem('Set my Sanity token', 'servicePagesSetToken')
+    .addToUi()
+}
+
+const SP_TOKEN_KEY = 'SERVICE_PAGES_SANITY_TOKEN'
+
+/** Lists, per selected row, what is not ready and what differs from Sanity. Writes nothing. */
+function servicePagesCheck() {
+  spGuarded(() => {
+    const {headers, rows} = spSelection()
+    const checks = spCheckRows(rows, spLoadVersions())
+    spShow('Check: service pages', `Sanity project ${SP_CONFIG.sanity.projectId}, dataset ${SP_CONFIG.sanity.dataset}. Nothing was written.\n\n${spReport(checks, spUnknownColumns(headers))}`)
+  })
+}
+
+/** Writes the selected rows as drafts after a Yes; never publishes. */
+function servicePagesPush() {
+  spGuarded(() => {
+    const ui = SpreadsheetApp.getUi()
+    const lock = LockService.getDocumentLock()
+    lock.waitLock(30000) // the hourly refresh rewrites the tab; never both at once
+    try {
+      const {sheet, headers, rows} = spSelection()
+      const unknown = spUnknownColumns(headers)
+      const checks = spCheckRows(rows, spLoadVersions())
+      if (checks.some((c) => c.errors.length)) { spShow('Not pushed: fix these rows first', spReport(checks, unknown)); return }
+      const ready = checks.filter((c) => c.changes.length)
+      if (!ready.length) { spShow('Nothing to push', spReport(checks, unknown)); return }
+      const {projectId, dataset} = SP_CONFIG.sanity
+      const answer = ui.alert(
+        'Write drafts to Sanity?',
+        `Project ${projectId}, dataset ${dataset}, New design service pages.\n\n${ready.map((c) => `drafts.${c.id} (row ${c.rowNumber}, ${c.changes[0] === '(new page)' ? 'new page' : `${c.changes.length} field(s)`})`).join('\n')}` +
+          (unknown.length ? `\n\nThese columns are not Sanity fields and are not sent: ${unknown.join(', ')}` : '') +
+          '\n\nThese become DRAFTS. Nothing is published: review and publish them in the Studio.',
+        ui.ButtonSet.YES_NO,
+      )
+      if (answer !== ui.Button.YES) return
+      const result = spSanity(`mutate/${dataset}?returnIds=true&visibility=sync`, {
+        mutations: ready.map((c) => ({createOrReplace: {...c.doc, _id: `drafts.${c.id}`}})),
+      })
+      const written = spQuery('*[_id in $ids]{_id, _updatedAt}', {ids: ready.map((c) => `drafts.${c.id}`)})
+      if (written.length !== ready.length) throw new Error(`Sanity confirmed ${written.length} of ${ready.length} drafts (transaction ${result.transactionId}). Check the Studio.`)
+      const column = (name) => headers.indexOf(name) + 1
+      const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ')
+      for (const c of ready) {
+        const updatedAt = written.find((w) => w._id === `drafts.${c.id}`)._updatedAt
+        sheet.getRange(c.rowNumber, column('_id')).setNumberFormat('@').setValue(c.id)
+        sheet.getRange(c.rowNumber, column('_status')).setValue(`Draft pushed ${stamp} UTC, publish in the Studio`)
+        // Plain text, so Sheets keeps the exact time the next push compares against.
+        sheet.getRange(c.rowNumber, column('_updatedAt')).setNumberFormat('@').setValue(updatedAt)
+      }
+      spShow('Drafts written', `Transaction ${result.transactionId}. ${ready.length} draft(s) in project ${projectId}:\n\n${ready.map((c) => c.id).join('\n')}\n\nReview each one in the Studio (Service pages, New design) and press Publish:\n${SP_CONFIG.sanity.studioUrl}`)
+    } finally {
+      lock.releaseLock()
+    }
+  })
+}
+
+/** Saves this person's Sanity token for this script, only after Sanity accepts it. */
+function servicePagesSetToken() {
+  spGuarded(() => {
+    const ui = SpreadsheetApp.getUi()
+    const {projectId} = SP_CONFIG.sanity
+    const answer = ui.prompt('Set my Sanity token', `Paste an Editor token for Sanity project ${projectId} (sanity.io/manage, project ${projectId}, API, Tokens). It is stored for your Google account only and never shown again.`, ui.ButtonSet.OK_CANCEL)
+    if (answer.getSelectedButton() !== ui.Button.OK) return
+    const value = String(answer.getResponseText() || '').trim()
+    if (!value) throw new Error('No token pasted.')
+    spQuery(`count(*[_type == "${SP_CONFIG.sanity.pageType}"])`, {}, value)
+    PropertiesService.getUserProperties().setProperty(SP_TOKEN_KEY, value)
+    ui.alert('Service pages', `Token saved and accepted by project ${projectId}.`, ui.ButtonSet.OK)
+  })
+}
+
+function spGuarded(run) {
+  try { run() } catch (error) {
+    const ui = SpreadsheetApp.getUi()
+    ui.alert('Service pages', error instanceof Error ? error.message : String(error), ui.ButtonSet.OK)
+  }
+}
+
+function spShow(title, text) {
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(`<pre style="white-space:pre-wrap;font:13px/1.5 monospace">${escaped}</pre>`).setWidth(720).setHeight(480), title)
+}
+
+function spSanity(path, payload, token) {
+  const key = token || PropertiesService.getUserProperties().getProperty(SP_TOKEN_KEY)
+  const {projectId, apiVersion} = SP_CONFIG.sanity
+  if (!key) throw new Error(`No Sanity token yet. Use "Service pages > Set my Sanity token" first (an Editor token for project ${projectId}).`)
+  const response = UrlFetchApp.fetch(`https://${projectId}.api.sanity.io/v${apiVersion}/data/${path}`, {
+    method: payload ? 'post' : 'get',
+    contentType: 'application/json',
+    headers: {Authorization: `Bearer ${key}`},
+    payload: payload ? JSON.stringify(payload) : undefined,
+    muteHttpExceptions: true,
+  })
+  const status = response.getResponseCode()
+  const body = JSON.parse(response.getContentText() || '{}')
+  if (status === 401 || status === 403) throw new Error(`Sanity refused the token (${status}). Set a valid Editor token for project ${projectId}.`)
+  if (status >= 300) throw new Error(`Sanity answered ${status}: ${(body.error && body.error.description) || body.message || 'unknown error'}`)
+  return body
+}
+
+/** A GROQ query that sees drafts too (since API 2025-02-19 the default perspective hides them). */
+function spQuery(groq, params, token) {
+  const parts = [['query', groq], ['perspective', 'raw'], ...Object.keys(params).map((name) => [`$${name}`, JSON.stringify(params[name])])]
+  return spSanity(`query/${SP_CONFIG.sanity.dataset}?${parts.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')}`, undefined, token).result
+}
+
+/** The selected rows of the "Service Pages" tab (the row of the active cell if nothing more). */
+function spSelection() {
+  const sheet = SpreadsheetApp.getActiveSheet()
+  if (sheet.getName() !== SP_CONFIG.tab) throw new Error(`Open the "${SP_CONFIG.tab}" tab and select the page rows first. This menu never reads other tabs.`)
+  const lastColumn = sheet.getLastColumn()
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
+  for (const meta of ['_id', '_updatedAt']) if (!headers.includes(meta)) throw new Error(`The heading "${meta}" is missing; keep the ${SP_CONFIG.meta.join(', ')} columns at the start.`)
+  const numbers = new Set()
+  const list = sheet.getActiveRangeList()
+  for (const range of list ? list.getRanges() : [sheet.getActiveRange()]) {
+    for (let r = range.getRow(); r < range.getRow() + range.getNumRows(); r++) if (r > 1 && r <= sheet.getLastRow()) numbers.add(r)
+  }
+  if (!numbers.size) throw new Error('Select one or more page rows (click a cell in each row you want).')
+  const rows = [...numbers].sort((a, b) => a - b).map((rowNumber) => {
+    const cells = sheet.getRange(rowNumber, 1, 1, lastColumn).getDisplayValues()[0]
+    return {rowNumber, record: Object.fromEntries(headers.map((header, i) => [header, cells[i]]))}
+  })
+  return {sheet, headers, rows}
+}
+
+/** Every new-design page in Sanity, published and draft versions (the checks compare against both). */
+function spLoadVersions() {
+  return spQuery('*[_type == $type]', {type: SP_CONFIG.sanity.pageType})
 }
 
 function servicePagesRefresh() {
@@ -1636,7 +1829,8 @@ function spMerge(docs, existingHeaders, existingRows, unchanged) {
       fromSanity.add(doc._id)
     } else {
       const newer = (doc._updatedAt || '') > (old._updatedAt || '')
-      rows.push({...old, _status: newer ? 'Edited in sheet; also changed in Sanity since' : 'Edited in sheet'})
+      const pushed = /^Draft pushed/.test(old._status || '')
+      rows.push({...old, _status: newer ? 'Edited in sheet; also changed in Sanity since' : pushed ? old._status : 'Edited in sheet'})
     }
   }
   for (const row of existingRows) {
@@ -1646,4 +1840,172 @@ function spMerge(docs, existingHeaders, existingRows, unchanged) {
     rows.push({...row, _status: status})
   }
   return {headers, rows, fromSanity}
+}
+
+// ---------- Sheet row -> Sanity page; mirrors unflatten, differences and the checks of `pnpm sheet:import` ----------
+
+/** "faqs[2].question" -> ["faqs", 1, "question"] (list positions 0-based). */
+function spSegments(path) {
+  const out = []
+  for (const part of path.split('.')) {
+    const match = part.match(/^([^[]+)((?:\[\d+\])*)$/)
+    if (!match) throw new Error(`Bad column path: ${path}`)
+    out.push(match[1])
+    for (const index of match[2].matchAll(/\[(\d+)\]/g)) out.push(Number(index[1]) - 1)
+  }
+  return out
+}
+
+function spSetAt(doc, path, value) {
+  const parts = spSegments(path)
+  let node = doc
+  parts.forEach((segment, i) => {
+    if (i === parts.length - 1) { node[segment] = value; return }
+    if (node[segment] == null) node[segment] = typeof parts[i + 1] === 'number' ? [] : {}
+    node = node[segment]
+  })
+}
+
+/** Drops blank list items and empty objects, so unused columns add nothing. */
+function spTidy(value) {
+  const empty = (item) => item && typeof item === 'object' && !Array.isArray(item) && Object.keys(item).length === 0
+  if (Array.isArray(value)) return value.map(spTidy).filter((item) => item !== undefined && item !== null && item !== '' && !empty(item))
+  if (value && typeof value === 'object') {
+    const out = {}
+    for (const key of Object.keys(value)) {
+      const clean = spTidy(value[key])
+      if (clean === undefined || (Array.isArray(clean) && clean.length === 0) || empty(clean)) continue
+      out[key] = clean
+    }
+    return out
+  }
+  return value
+}
+
+/** Adds _type to every named object (v2Faq, v2Image ...) and a stable _key to every list item. */
+function spTyped(value, fields, keyPrefix) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !fields) return value
+  const out = {}
+  for (const field of fields) {
+    const child = value[field.n]
+    if (child === undefined) continue
+    if (field.k === 'list' && Array.isArray(child)) {
+      out[field.n] = field.i.k === 'object'
+        ? child.map((item, i) => ({_key: `${keyPrefix}${field.n}-${i + 1}`, _type: field.i.t, ...spTyped(item, field.i.f, `${keyPrefix}${field.n}-${i + 1}-`)}))
+        : child
+    } else if (field.k === 'object') out[field.n] = {...(field.t ? {_type: field.t} : {}), ...spTyped(child, field.f, `${keyPrefix}${field.n}-`)}
+    else out[field.n] = child
+  }
+  return out
+}
+
+/** One sheet row -> the page's Sanity fields (no _id). Bad numbers and bad JSON are errors, never guesses. */
+function spUnflatten(row, columns) {
+  const doc = {}
+  const errors = []
+  for (const column of columns) {
+    const raw = String(row[column.path] == null ? '' : row[column.path]).trim()
+    if (!raw) continue
+    if (column.kind === 'number') {
+      const n = Number(raw.replace(/,/g, ''))
+      if (!Number.isFinite(n)) { errors.push(`${column.path}: "${raw}" is not a number`); continue }
+      spSetAt(doc, column.path, n)
+    } else if (column.kind === 'json') {
+      try { spSetAt(doc, column.path, JSON.parse(raw)) } catch (error) { errors.push(`${column.path}: not valid JSON`) }
+    } else if (column.kind === 'slug') spSetAt(doc, column.path, {_type: 'slug', current: raw})
+    else if (column.kind === 'reference') spSetAt(doc, column.path, {_type: 'reference', _ref: raw})
+    else spSetAt(doc, column.path, raw)
+  }
+  return {doc: {_type: SP_CONFIG.sanity.pageType, ...spTyped(spTidy(doc), SP_CONFIG.schema, '')}, errors}
+}
+
+/** A page without system fields, _key and empty values, keys sorted, for comparing two versions. */
+function spComparable(doc) {
+  const strip = (value) => {
+    if (Array.isArray(value)) return value.map(strip)
+    if (value && typeof value === 'object') {
+      const out = {}
+      for (const key of Object.keys(value).sort((a, b) => a.localeCompare(b))) {
+        const child = value[key]
+        if (key.startsWith('_') && !['_type', '_ref'].includes(key)) continue
+        if (child === '' || child === null || child === undefined) continue
+        if (Array.isArray(child) && child.length === 0) continue
+        out[key] = strip(child)
+      }
+      return out
+    }
+    return value
+  }
+  return strip(doc)
+}
+
+/** The paths where two versions of a page differ. */
+function spDifferences(a, b) {
+  const out = []
+  const diff = (x, y, path) => {
+    if (JSON.stringify(x) === JSON.stringify(y)) return
+    if (x && y && typeof x === 'object' && typeof y === 'object') {
+      for (const key of new Set([...Object.keys(x), ...Object.keys(y)])) diff(x[key], y[key], path ? `${path}.${key}` : key)
+    } else out.push(path)
+  }
+  diff(spComparable(a), spComparable(b), '')
+  return out
+}
+
+/** Headings that are not fields or bookkeeping (a hand-added notes column, or a misspelled field). */
+function spUnknownColumns(headers) {
+  const known = new Set([...SP_CONFIG.meta, ...spColumns(spCapacity([], headers)).map((column) => column.path)])
+  return headers.filter((header) => header && !known.has(header))
+}
+
+/**
+ * The rules of `pnpm sheet:import`, per row: required cells, numbers and JSON that read, _id that
+ * matches serviceId, a slug no other page uses, and no Sanity edit after the row's _updatedAt
+ * (that would be overwritten). `docs` are all new-design pages in Sanity, drafts included.
+ */
+function spCheckRows(rows, docs) {
+  const headers = rows.length ? Object.keys(rows[0].record) : []
+  const columns = spColumns(spCapacity([], headers))
+  const versions = new Map()
+  const slugOwner = new Map()
+  for (const doc of docs) {
+    const id = doc._id.replace(/^drafts\./, '')
+    const entry = versions.get(id) || {}
+    entry[doc._id.startsWith('drafts.') ? 'draft' : 'published'] = doc
+    versions.set(id, entry)
+    if (doc.slug && doc.slug.current) slugOwner.set(doc.slug.current, id)
+  }
+  const seen = new Map()
+  return rows.map(({rowNumber, record}) => {
+    const {doc, errors} = spUnflatten(record, columns)
+    for (const field of SP_CONFIG.required) if (!String(record[field] || '').trim()) errors.push(`${field} is empty`)
+    const expected = doc.serviceId ? `v2-page-${doc.serviceId}` : ''
+    const id = String(record._id || '').trim() || expected
+    if (id && expected && id !== expected) errors.push(`_id ${id} does not match serviceId ${doc.serviceId} (expected ${expected})`)
+    const slug = doc.slug ? doc.slug.current : ''
+    const owner = slug && slugOwner.get(slug)
+    if (owner && owner !== id) errors.push(`slug "${slug}" already belongs to ${owner}`)
+    if (id && seen.has(id)) errors.push(`same page as row ${seen.get(id)}`)
+    if (id) seen.set(id, rowNumber)
+    const existing = versions.get(id) || {}
+    const current = existing.draft || existing.published
+    const updatedAt = String(record._updatedAt || '').trim()
+    if (current && !updatedAt) errors.push('already in Sanity, but this row has no _updatedAt: delete this row, use Refresh from Sanity for the current page, then redo your edits')
+    else if (current && current._updatedAt > updatedAt) errors.push(`edited in Sanity at ${current._updatedAt}, after this row (${updatedAt}); delete this row, use Refresh from Sanity for the current page, then redo your edits`)
+    const changes = errors.length ? [] : current ? spDifferences(current, doc) : ['(new page)']
+    return {rowNumber, id, slug, doc, errors, changes}
+  })
+}
+
+function spReport(checks, unknown) {
+  const lines = checks.map((c) => {
+    const head = `Row ${c.rowNumber} (${c.slug || 'no slug'}): `
+    if (c.errors.length) return `${head}NOT READY\n  - ${c.errors.join('\n  - ')}`
+    if (!c.changes.length) return `${head}same as Sanity, nothing to push`
+    if (c.changes[0] === '(new page)') return `${head}new page, ready to push as drafts.${c.id}`
+    const shown = c.changes.slice(0, 15).join(', ')
+    return `${head}${c.changes.length} field(s) differ from Sanity: ${shown}${c.changes.length > 15 ? ` and ${c.changes.length - 15} more` : ''}`
+  })
+  if (unknown.length) lines.push(`Not Sanity fields, never sent: ${unknown.join(', ')}`)
+  return lines.join('\n\n')
 }

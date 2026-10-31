@@ -25,6 +25,8 @@ export const PAGE_TYPE = 'v2ServicePage'
 export const META_COLUMNS = ['_id', '_status', '_url', '_updatedAt']
 /** Extra empty item columns per list beyond the longest list on any page, so a new page has room. */
 export const LIST_HEADROOM = 2
+/** Cells a page row must fill before it can go to Sanity. */
+export const REQUIRED_FIELDS = ['serviceId', 'name', 'slug', 'area', 'seo.title', 'seo.description', 'hero.h1Prefix']
 
 const NAMED_TYPES: Record<string, Json> = Object.fromEntries(
   ([...Object.values(v2Documents), ...Object.values(v2Objects)] as unknown[])
@@ -125,9 +127,10 @@ export function capacityFromHeaders(headers: string[]): Capacity {
 
 /**
  * The schema as the Google Apps Script needs it (google-apps-script/service-pages.gs): each field
- * is {n: name, k: kind}, objects carry their fields in f, lists say what one item is in i.
+ * is {n: name, k: kind}, objects carry their fields in f, lists say what one item is in i, and a
+ * named object type (v2Faq, v2Image ...) gives its name in t, which a pushed page needs as _type.
  */
-export type CompactField = {n: string; k: Column['kind'] | 'object' | 'list'; f?: CompactField[]; i?: CompactField}
+export type CompactField = {n: string; k: Column['kind'] | 'object' | 'list'; f?: CompactField[]; i?: CompactField; t?: string}
 export function compactSchema(fields: SchemaField[] = pageFields()): CompactField[] {
   return fields.map((field): CompactField => {
     if (field.type === 'slug') return {n: field.name, k: 'slug'}
@@ -137,10 +140,11 @@ export function compactSchema(fields: SchemaField[] = pageFields()): CompactFiel
     if (field.type === 'array') {
       const member = field.of?.[0]?.type || 'string'
       const memberFields = objectFields(member)
-      return {n: field.name, k: 'list', i: memberFields ? {n: '', k: 'object', f: compactSchema(memberFields)} : {n: '', k: member === 'number' ? 'number' : 'text'}}
+      return {n: field.name, k: 'list', i: memberFields ? {n: '', k: 'object', t: member, f: compactSchema(memberFields)} : {n: '', k: member === 'number' ? 'number' : 'text'}}
     }
     const inner = objectFields(field.type, field.fields)
-    return inner ? {n: field.name, k: 'object', f: compactSchema(inner)} : {n: field.name, k: 'json'}
+    if (!inner) return {n: field.name, k: 'json'}
+    return {n: field.name, k: 'object', ...(NAMED_TYPES[field.type] ? {t: field.type} : {}), f: compactSchema(inner)}
   })
 }
 

@@ -32,7 +32,7 @@
     "vercel:deploy": "vercel deploy --prebuilt --prod",
     "sheet:export": "tsx scripts/page-sheet.ts export",
     "sheet:import": "tsx scripts/page-sheet.ts import",
-    "test:sheet": "tsx scripts/test-page-sheet.ts",
+    "test:sheet": "tsx scripts/test-page-sheet.ts && tsx scripts/test-page-sheet-push.ts",
     "sheet:apps-script": "tsx scripts/page-sheet.ts apps-script"
   },
   "dependencies": {
