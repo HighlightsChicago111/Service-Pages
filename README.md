@@ -54,7 +54,16 @@ Every list has two spare items. Same rules as the service area tab (service area
 
 **Sanity to sheet** is automatic: the Apps Script `google-apps-script/service-pages.gs`, installed in the sheet, rewrites only the Service Pages tab every hour and from its **Service pages → Refresh from Sanity** menu, reading published pages from Sanity's public API (no token). A row edited in the sheet, or a new row not in Sanity yet, is kept as written and marked in `_status`; delete an edited row to take Sanity's version again. After a schema change, run `pnpm sheet:apps-script` and paste the file into the sheet's Apps Script again (`pnpm test:sheet` fails until the checked-in copy is current).
 
-**Sheet to Sanity** (new or edited rows):
+**Sheet to Sanity, in the sheet** (new or edited rows). Each person once: **Service pages → Set my Sanity token**, pasting an Editor token for project `5w5623jq` (sanity.io/manage → API → Tokens). It is kept for that Google account only, and saved only after Sanity accepts it. Then:
+
+1. Write or edit a page row in the **Service Pages** tab. A new page is a new row: leave `_id`, `_status`, `_url` and `_updatedAt` empty, and fill at least `serviceId`, `name`, `slug`, `area`, `seo.title`, `seo.description` and `hero.h1Prefix`.
+2. Click a cell in each row you want, then **Service pages → Check selected rows**. It lists, per row, what is not ready and which fields differ from Sanity. It writes nothing.
+3. **Service pages → Push selected rows to Sanity as drafts**. Same checks; it names the project and the drafts and writes only after **Yes**, then fills the row's `_id`, `_status` ("Draft pushed …") and `_updatedAt`.
+4. Review the draft in the Studio (Service pages → New design) and press **Publish**. The next refresh then shows the row as Published.
+
+A row is refused when its page was edited in Sanity after the row's `_updatedAt` (including an unpublished Studio draft), so an old row never overwrites newer work: delete the row, **Refresh from Sanity**, and redo the edit. A hand-added column (notes) is allowed and never sent; the Check names it, so a misspelled heading is visible.
+
+**Sheet to Sanity, from the command line** (same rules):
 
 ```powershell
 pnpm sheet:import -- --sheet "<URL of the Service pages tab, with #gid=...>"                 # dry run

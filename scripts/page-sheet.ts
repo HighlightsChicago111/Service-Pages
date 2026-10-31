@@ -18,7 +18,7 @@ import path from 'node:path'
 import {createClient} from 'next-sanity'
 import {servicePageUrl} from '../src/lib/service-urls'
 import {
-  META_COLUMNS, PAGE_TYPE, capacityFor, capacityFromHeaders, differences, flatten, fromCsv, lostValues, sheetColumns, toCsv, unflatten, unknownColumns,
+  META_COLUMNS, PAGE_TYPE, REQUIRED_FIELDS, capacityFor, capacityFromHeaders, differences, flatten, fromCsv, lostValues, sheetColumns, toCsv, unflatten, unknownColumns,
 } from './lib/page-sheet'
 import {APPS_SCRIPT_PATH, renderAppsScript} from './lib/page-sheet-apps-script'
 
@@ -127,8 +127,6 @@ async function readSheet(): Promise<string> {
   return response.text()
 }
 
-const REQUIRED = ['serviceId', 'name', 'slug', 'area', 'seo.title', 'seo.description', 'hero.h1Prefix']
-
 async function importSheet() {
   const {headers, rows} = fromCsv(await readSheet())
   const columns = sheetColumns(capacityFromHeaders(headers))
@@ -145,7 +143,7 @@ async function importSheet() {
     if (only && ![row.serviceId, row.slug, row._id].includes(only)) continue
     const label = `${row.serviceId || '?'} ${row.slug || row.name || '(no slug)'}`
     const {doc, errors: rowErrors} = unflatten(row, columns)
-    const problems = [...rowErrors, ...REQUIRED.filter((field) => !row[field]?.trim()).map((field) => `${field} is empty`)]
+    const problems = [...rowErrors, ...REQUIRED_FIELDS.filter((field) => !row[field]?.trim()).map((field) => `${field} is empty`)]
     const id = row._id?.trim() || (doc.serviceId ? pageId(doc.serviceId) : '')
     if (id && doc.serviceId && id !== pageId(doc.serviceId)) problems.push(`_id ${id} does not match serviceId ${doc.serviceId} (expected ${pageId(doc.serviceId)})`)
     const owner = doc.slug?.current && slugOwner.get(doc.slug.current)
