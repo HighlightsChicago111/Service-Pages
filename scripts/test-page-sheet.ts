@@ -82,7 +82,7 @@ assert.deepEqual(sheetColumns(capacityFromHeaders(parsed.headers)), columns)
 assert.deepEqual(comparable(unflatten(parsed.rows[0], columns).doc), comparable(page))
 
 // 8. The in-sheet Apps Script is current with the schema and builds the same rows as this code.
-const gsSource = fs.readFileSync(APPS_SCRIPT_PATH, 'utf8')
+const gsSource = fs.readFileSync(APPS_SCRIPT_PATH, 'utf8').replace(/\r\n/g, '\n') // a Windows checkout may add CRs
 assert.equal(gsSource, renderAppsScript(gsSource), 'google-apps-script/service-pages.gs is out of date: run pnpm sheet:apps-script and paste it into the sheet')
 type Row = Record<string, string>
 const gs = vm.createContext({})
