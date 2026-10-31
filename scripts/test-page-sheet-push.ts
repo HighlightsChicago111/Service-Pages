@@ -1,6 +1,7 @@
 /**
- * The sheet's "Check selected rows" and "Push selected rows to Sanity as drafts"
- * (google-apps-script/service-pages.gs), run against a simulated Google Sheet and Sanity.
+ * The sheet's "Check selected rows", "Push selected rows to Sanity as drafts", "Add a page from
+ * Claude" and "Get a page for Claude" (google-apps-script/service-pages.gs), run against a
+ * simulated Google Sheet and Sanity.
  *
  *   pnpm test:sheet
  *
@@ -9,12 +10,15 @@
  *    twice, and a Sanity edit after the row's _updatedAt.
  * 3. Push writes drafts only, only after Yes, only for rows that differ, and reads drafts with
  *    perspective=raw (since API 2025-02-19 Sanity hides drafts otherwise).
+ * 4. Add writes a page Claude wrote into exactly the right cells, refuses anything that would be
+ *    lost or is not true (unknown fields, invented reviews, listicle titles, stale pages), and Get
+ *    hands back a page that Add accepts unchanged.
  */
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import vm from 'node:vm'
 import {META_COLUMNS, capacityFor, flatten, sheetColumns, unflatten} from './lib/page-sheet'
-import {APPS_SCRIPT_PATH} from './lib/page-sheet-apps-script'
+import {APPS_SCRIPT_PATH, reviewPack} from './lib/page-sheet-apps-script'
 
 type Json = Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any -- free-form Sanity documents
 type Row = Record<string, string>
@@ -49,23 +53,25 @@ function check(name: string, run: () => void) {
 type World = {
   tab: string; grid: string[][]; selected: number[]; answer: 'YES' | 'NO'; token: string | null; promptText: string
   docs: Json[]; alerts: string[]; dialogs: string[]; mutations: Json[]; fetches: string[]; savedToken: string | null; locked: number
+  live: number
 }
 
 function makeWorld(over: Partial<World> = {}): World {
   return {
     tab: 'Service Pages', grid: [[...headers], ...[page, other].map((doc) => headers.map((h) => rowOf(doc)[h] ?? ''))], selected: [2],
     answer: 'YES', token: 'good-token', promptText: '', docs: [plain(page), plain(other)],
-    alerts: [], dialogs: [], mutations: [], fetches: [], savedToken: null, locked: 0, ...over,
+    alerts: [], dialogs: [], mutations: [], fetches: [], savedToken: null, locked: 0, live: 0, ...over,
   }
 }
 
-function run(world: World, fn: string) {
+function run(world: World, fn: string, args: unknown[] = []): any { // eslint-disable-line @typescript-eslint/no-explicit-any -- whatever the script returns
   const respond = (code: number, body: unknown) => ({getResponseCode: () => code, getContentText: () => JSON.stringify(body)})
   const range = (row: number, col: number, nRows = 1, nCols = 1): Json => ({
     getRow: () => row, getNumRows: () => nRows,
     getDisplayValues: () => Array.from({length: nRows}, (_, i) => Array.from({length: nCols}, (_, j) => world.grid[row - 1 + i]?.[col - 1 + j] ?? '')),
     setNumberFormat: () => range(row, col, nRows, nCols),
     setValue: (value: string) => { world.grid[row - 1][col - 1] = value; return range(row, col) },
+    setValues: (values: string[][]) => { values.forEach((cells, i) => { world.grid[row - 1 + i] = [...cells] }); return range(row, col, nRows, nCols) },
   })
   const sheet = {
     getName: () => world.tab,
@@ -74,6 +80,9 @@ function run(world: World, fn: string) {
     getRange: range,
     getActiveRangeList: () => ({getRanges: () => world.selected.map((r) => range(r, 1))}),
     getActiveRange: () => range(world.selected[0], 1),
+    getDataRange: () => range(1, 1, world.grid.length, world.grid[0].length),
+    clearContents: () => { world.grid = [] },
+    getMaxRows: () => 1000, getMaxColumns: () => 5000, insertRowsAfter: () => {}, insertColumnsAfter: () => {},
   }
   const ui = {
     ButtonSet: {OK: 'OK', YES_NO: 'YES_NO', OK_CANCEL: 'OK_CANCEL'}, Button: {YES: 'YES', NO: 'NO', OK: 'OK'},
@@ -99,7 +108,12 @@ function run(world: World, fn: string) {
     const raw = u.searchParams.get('perspective') === 'raw'
     // Like Sanity since API 2025-02-19: without perspective=raw, drafts are hidden.
     const visible = world.docs.filter((d) => raw || !d._id.startsWith('drafts.'))
+    if (query.includes('_type == "servicePage"')) return respond(200, {result: world.live})
     if (query.startsWith('count(')) return respond(200, {result: visible.length})
+    if (query.includes('serviceId == $n')) {
+      const n = JSON.parse(u.searchParams.get('$n') || '-1'), key = JSON.parse(u.searchParams.get('$key') || '""')
+      return respond(200, {result: visible.filter((d) => d.serviceId === n || d.slug?.current === key)})
+    }
     if (query.includes('_id in $ids')) {
       const ids: string[] = JSON.parse(u.searchParams.get('$ids') || '[]')
       return respond(200, {result: visible.filter((d) => ids.includes(d._id)).map((d) => ({_id: d._id, _updatedAt: d._updatedAt}))})
@@ -107,7 +121,7 @@ function run(world: World, fn: string) {
     return respond(200, {result: visible})
   }
   const context = vm.createContext({
-    SpreadsheetApp: {getUi: () => ui, getActiveSheet: () => sheet},
+    SpreadsheetApp: {getUi: () => ui, getActiveSheet: () => sheet, getActive: () => ({getSheetByName: (name: string) => (name === world.tab ? sheet : null)})},
     UrlFetchApp: {fetch: sanityFetch},
     PropertiesService: {getUserProperties: () => ({
       getProperty: () => world.token,
@@ -117,7 +131,8 @@ function run(world: World, fn: string) {
     HtmlService: {createHtmlOutput: (text: string) => ({text, setWidth() { return this }, setHeight() { return this }})},
     URL,
   })
-  vm.runInContext(`${source}\n${fn}()`, context)
+  vm.runInContext(`${source}\nthis.__result = ${fn}(...${JSON.stringify(args)})`, context)
+  return (context as Json).__result
 }
 
 const pure = vm.createContext({})
@@ -281,6 +296,134 @@ check('the hourly refresh keeps a pushed row and its "Draft pushed" status', () 
   const result = plain((merged.spMerge as (...args: unknown[]) => {rows: Row[]})([page], headers, [pushedRow], () => false))
   assert.equal(result.rows[0]['faqs[1].answer'], 'Edited')
   assert.equal(result.rows[0]._status, pushedRow._status)
+})
+
+// ---------- 4. Add a page from Claude, Get a page for Claude ----------
+
+const pack = reviewPack()
+const reviewOf = (n: number, words = 8): Json => {
+  const [reviewer, date, text, link] = pack[n - 1]
+  return {_key: `r${n}`, _type: 'v2Review', author: `${reviewer.split(' ')[0]} X.`, date, quote: text.split(/\s+/).slice(0, words).join(' '), sourceId: `hc-${n}`, sourceUrl: link}
+}
+const fresh: Json = {
+  ...plain(page), _id: undefined, _rev: undefined, _updatedAt: undefined, serviceId: 1001, name: 'Brand New Service',
+  slug: {_type: 'slug', current: 'brand-new-service'}, reviews: [reviewOf(158), reviewOf(1), reviewOf(2), reviewOf(3)],
+}
+const add = (world: World, doc: unknown, write: boolean): string => run(world, 'spAddFromClaude', [typeof doc === 'string' ? doc : JSON.stringify(doc), write])
+
+check('add (check only) reports a ready new page and writes nothing', () => {
+  const world = makeWorld()
+  const before = JSON.stringify(world.grid)
+  const report = add(world, fresh, false)
+  assert.match(report, /^Ready to add: v2-page-1001 \(\/services\/brand-new-service\)\. Nothing was written/)
+  assert.match(report, /Sanity: a new page\./)
+  assert.equal(JSON.stringify(world.grid), before)
+  assert.equal(world.mutations.length, 0)
+})
+
+check('add writes a new row with exactly the cells a refresh would write, then Check and Push take it as a new page', () => {
+  const world = makeWorld()
+  const report = add(world, fresh, true)
+  assert.match(report, /^Added: v2-page-1001 \(\/services\/brand-new-service\), as a new row at the bottom/)
+  assert.equal(world.grid.length, 4)
+  const row = Object.fromEntries(world.grid[0].map((h, i) => [h, world.grid[3][i]]))
+  for (const column of columns) assert.equal(row[column.path], flatten(fresh, columns)[column.path], column.path)
+  assert.match(row._status, /^Added from Claude .* UTC, not pushed yet$/)
+  assert.equal(row._id, '')
+  world.selected = [4]
+  run(world, 'servicePagesPush')
+  assert.equal(world.mutations.length, 1)
+  assert.equal(world.mutations[0]._id, 'drafts.v2-page-1001')
+  assert.deepEqual(plain(api.spDifferences(world.mutations[0], fresh)), [], 'the draft is the page Claude wrote')
+})
+
+check('add replaces the page\'s existing row and keeps its _updatedAt, so a newer Sanity edit is still caught', () => {
+  const world = makeWorld()
+  const edited = {...plain(page), _updatedAt: undefined, _rev: undefined, reviews: fresh.reviews, faqs: [{_key: 'f1', _type: 'v2Faq', question: 'Why?', answer: 'Rewritten.'}]}
+  const report = add(world, edited, true)
+  assert.match(report, /^Added: v2-page-999 \(\/services\/test-service\), replacing row 2/)
+  assert.equal(world.grid.length, 3)
+  // Four reviews need more columns than the test tab had, so the tab widened: read cells by heading.
+  const at = (r: number, heading: string) => world.grid[r][world.grid[0].indexOf(heading)]
+  assert.ok(world.grid[0].includes('reviews[4].quote'))
+  assert.equal(at(1, '_updatedAt'), page._updatedAt)
+  assert.equal(at(1, 'faqs[1].answer'), 'Rewritten.')
+  assert.equal(at(1, 'faqs[2].question'), '', 'the removed FAQ is gone from the row')
+  for (const h of headers) assert.equal(at(2, h), rowOf(other)[h] ?? '', `other row untouched: ${h}`)
+  const renamed = makeWorld()
+  assert.match(add(renamed, {...edited, slug: {_type: 'slug', current: 'test-service-renamed'}}, true), /replacing row 2/, 'found by its _id even when the slug changed')
+  assert.equal(renamed.grid.length, 3)
+  const stale = makeWorld()
+  stale.docs.push({...plain(page), _id: 'drafts.v2-page-999', _updatedAt: '2026-10-31T09:00:00Z'})
+  assert.match(add(stale, edited, true), /^Not added[\s\S]*edited in Sanity at 2026-10-31T09:00:00Z/)
+})
+
+check('add refuses anything that would be lost or is the wrong kind of value, and names it', () => {
+  const world = makeWorld()
+  const before = JSON.stringify(world.grid)
+  const typo = {...fresh, faqs: [{_type: 'v2Faq', questoin: 'Typo?', answer: 'Yes.'}], seo: {...fresh.seo, titel: 'x'}, serviceId: '1001'}
+  const report = add(world, typo, true)
+  assert.match(report, /^Not added/)
+  assert.match(report, /faqs\.0\.questoin: not a field of the page/)
+  assert.match(report, /seo\.titel: not a field of the page/)
+  assert.match(report, /serviceId: not a field of the page, or the wrong kind of value/)
+  assert.equal(JSON.stringify(world.grid), before)
+  assert.match(add(world, '{"name": "half', true), /not valid JSON/)
+  assert.match(add(world, {...fresh, _type: 'areaPage'}, false), /This is a areaPage, not a v2ServicePage/)
+})
+
+check('add checks every review against the real Google review', () => {
+  const world = makeWorld()
+  const invented = {...fresh, reviews: [{...reviewOf(158), quote: 'Best electricians in the whole city'}, {...reviewOf(1), sourceUrl: 'https://example.com'}, {...reviewOf(2), sourceId: 'hc-9999'}, reviewOf(3)]}
+  const report = add(world, invented, false)
+  assert.match(report, /reviews\[1\]: the quote is not in hc-158's text/)
+  assert.match(report, /reviews\[2\]: sourceUrl must be hc-1's review link/)
+  assert.match(report, /reviews\[3\]: sourceId "hc-9999" is not a review in the pack/)
+  assert.doesNotMatch(report, /reviews\[4\]/)
+  assert.match(add(world, {...fresh, reviews: [{...reviewOf(158), sourceId: 'hc-9999'}, ...fresh.reviews.slice(1)]}, false), /^Not ready/, 'an unknown review alone blocks the page')
+  const curly = {...fresh, reviews: [{...reviewOf(158, 14), quote: `${reviewOf(158, 14).quote}…`}, ...fresh.reviews.slice(1)]}
+  assert.match(add(world, curly, false), /^Ready to add/, 'a trailing ellipsis is fine')
+})
+
+check('add refuses listicle titles, lists [CONFIRM] placeholders, and warns about a current-design URL', () => {
+  const world = makeWorld({live: 1})
+  const report = add(world, {...fresh, seo: {...fresh.seo, title: '10 Best Electricians in Chicago'}, hero: {...fresh.hero, lede: 'Visits take [CONFIRM: how long?].'}}, false)
+  assert.match(report, /seo\.title: "10 Best Electricians in Chicago" reads like a listicle title/)
+  assert.match(report, /\[CONFIRM\] placeholders \(1\)[\s\S]*hero\.lede: \[CONFIRM: how long\?\]/)
+  assert.match(report, /A published current-design page already uses \/services\/brand-new-service/)
+  assert.doesNotMatch(add(makeWorld(), {...fresh, hero: {...fresh.hero, lede: 'Emergency service runs 24/7.'}}, false), /Not ready/, '24/7 emergency service is confirmed (31/10/2026)')
+})
+
+check('a page with more list items than the tab widens the tab and keeps every other row', () => {
+  const world = makeWorld()
+  const many = {...fresh, faqs: Array.from({length: 7}, (_, i) => ({_key: `f${i}`, _type: 'v2Faq', question: `Q${i}?`, answer: `A${i}.`}))}
+  assert.match(add(world, many, true), /^Added/)
+  const head = world.grid[0]
+  assert.ok(head.includes('faqs[7].answer') && head.includes('faqs[9].answer'), 'room for 7 plus 2 spare')
+  const rowAt = (r: number) => Object.fromEntries(head.map((h, i) => [h, world.grid[r][i]]))
+  for (const [r, doc] of [[1, page], [2, other]] as const) for (const column of columns) assert.equal(rowAt(r)[column.path], rowOf(doc)[column.path], `row ${r + 1} ${column.path}`)
+  assert.equal(rowAt(3)['faqs[7].question'], 'Q6?')
+})
+
+check('get gives the selected row as Claude needs it, and Add takes it back unchanged', () => {
+  const world = makeWorld({promptText: ''})
+  run(world, 'servicePagesGet')
+  const json = /<textarea id="json"[^>]*>([\s\S]*)<\/textarea>/.exec(world.dialogs[0])?.[1] || ''
+  const doc = JSON.parse(json.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'))
+  assert.equal(doc._id, 'v2-page-999')
+  assert.equal(doc._updatedAt, page._updatedAt)
+  assert.match(world.dialogs[0], /From row 2 of the &quot;Service Pages&quot; tab, as written/)
+  assert.match(add(world, doc, false), /^Ready to add: v2-page-999[\s\S]*Sanity: the same as the page already there/)
+})
+
+check('get by service ID gives Sanity\'s unpublished draft first', () => {
+  const world = makeWorld({promptText: '999'})
+  world.docs.push({...plain(page), _id: 'drafts.v2-page-999', _updatedAt: '2026-10-31T09:00:00Z', name: 'Draft name'})
+  run(world, 'servicePagesGet')
+  assert.match(world.dialogs[0], /From Sanity, the unpublished draft \(2026-10-31T09:00:00Z\)/)
+  assert.match(world.dialogs[0], /&quot;name&quot;: &quot;Draft name&quot;/)
+  assert.match(world.dialogs[0], /&quot;_id&quot;: &quot;v2-page-999&quot;/)
+  assert.doesNotMatch(world.dialogs[0], /_rev/)
 })
 
 console.log(`\n${passed} sheet push checks passed`)

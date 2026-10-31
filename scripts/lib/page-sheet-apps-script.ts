@@ -7,10 +7,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import hierarchy from '../../data/cluster-hierarchy.json'
 import {PUBLIC_SITE_ORIGIN} from '../../src/lib/service-urls'
-import {LIST_HEADROOM, META_COLUMNS, PAGE_TYPE, REQUIRED_FIELDS, compactSchema} from './page-sheet'
+import {LIST_HEADROOM, META_COLUMNS, PAGE_TYPE, REQUIRED_FIELDS, compactSchema, parseCsvRows} from './page-sheet'
 
 export const APPS_SCRIPT_PATH = path.resolve('google-apps-script/service-pages.gs')
 export const SHEET_TAB = 'Service Pages'
+/** Highlights' Google reviews; a page's review "hc-N" is row N of this file (the same pack as the area skill). */
+export const REVIEWS_PATH = path.resolve('data/google-reviews.csv')
 const PROJECT_ID = '5w5623jq'
 const DATASET = 'production'
 const API_VERSION = '2025-02-19'
@@ -29,6 +31,8 @@ export function appsScriptConfig() {
     // Check and push read drafts too and write drafts, with each person's own token.
     sanity: {projectId: PROJECT_ID, dataset: DATASET, apiVersion: API_VERSION, pageType: PAGE_TYPE, studioUrl: `${PUBLIC_SITE_ORIGIN}/services/studio`},
     required: REQUIRED_FIELDS,
+    // [reviewer, date, full text, link] per review, for checking a page's quotes against the real review.
+    reviews: reviewPack(),
     origin: PUBLIC_SITE_ORIGIN,
     nested: hierarchy.nestedServiceUrls === true,
     groups: {
@@ -39,6 +43,12 @@ export function appsScriptConfig() {
     headroom: LIST_HEADROOM,
     schema: compactSchema(),
   }
+}
+
+export function reviewPack(): string[][] {
+  const [header, ...rows] = parseCsvRows(fs.readFileSync(REVIEWS_PATH, 'utf8'))
+  const at = (name: string) => header.indexOf(name)
+  return rows.map((cells) => [cells[at('reviewer')], cells[at('iso_date')].slice(0, 10), cells[at('review')], cells[at('review_link')]])
 }
 
 export const generatedBlock = () => `${START}\nconst SP_CONFIG = ${JSON.stringify(appsScriptConfig(), null, 1)}\n${END}`
