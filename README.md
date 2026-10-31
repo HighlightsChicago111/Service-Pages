@@ -36,6 +36,33 @@ New-design slugs cannot be a redirect source in `next.config.ts` or a reserved p
 
 Sanity is the source of truth for published content. `data/source-content.json` is the normalized spreadsheet export that seeded the first import; it does not include the pages added later in the Studio (Sanity has 40 service pages, the file has 30). The original spreadsheet package is preserved locally but ignored by Git.
 
+## The Google Sheet copy of the new-design pages
+
+The team's page sheet keeps one row per **published** new-design service page in its **Service Pages** tab. The headings are the exact Sanity field paths, so each cell maps to one field:
+
+| Heading | Means |
+|---|---|
+| `name`, `serviceId`, `slug`, `area` | a single field (`slug` is the URL slug, `area` the area document's `_id`) |
+| `seo.title`, `hero.h1Prefix` | a part of an object field |
+| `primaryKeywords[1]`, `cta.readyItems[3]` | item 1, item 3 of a list of text |
+| `faqs[2].question`, `gallery[1].alt` | a part of item 2 of a list |
+| `equipment.comparison.rows[1].values[2]` | a list inside a list item |
+| `hero.image.image` | an uploaded Sanity image, one JSON cell |
+| `_id`, `_status`, `_url`, `_updatedAt` | bookkeeping |
+
+Every list has two spare items. Same rules as the service area tab (service area repo, `scripts/lib/sheet.ts`).
+
+**Sanity to sheet** is automatic: the Apps Script `google-apps-script/service-pages.gs`, installed in the sheet, rewrites only the Service Pages tab every hour and from its **Service pages → Refresh from Sanity** menu, reading published pages from Sanity's public API (no token). A row edited in the sheet, or a new row not in Sanity yet, is kept as written and marked in `_status`; delete an edited row to take Sanity's version again. After a schema change, run `pnpm sheet:apps-script` and paste the file into the sheet's Apps Script again (`pnpm test:sheet` fails until the checked-in copy is current).
+
+**Sheet to Sanity** (new or edited rows):
+
+```powershell
+pnpm sheet:import -- --sheet "<URL of the Service pages tab, with #gid=...>"                 # dry run
+pnpm sheet:import -- --sheet "<URL of the Service pages tab, with #gid=...>" --only 341 --yes   # write drafts
+```
+
+The dry run checks every row (misspelled headings, bad numbers or JSON, missing required fields, an `_id` that does not match `serviceId`, a slug another page owns) and lists the fields that differ from Sanity. `--yes` writes only changed pages, as **drafts** (never published, never duplicated), and skips a page edited in Sanity after its row's `_updatedAt`. Review and publish in the Studio. `pnpm sheet:export` writes the same rows to `exports/service-pages.csv`.
+
 ## Local setup
 
 1. Copy `.env.example` to `.env.local` and fill in the values you need.

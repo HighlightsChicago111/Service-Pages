@@ -29,7 +29,11 @@
     "content:update-template": "tsx scripts/update-service-template.ts",
     "vercel:pull": "vercel pull --yes --environment=production",
     "vercel:build": "vercel build --prod",
-    "vercel:deploy": "vercel deploy --prebuilt --prod"
+    "vercel:deploy": "vercel deploy --prebuilt --prod",
+    "sheet:export": "tsx scripts/page-sheet.ts export",
+    "sheet:import": "tsx scripts/page-sheet.ts import",
+    "test:sheet": "tsx scripts/test-page-sheet.ts",
+    "sheet:apps-script": "tsx scripts/page-sheet.ts apps-script"
   },
   "dependencies": {
     "@portabletext/react": "8.0.1",
