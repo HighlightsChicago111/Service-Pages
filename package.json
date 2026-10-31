@@ -21,6 +21,7 @@
     "test:lead": "tsx scripts/test-lead-delivery.ts",
     "test:thank-you": "tsx scripts/test-thank-you-page.ts",
     "test:footer-legal": "tsx scripts/test-footer-legal-links.tsx",
+    "test:header-nav": "tsx scripts/test-header-nav.tsx",
     "test:preview": "tsx scripts/test-preview-markers.tsx",
     "test:design": "tsx scripts/test-design-precedence.ts",
     "test:worker": "tsx scripts/test-services-worker.ts",

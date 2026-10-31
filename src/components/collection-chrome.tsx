@@ -19,6 +19,7 @@ const primaryLinks: Array<{label: string; href: string; services?: boolean}> = [
   {label: 'About Us', href: `${LIVE_SITE}/about-us`},
   {label: 'Services', href: SERVICES_PATH, services: true},
   {label: 'Service Areas', href: `${LIVE_SITE}/service-areas`},
+  {label: 'Reviews', href: `${LIVE_SITE}/reviews`},
   {label: 'Blog', href: `${LIVE_SITE}/blog`},
   {label: 'Learning Center', href: `${LIVE_SITE}/learning-center`},
 ]

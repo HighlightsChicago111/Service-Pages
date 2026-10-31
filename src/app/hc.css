@@ -38,7 +38,7 @@
 /* Main nav */
 .hc-nav{background:#fff;border-bottom:1px solid var(--color-line);position:relative;z-index:20}
 .hc-nav-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;height:84px}
-.hc-nav-logo{display:flex;align-items:center}.hc-nav-logo img{display:block;width:181px;height:auto}
+.hc-nav-logo{display:flex;flex-shrink:0;align-items:center}.hc-nav-logo img{display:block;width:181px;height:auto}
 .hc-nav-links{display:flex;align-items:center;gap:36px}
 .hc-nav-links a{display:inline-flex;align-items:center;gap:6px;font-size:15px;line-height:20px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;text-decoration:none;color:var(--color-ink)}
 .hc-nav-links a:hover,.hc-nav-links a[aria-current="page"]{color:var(--color-blue)}
@@ -126,6 +126,6 @@
 /* Six navigation items: keep every label on one line and tighten the spacing as the bar narrows,
    down to 993px where the menu button takes over. The phone number stays in the utility bar above. */
 .hc-nav-links a,.hc-nav-phone,.hc-nav-cta{white-space:nowrap}
-@media(min-width:993px){.hc-nav-links{gap:24px}.hc-nav-links a{font-size:14px}.hc-nav-actions{gap:18px}.hc-nav-cta{padding-inline:20px}}
-@media(min-width:993px) and (max-width:1200px){.hc-nav-links{gap:18px}.hc-nav-phone{display:none}}
+@media(min-width:993px){.hc-nav-inner{gap:20px}.hc-nav-links{gap:18px}.hc-nav-links a{font-size:14px}.hc-nav-actions{gap:14px}.hc-nav-cta{padding-inline:20px}}
+@media(min-width:993px) and (max-width:1279px){.hc-nav-links{gap:18px}.hc-nav-phone{display:none}}
 @media(min-width:993px) and (max-width:1100px){.hc-nav-links{gap:14px}.hc-nav-links a{font-size:13px}.hc-nav-logo img{width:150px}}
