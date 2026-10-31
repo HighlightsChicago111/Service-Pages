@@ -32,7 +32,8 @@
     "vercel:deploy": "vercel deploy --prebuilt --prod",
     "sheet:export": "tsx scripts/page-sheet.ts export",
     "sheet:import": "tsx scripts/page-sheet.ts import",
-    "test:sheet": "tsx scripts/test-page-sheet.ts"
+    "test:sheet": "tsx scripts/test-page-sheet.ts",
+    "sheet:apps-script": "tsx scripts/page-sheet.ts apps-script"
   },
   "dependencies": {
     "@portabletext/react": "8.0.1",

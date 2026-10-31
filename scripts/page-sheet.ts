@@ -5,6 +5,10 @@
  *   pnpm sheet:export -- --include-drafts    also pages that were never published
  *   pnpm sheet:import -- --sheet "<tab URL>"              dry run: checks every row, lists changes
  *   pnpm sheet:import -- --file service-pages.csv --only 341 --yes   writes DRAFTS, never publishes
+ *   pnpm sheet:apps-script                   refreshes the schema inside google-apps-script/service-pages.gs
+ *
+ * The sheet's "Service pages" tab refreshes itself from Sanity (published pages) through that
+ * Apps Script; the export here is the same rows as a file, for checking or for a manual import.
  *
  * Headings are exact Sanity field paths (see scripts/lib/page-sheet.ts). The import writes only rows
  * that differ from Sanity, and skips a page edited in Sanity after the sheet's _updatedAt.
@@ -16,6 +20,7 @@ import {servicePageUrl} from '../src/lib/service-urls'
 import {
   META_COLUMNS, PAGE_TYPE, capacityFor, capacityFromHeaders, differences, flatten, fromCsv, lostValues, sheetColumns, toCsv, unflatten, unknownColumns,
 } from './lib/page-sheet'
+import {APPS_SCRIPT_PATH, renderAppsScript} from './lib/page-sheet-apps-script'
 
 type Json = Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any -- free-form Sanity documents
 
@@ -44,10 +49,12 @@ const option = (name: string) => {
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '5w5623jq'
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
-const writing = command === 'import' && flag('--yes')
-const token = writing ? process.env.SANITY_API_WRITE_TOKEN : process.env.SANITY_API_READ_TOKEN || process.env.SANITY_API_WRITE_TOKEN
-if (!token) throw new Error(`Add ${writing ? 'SANITY_API_WRITE_TOKEN' : 'SANITY_API_READ_TOKEN'} to .env.local`)
-const client = createClient({projectId, dataset, apiVersion: '2026-03-01', token, useCdn: false, perspective: 'raw'})
+function sanityClient() {
+  const writing = command === 'import' && flag('--yes')
+  const token = writing ? process.env.SANITY_API_WRITE_TOKEN : process.env.SANITY_API_READ_TOKEN || process.env.SANITY_API_WRITE_TOKEN
+  if (!token) throw new Error(`Add ${writing ? 'SANITY_API_WRITE_TOKEN' : 'SANITY_API_READ_TOKEN'} to .env.local`)
+  return createClient({projectId, dataset, apiVersion: '2026-03-01', token, useCdn: false, perspective: 'raw'})
+}
 
 function fail(error: unknown) {
   console.error(error instanceof Error ? error.message : error)
@@ -59,7 +66,7 @@ const pageId = (serviceId: number) => `v2-page-${serviceId}`
 
 /** Every new-design page in the dataset: published and draft versions, grouped by page. */
 async function loadPages() {
-  const docs = await client.fetch<Json[]>(`*[_type == $type]`, {type: PAGE_TYPE})
+  const docs = await sanityClient().fetch<Json[]>(`*[_type == $type]`, {type: PAGE_TYPE})
   const pages = new Map<string, {published?: Json; draft?: Json}>()
   for (const doc of docs) {
     const entry = pages.get(baseId(doc._id)) || {}
@@ -166,7 +173,7 @@ async function importSheet() {
   if (!flag('--yes')) { console.log('Dry run: nothing written. Add --yes to write these as drafts.'); return }
   if (errors) { console.log('Nothing written: fix the errors first.'); process.exit(1) }
   if (!writes.length) return
-  const transaction = client.transaction()
+  const transaction = sanityClient().transaction()
   for (const doc of writes) transaction.createOrReplace(doc as Json & {_id: string; _type: string})
   await transaction.commit()
   console.log(`Wrote ${writes.length} draft(s). Review and publish them in the Studio (New design).`)
@@ -174,4 +181,7 @@ async function importSheet() {
 
 if (command === 'export') exportSheet().catch(fail)
 else if (command === 'import') importSheet().catch(fail)
-else console.log('Usage: tsx scripts/page-sheet.ts export [--include-drafts] [--out file.csv] | import (--sheet <tab URL> | --file <csv>) [--only <serviceId|slug>] [--yes] [--force]')
+else if (command === 'apps-script') {
+  fs.writeFileSync(APPS_SCRIPT_PATH, renderAppsScript())
+  console.log(`Updated ${path.relative(process.cwd(), APPS_SCRIPT_PATH)}. Paste it into the sheet's Extensions > Apps Script (file service-pages.gs) and save.`)
+} else console.log('Usage: tsx scripts/page-sheet.ts export [--include-drafts] [--out file.csv] | import (--sheet <tab URL> | --file <csv>) [--only <serviceId|slug>] [--yes] [--force] | apps-script')

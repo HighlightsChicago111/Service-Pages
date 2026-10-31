@@ -123,6 +123,27 @@ export function capacityFromHeaders(headers: string[]): Capacity {
   return capacity
 }
 
+/**
+ * The schema as the Google Apps Script needs it (google-apps-script/service-pages.gs): each field
+ * is {n: name, k: kind}, objects carry their fields in f, lists say what one item is in i.
+ */
+export type CompactField = {n: string; k: Column['kind'] | 'object' | 'list'; f?: CompactField[]; i?: CompactField}
+export function compactSchema(fields: SchemaField[] = pageFields()): CompactField[] {
+  return fields.map((field): CompactField => {
+    if (field.type === 'slug') return {n: field.name, k: 'slug'}
+    if (field.type === 'reference') return {n: field.name, k: 'reference'}
+    if (field.type === 'image' || field.type === 'geopoint') return {n: field.name, k: 'json'}
+    if (SCALAR.has(field.type)) return {n: field.name, k: field.type === 'number' ? 'number' : 'text'}
+    if (field.type === 'array') {
+      const member = field.of?.[0]?.type || 'string'
+      const memberFields = objectFields(member)
+      return {n: field.name, k: 'list', i: memberFields ? {n: '', k: 'object', f: compactSchema(memberFields)} : {n: '', k: member === 'number' ? 'number' : 'text'}}
+    }
+    const inner = objectFields(field.type, field.fields)
+    return inner ? {n: field.name, k: 'object', f: compactSchema(inner)} : {n: field.name, k: 'json'}
+  })
+}
+
 /** "faqs[2].question" -> ["faqs", 1, "question"] (list positions 0-based). */
 function segments(path: string): Array<string | number> {
   const out: Array<string | number> = []

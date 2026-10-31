@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import vm from 'node:vm'
+import {servicePageUrl} from '../src/lib/service-urls'
 import {
   META_COLUMNS, capacityFor, capacityFromHeaders, comparable, differences, flatten, fromCsv, lostValues, sheetColumns, toCsv, unflatten, unknownColumns,
 } from './lib/page-sheet'
+import {APPS_SCRIPT_PATH, renderAppsScript} from './lib/page-sheet-apps-script'
 
 // A page shaped like the live ones: inline objects, named objects, a reference, an uploaded image,
 // a list inside a list item, and text with commas, quotes and line breaks.
@@ -76,5 +80,63 @@ assert.equal(parsed.rows[0]['seo.description'], 'Line one,\nline two.')
 assert.equal(parsed.rows[0]['hero.lede'], 'First line.\nSecond line.', 'a line break alone must not split the row')
 assert.deepEqual(sheetColumns(capacityFromHeaders(parsed.headers)), columns)
 assert.deepEqual(comparable(unflatten(parsed.rows[0], columns).doc), comparable(page))
+
+// 8. The in-sheet Apps Script is current with the schema and builds the same rows as this code.
+const gsSource = fs.readFileSync(APPS_SCRIPT_PATH, 'utf8')
+assert.equal(gsSource, renderAppsScript(gsSource), 'google-apps-script/service-pages.gs is out of date: run pnpm sheet:apps-script and paste it into the sheet')
+type Row = Record<string, string>
+const gs = vm.createContext({})
+vm.runInContext(`${gsSource}\nthis.api = {spColumns, spCapacity, spRow, spUrl, spMerge}`, gs)
+const api = gs.api as {
+  spColumns: (capacity: Record<string, number>) => Array<{path: string; kind: string}>
+  spCapacity: (docs: unknown[], headers: string[]) => Record<string, number>
+  spRow: (doc: unknown, columns: unknown) => Row
+  spUrl: (slug: string, parentName?: string) => string
+  spMerge: (docs: unknown[], headers: string[], rows: Row[], unchanged: (row: Row) => boolean) => {headers: string[]; rows: Row[]; fromSanity: Set<string>}
+}
+const plain = <T>(value: T): T => JSON.parse(JSON.stringify(value))
+assert.deepEqual(plain(api.spCapacity([page], [])), capacity, 'same list sizes')
+assert.deepEqual(plain(api.spColumns(capacity)), columns, 'same columns, same order')
+const gsRow = api.spRow(page, api.spColumns(capacity))
+for (const column of columns) assert.equal(gsRow[column.path], row[column.path], `same cell ${column.path}`)
+for (const [slug, parent] of [['gfci-outlet-installation', ''], ['test-service', 'Electrical Wiring'], ['brand-new-page', 'Power Distribution & Service Entry'], ['no-group', 'Unknown group']]) {
+  assert.equal(api.spUrl(slug, parent), servicePageUrl(slug, parent), `same URL for ${slug}`)
+}
+
+// 9. The refresh never loses a row written in the sheet.
+const merge = (...args: Parameters<typeof api.spMerge>) => {
+  const result = api.spMerge(...args)
+  return {headers: plain(result.headers), rows: plain(result.rows), fromSanity: result.fromSanity}
+}
+const fresh = merge([page], [], [], () => false)
+assert.deepEqual(fresh.rows.map((r) => r._id), ['v2-page-999'])
+assert.equal(fresh.rows[0]._status, 'Published')
+assert.equal(fresh.rows[0]._url, servicePageUrl('test-service', 'Electrical Wiring'))
+const written = fresh.rows[0]
+const newRow: Row = {_id: '', name: 'Brand new page', slug: 'brand-new-page'}
+const goneRow: Row = {_id: 'v2-page-998', _status: 'Published', name: 'Unpublished since'}
+const later = {...page, _updatedAt: '2026-11-01T00:00:00Z', name: 'Renamed in Sanity'}
+// a. Nobody touched the row: Sanity's newer version replaces it; other rows stay, marked.
+let merged = merge([later], fresh.headers, [written, newRow, goneRow, {_id: '', name: ''}], () => true)
+assert.deepEqual(merged.rows.map((r) => [r._id, r._status]), [['v2-page-999', 'Published'], ['', 'Not in Sanity yet'], ['v2-page-998', 'Not published']])
+assert.equal(merged.rows[0].name, 'Renamed in Sanity')
+assert.equal(merged.rows[1].name, 'Brand new page')
+assert.ok(merged.fromSanity.has('v2-page-999') && merged.fromSanity.size === 1)
+// b. The row was edited in the sheet: it is kept as written, and flagged when Sanity changed too.
+const editedRow = {...written, 'faqs[1].answer': 'Edited in the sheet'}
+merged = merge([later], fresh.headers, [editedRow], () => false)
+assert.equal(merged.rows[0]['faqs[1].answer'], 'Edited in the sheet')
+assert.equal(merged.rows[0]._status, 'Edited in sheet; also changed in Sanity since')
+assert.equal(merged.fromSanity.size, 0)
+// c. Once Sanity says what the sheet says (imported and published), the row follows Sanity again.
+merged = merge([{...page, _updatedAt: '2026-11-02T00:00:00Z'}], fresh.headers, [{...written, _updatedAt: 'old'}], () => false)
+assert.equal(merged.rows[0]._updatedAt, '2026-11-02T00:00:00Z')
+assert.ok(merged.fromSanity.has('v2-page-999'))
+// d. A column added by hand, and extra list items, are kept.
+merged = merge([page], [...fresh.headers, 'notes'], [{...written, notes: 'check photos'}], () => true)
+assert.equal(merged.headers.at(-1), 'notes')
+assert.equal(merged.rows[0].notes, 'check photos')
+merged = merge([page], [...fresh.headers, 'faqs[9].question'], [], () => true)
+assert.ok(merged.headers.includes('faqs[9].answer'), 'a list never shrinks below what the sheet already has')
 
 console.log('page sheet: all checks passed')
