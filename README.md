@@ -38,7 +38,7 @@ Sanity is the source of truth for published content. `data/source-content.json` 
 
 ## The Google Sheet copy of the new-design pages
 
-The team's page sheet keeps one row per **published** new-design service page in its **Service pages** tab. The headings are the exact Sanity field paths, so each cell maps to one field:
+The team's page sheet keeps one row per **published** new-design service page in its **Service Pages** tab. The headings are the exact Sanity field paths, so each cell maps to one field:
 
 | Heading | Means |
 |---|---|
@@ -52,7 +52,7 @@ The team's page sheet keeps one row per **published** new-design service page in
 
 Every list has two spare items. Same rules as the service area tab (service area repo, `scripts/lib/sheet.ts`).
 
-**Sanity to sheet** is automatic: the Apps Script `google-apps-script/service-pages.gs`, installed in the sheet, rewrites only the Service pages tab every hour and from its **Service pages → Refresh from Sanity** menu, reading published pages from Sanity's public API (no token). A row edited in the sheet, or a new row not in Sanity yet, is kept as written and marked in `_status`; delete an edited row to take Sanity's version again. After a schema change, run `pnpm sheet:apps-script` and paste the file into the sheet's Apps Script again (`pnpm test:sheet` fails until the checked-in copy is current).
+**Sanity to sheet** is automatic: the Apps Script `google-apps-script/service-pages.gs`, installed in the sheet, rewrites only the Service Pages tab every hour and from its **Service pages → Refresh from Sanity** menu, reading published pages from Sanity's public API (no token). A row edited in the sheet, or a new row not in Sanity yet, is kept as written and marked in `_status`; delete an edited row to take Sanity's version again. After a schema change, run `pnpm sheet:apps-script` and paste the file into the sheet's Apps Script again (`pnpm test:sheet` fails until the checked-in copy is current).
 
 **Sheet to Sanity** (new or edited rows):
 
