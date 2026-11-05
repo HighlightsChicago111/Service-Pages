@@ -5,6 +5,9 @@ import type {StructureResolver} from 'sanity/structure'
 export const NEW_DESIGN_SETTINGS_ID = 'v2-siteSettings'
 export const NEW_DESIGN_AREA_ID = 'v2-area-chicago'
 
+// The first service ID of the pages written after the original service list (301-372).
+const FIRST_NEW_SERVICE_ID = 373
+
 export const structure: StructureResolver = (S) =>
   S.list()
     .title('Highlights Chicago')
@@ -36,7 +39,29 @@ export const structure: StructureResolver = (S) =>
                   S.list()
                     .title('New design')
                     .items([
-                      S.documentTypeListItem('v2ServicePage').title('Pages'),
+                      // The id keeps the old address of this list working.
+                      S.listItem()
+                        .id('v2ServicePage')
+                        .title('Pages')
+                        .child(
+                          S.list()
+                            .title('Pages')
+                            .items([
+                              S.documentTypeListItem('v2ServicePage').id('allPages').title('All pages'),
+                              // A view, not a move: these pages also stay in "All pages".
+                              S.listItem()
+                                .id('newServicePages')
+                                .title('New service pages')
+                                .child(
+                                  S.documentTypeList('v2ServicePage')
+                                    .title('New service pages')
+                                    .apiVersion('2025-02-19')
+                                    .filter('_type == "v2ServicePage" && serviceId >= $first')
+                                    .params({first: FIRST_NEW_SERVICE_ID})
+                                    .defaultOrdering([{field: 'serviceId', direction: 'asc'}]),
+                                ),
+                            ]),
+                        ),
                       S.divider(),
                       S.listItem()
                         .title('New design settings')
