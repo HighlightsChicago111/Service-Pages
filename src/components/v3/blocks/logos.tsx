@@ -3,6 +3,7 @@ import {Copy, IconBadge, SectionHead} from '../atoms'
 import {SERVICES_PATH} from '@/lib/service-urls'
 import {questionHeading} from '@/lib/headings'
 import {splitConfirm} from '@/lib/v3/content'
+import {BRAND_LOGO_FILES} from '@/lib/v3/brand-logo-files'
 import type {BlockContext} from '../types'
 
 export const hasLogos = ({page}: BlockContext) => Boolean(page.brands?.items?.length)
@@ -23,14 +24,24 @@ const OFFICIAL: Record<string, string> = {
   siemens: 'logo-siemens.svg',
 }
 
-/** A logo uploaded on the page wins, then the official handoff file, then the shared brand logo folder. */
+/**
+ * A logo uploaded on the page wins, then the official handoff file, then the shared brand logo folder.
+ * Undefined when none of them has the brand, so the tile shows the name instead of a broken image.
+ */
 export function brandLogoSrc(brand: string, uploaded: Record<string, string> = {}) {
   const key = slug(brand)
-  return uploaded[brand.trim().toLowerCase()] || (OFFICIAL[key] ? `${SERVICES_PATH}/images/v3/logos/${OFFICIAL[key]}` : `${SERVICES_PATH}/images/brands/${key}.png`)
+  if (uploaded[brand.trim().toLowerCase()]) return uploaded[brand.trim().toLowerCase()]
+  if (OFFICIAL[key]) return `${SERVICES_PATH}/images/v3/logos/${OFFICIAL[key]}`
+  return BRAND_LOGO_FILES.has(key) ? `${SERVICES_PATH}/images/brands/${key}.png` : undefined
 }
 
 export function LogoTile({brand, compact, uploaded}: {brand: string; compact?: boolean; uploaded?: Record<string, string>}) {
-  return <li className={compact ? 'ds-logo-tile ds-logo-tile--compact' : 'ds-logo-tile'}><img src={brandLogoSrc(brand, uploaded)} alt={`${brand} logo`} loading="lazy" decoding="async" /></li>
+  const src = brandLogoSrc(brand, uploaded)
+  return (
+    <li className={compact ? 'ds-logo-tile ds-logo-tile--compact' : 'ds-logo-tile'}>
+      {src ? <img src={src} alt={`${brand} logo`} loading="lazy" decoding="async" /> : <span className="ds-logo-name">{brand}</span>}
+    </li>
+  )
 }
 
 /** D6 Logo wall: official full-colour logos on white tiles, a big blue count. */

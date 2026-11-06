@@ -33,7 +33,8 @@
     "sheet:export": "tsx scripts/page-sheet.ts export",
     "sheet:import": "tsx scripts/page-sheet.ts import",
     "test:sheet": "tsx scripts/test-page-sheet.ts && tsx scripts/test-page-sheet-push.ts",
-    "sheet:apps-script": "tsx scripts/page-sheet.ts apps-script"
+    "sheet:apps-script": "tsx scripts/page-sheet.ts apps-script",
+    "test:editorial": "tsx scripts/test-editorial-notes.ts"
   },
   "dependencies": {
     "@portabletext/react": "8.0.1",

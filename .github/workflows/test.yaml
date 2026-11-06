@@ -54,6 +54,7 @@ jobs:
       - name: Unit tests
         run: |
           pnpm test:design
+          pnpm test:editorial
           pnpm test:lead
           pnpm test:indexing-contract
           pnpm test:collection-data

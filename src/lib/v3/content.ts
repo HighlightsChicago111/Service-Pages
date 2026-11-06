@@ -15,6 +15,23 @@ export function splitConfirm(value?: string): Editorial {
 
 export const hasConfirm = (value?: string) => Boolean(value && /\[CONFIRM:[^\]]*\]/.test(value))
 
+/**
+ * Page data with every "[CONFIRM: …]" flag removed, for published pages. A list entry that
+ * was nothing but a flag is dropped, so no section shows an empty card or a blank line.
+ */
+export function withoutEditorialNotes<T>(value: T): T {
+  if (typeof value === 'string') return (hasConfirm(value) ? splitConfirm(value).text : value) as T
+  if (Array.isArray(value)) {
+    return value
+      .filter((item) => !(typeof item === 'string' && hasConfirm(item) && !splitConfirm(item).text))
+      .map((item) => withoutEditorialNotes(item)) as T
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, key.startsWith('_') ? item : withoutEditorialNotes(item)])) as T
+  }
+  return value
+}
+
 /** Split prose into sentences, keeping punctuation. */
 export function sentences(value: string): string[] {
   return value.split(/(?<=[.!?])\s+(?=["“(]?[A-Z0-9])/).map((part) => part.trim()).filter(Boolean)
