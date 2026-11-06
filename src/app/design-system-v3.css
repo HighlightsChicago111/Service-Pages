@@ -424,6 +424,8 @@
 .ds-logo-tile img { max-width: 150px; max-height: 44px; width: auto; height: auto; object-fit: contain; }
 .ds-logo-tile--compact { height: 64px; padding: 10px 14px; border: 0; }
 .ds-logo-tile--compact img { max-width: 100%; max-height: 26px; }
+.ds-logo-name { font-family: var(--f-display); font-size: var(--t-h6); line-height: var(--l-h6); font-weight: 600; text-transform: uppercase; text-align: center; text-wrap: balance; color: var(--c-ink, inherit); }
+.ds-logo-tile--compact .ds-logo-name { font-size: 13px; line-height: 1.2; }
 
 /* --- D7 Credentials band (navy) ----------------------------------------- */
 .ds-cred { display: grid; grid-template-columns: 480px minmax(0, 1fr); gap: 40px; align-items: stretch; }

@@ -20,7 +20,7 @@ import {ReviewsBlock, hasReviews} from './blocks/reviews'
 import {ScopeBlock, hasScope} from './blocks/scope'
 import {SymptomsBlock, hasSymptoms} from './blocks/symptoms'
 import {AreasBlock, hasAreas} from './blocks/areas'
-import {hasConfirm, vocabularyFrom} from '@/lib/v3/content'
+import {hasConfirm, vocabularyFrom, withoutEditorialNotes} from '@/lib/v3/content'
 import {visualsFor} from '@/lib/v3/visuals'
 import {clusterForService} from '@/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, servicePageUrl} from '@/lib/service-urls'
@@ -99,7 +99,9 @@ function JsonLd({ctx}: {ctx: BlockContext}) {
  * `fontClassName` carries the v3 font variables; the route sets it with the stylesheet.
  */
 export function ServiceLandingPage({data, draft, fontClassName}: {data: V2PageData; draft: boolean; fontClassName?: string}) {
-  const {page, area, settings, routes} = data
+  const editorial = draft || process.env.NODE_ENV !== 'production'
+  // A published page never shows an editorial flag, whichever block renders the field.
+  const {page, area, settings, routes} = editorial ? data : {...data, page: withoutEditorialNotes(data.page), area: withoutEditorialNotes(data.area)}
   if (!page || !area || !settings) return null
   const ctx: BlockContext = {
     page,
@@ -107,7 +109,7 @@ export function ServiceLandingPage({data, draft, fontClassName}: {data: V2PageDa
     settings,
     routes,
     visuals: visualsFor(page, area),
-    editorial: draft || process.env.NODE_ENV !== 'production',
+    editorial,
     vocab: vocabularyFrom(page),
     tel: telHref(settings.phoneE164, settings.phoneDisplay),
     phone: settings.phoneDisplay || '',
