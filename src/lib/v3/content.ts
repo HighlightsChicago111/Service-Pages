@@ -15,19 +15,22 @@ export function splitConfirm(value?: string): Editorial {
 
 export const hasConfirm = (value?: string) => Boolean(value && /\[CONFIRM:[^\]]*\]/.test(value))
 
+const onlyFlags = (value: unknown) => typeof value === 'string' && hasConfirm(value) && !splitConfirm(value).text
+
 /**
- * Page data with every "[CONFIRM: …]" flag removed, for published pages. A list entry that
- * was nothing but a flag is dropped, so no section shows an empty card or a blank line.
+ * Page data with every "[CONFIRM: …]" flag removed, for published pages. A list entry or a field
+ * that was nothing but a flag is dropped, so its block hides it the way it hides an empty field
+ * instead of showing an empty card, note or line.
  */
 export function withoutEditorialNotes<T>(value: T): T {
   if (typeof value === 'string') return (hasConfirm(value) ? splitConfirm(value).text : value) as T
-  if (Array.isArray(value)) {
-    return value
-      .filter((item) => !(typeof item === 'string' && hasConfirm(item) && !splitConfirm(item).text))
-      .map((item) => withoutEditorialNotes(item)) as T
-  }
+  if (Array.isArray(value)) return value.filter((item) => !onlyFlags(item)).map((item) => withoutEditorialNotes(item)) as T
   if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, key.startsWith('_') ? item : withoutEditorialNotes(item)])) as T
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key, item]) => key.startsWith('_') || !onlyFlags(item))
+        .map(([key, item]) => [key, key.startsWith('_') ? item : withoutEditorialNotes(item)]),
+    ) as T
   }
   return value
 }

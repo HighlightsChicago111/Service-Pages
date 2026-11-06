@@ -13,6 +13,8 @@ const page = {
   pricing: {drivers: [{_key: 'd1', when: 'At the check [CONFIRM: priced then?]'}]},
   included: {handover: ['Permit number', '[CONFIRM: what else is handed over]', 'Inspection result']},
   faqs: [{_key: 'f1', question: 'How long?', answer: 'A day. [CONFIRM: typical length]'}],
+  equipment: {note: '[CONFIRM: which option applies]', items: [{_key: 'e1', title: 'Panel', body: '[CONFIRM: what it includes]'}]},
+  brands: {items: ['Square D', '[CONFIRM: which brands]']},
 }
 const clean = withoutEditorialNotes(page)
 assert.equal(clean.hero.lede, 'Fast help.')
@@ -20,6 +22,9 @@ assert.equal(clean.serviceGuide.sections[0].body, 'One check first. Then the fix
 assert.equal(clean.pricing.drivers[0].when, 'At the check')
 assert.deepEqual(clean.included.handover, ['Permit number', 'Inspection result'])
 assert.equal(clean.faqs[0].answer, 'A day.')
+assert.equal('note' in clean.equipment, false, 'a field that was only a flag is dropped, so its block hides it')
+assert.deepEqual(clean.equipment.items[0], {_key: 'e1', title: 'Panel'})
+assert.deepEqual(clean.brands.items, ['Square D'])
 assert.equal(clean._id, 'v2-page-1')
 assert.equal(JSON.stringify(clean).includes('CONFIRM'), false)
 assert.equal(withoutEditorialNotes(null), null)
