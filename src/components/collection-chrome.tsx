@@ -2,32 +2,17 @@
 
 import {FooterLeadForm} from './footer-lead-form'
 import {Icon, XLogo} from './hc-icons'
-import {MobileMenu} from './mobile-menu'
+import {SiteNavbar} from './site-navbar/site-navbar'
 import {LEGAL_LINKS} from '@/lib/legal-links'
 import {SERVICES_PATH} from '@/lib/service-urls'
 
 const LIVE_SITE = 'https://www.highlightschicago.com'
-const HEADER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/6a3c3c20491b43b0858c1876_highlights-chicago-logo.webp'
 const FOOTER_LOGO = 'https://cdn.prod.website-files.com/69f58d69563c4c5bf9b01c60/69ffb4d8099654cbee2d7b53_Highlights-Chicago_Logo-white.webp'
 const MAPS_URL = 'https://www.google.com/maps/place/Highlights+Chicago+Electrical+Services/@41.986143,-87.700781,15z/data=!4m5!3m4!1s0x0:0xae9382f0c0f6b3b!8m2!3d41.9861431!4d-87.7007806?hl=en-US&shorturl=1'
 // Google AI Mode (udm=50) with the question already asked; the address pins the business.
 const AI_SUMMARY_URL = `https://www.google.com/search?udm=50&q=${encodeURIComponent('Tell me about Highlights Chicago, the electrical contractor at 5766 N Lincoln Ave, Chicago: its services, service areas, reviews and how to book')}`
 
-// Services is a plain link to the /services collection page, with no dropdown.
-const primaryLinks: Array<{label: string; href: string; services?: boolean}> = [
-  {label: 'Home', href: `${LIVE_SITE}/`},
-  {label: 'About Us', href: `${LIVE_SITE}/about-us`},
-  {label: 'Services', href: SERVICES_PATH, services: true},
-  {label: 'Service Areas', href: `${LIVE_SITE}/service-areas`},
-  {label: 'Blog', href: `${LIVE_SITE}/blog`},
-  {label: 'Learning Center', href: `${LIVE_SITE}/learning-center`},
-]
-
-function NavLink({link}: {link: (typeof primaryLinks)[number]}) {
-  return <a href={link.href} aria-current={link.services ? 'page' : undefined}>{link.label}</a>
-}
-
-/** Utility bar and main navigation (design system SP-00 and SP-01). */
+/** Utility bar (design system SP-00), then the site-wide navbar. */
 export function CollectionHeader() {
   return (
     <div className="hc hc-header-stack">
@@ -45,25 +30,7 @@ export function CollectionHeader() {
           </div>
         </div>
       </div>
-      <header className="hc-nav">
-        <div className="hc-wrap hc-nav-inner">
-          <a className="hc-nav-logo" href={`${LIVE_SITE}/`} aria-label="Highlights Chicago home">
-            <img src={HEADER_LOGO} alt="Highlights Chicago" />
-          </a>
-          <nav className="hc-nav-links" aria-label="Primary navigation">
-            {primaryLinks.map((link) => <NavLink link={link} key={link.label} />)}
-          </nav>
-          <div className="hc-nav-actions">
-            <a className="hc-nav-phone" href="tel:773-262-3333"><Icon name="phone" />(773) 262-3333</a>
-            <a className="hc-nav-cta" href={`${LIVE_SITE}/contact-us`}>Contact us</a>
-            <MobileMenu className="hc-nav-menu">
-              {primaryLinks.map((link) => <NavLink link={link} key={link.label} />)}
-              <a href="tel:773-262-3333">Call (773) 262-3333</a>
-              <a href={`${LIVE_SITE}/contact-us`}>Contact us</a>
-            </MobileMenu>
-          </div>
-        </div>
-      </header>
+      <SiteNavbar current="services" />
     </div>
   )
 }

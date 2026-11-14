@@ -2,31 +2,21 @@
 import {Icon} from './icon'
 import {IconBadge} from './atoms'
 import {FooterQuoteForm} from './footer-quote-form'
-import {MobileMenu} from '@/components/mobile-menu'
+import {SiteNavbar} from '@/components/site-navbar/site-navbar'
 import {LEGAL_LINKS} from '@/lib/legal-links'
-import {LOGO, LOGO_WHITE} from '@/lib/v3/visuals'
-import {PUBLIC_SITE_ORIGIN, SERVICES_PATH} from '@/lib/service-urls'
+import {LOGO_WHITE} from '@/lib/v3/visuals'
+import {PUBLIC_SITE_ORIGIN} from '@/lib/service-urls'
 import type {V2Settings} from '@/types/v2'
 
 const SHOP_MAPS_URL = 'https://www.google.com/maps/place/Highlights+Chicago+Electrical+Services/@41.986143,-87.700781,15z'
 const HOURS = 'Mon–Fri 08:00 AM – 05:00 PM'
-
-const NAV = [
-  {label: 'Home', href: `${PUBLIC_SITE_ORIGIN}/`},
-  {label: 'About us', href: `${PUBLIC_SITE_ORIGIN}/about-us`},
-  {label: 'Services', href: SERVICES_PATH, current: true},
-  {label: 'Service Areas', href: `${PUBLIC_SITE_ORIGIN}/service-areas`},
-  {label: 'Reviews', href: `${PUBLIC_SITE_ORIGIN}/reviews`},
-  {label: 'Blog', href: `${PUBLIC_SITE_ORIGIN}/blog`},
-  {label: 'Learning Center', href: `${PUBLIC_SITE_ORIGIN}/learning-center`},
-]
 
 function addressLine(settings: V2Settings) {
   const address = settings.address
   return address ? `${address.street}, ${address.city}, ${address.state} ${address.zip}` : ''
 }
 
-/** D0 + D1: navy utility bar and the white main nav (global blocks). */
+/** D0: navy utility bar, then the site-wide navbar. */
 export function SiteHeader({settings, tel}: {settings: V2Settings; tel: string}) {
   return (
     <>
@@ -41,22 +31,7 @@ export function SiteHeader({settings, tel}: {settings: V2Settings; tel: string})
           <a className="ds-utility-phone" href={tel}><Icon name="phone" size={16} />{settings.phoneDisplay}</a>
         </div>
       </div>
-      <header className="ds-nav">
-        <div className="ds-wrap ds-nav-inner">
-          <a className="ds-nav-logo" href={`${PUBLIC_SITE_ORIGIN}/`} aria-label={`${settings.companyName} home`}><img src={LOGO} alt="Highlights Chicago Electrical Services" width={180} height={44} /></a>
-          <nav className="ds-nav-links" aria-label="Primary navigation">
-            {NAV.map((item) => item.current
-              ? <a className="ds-nav-current" href={SERVICES_PATH} key={item.label}>{item.label}</a>
-              : <a href={item.href} key={item.label}>{item.label}</a>)}
-          </nav>
-          <a className="ds-btn ds-btn--primary ds-btn--m ds-nav-cta" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
-          <a className="ds-nav-call" href={tel} aria-label={`Call ${settings.phoneDisplay}`}><Icon name="phone" size={20} /></a>
-          <MobileMenu className="ds-nav-mobile">
-            {NAV.map((item) => <a href={item.href} key={item.label} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
-            <a className="ds-btn ds-btn--primary ds-btn--block" href={`${PUBLIC_SITE_ORIGIN}/contact-us`}><span>Book Now</span></a>
-          </MobileMenu>
-        </div>
-      </header>
+      <SiteNavbar current="services" />
     </>
   )
 }
