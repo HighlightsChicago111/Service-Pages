@@ -8,6 +8,7 @@ import {siteUrl} from '@/sanity/env'
 import {SanityLive} from '@/sanity/lib/live'
 import './globals.css'
 import './hc.css'
+import '@/components/site-navbar/site-navbar.css'
 
 const inter = Inter({subsets: ['latin'], variable: '--font-inter', display: 'swap'})
 

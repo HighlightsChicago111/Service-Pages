@@ -1,0 +1,220 @@
+/* Site-wide navbar. Same values as the Webflow "Site Navbar" component (classes snav-*).
+   Every rule is scoped to .snav, so page styles cannot leak in and these cannot leak out.
+   Widths: phone menu up to 991px, compact bar 992-1279px, full bar from 1280px. */
+
+.snav {
+  --snav-ink: #12202b;
+  --snav-ink-2: #3d5566;
+  --snav-line: #dde5ec;
+  --snav-brand: #223d90;
+  --snav-brand-dk: #182c69;
+  --snav-accent: #66b143;
+  --snav-panel: #15202a;
+  --snav-panel-text: #e6ecf1;
+  --snav-panel-muted: #9aabb8;
+  /* Each var() has a fallback: an undefined variable would void the whole font list. */
+  --snav-font: var(--snav-inter, var(--font-inter, Inter)), Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --snav-font-button: "Space Grotesk Live", var(--font-space-grotesk, "Space Grotesk"), var(--snav-font);
+  position: relative;
+  z-index: 50;
+  background: #fff;
+  border-bottom: 1px solid var(--snav-line);
+  font-family: var(--snav-font);
+  -webkit-font-smoothing: antialiased;
+}
+.snav *, .snav *::before, .snav *::after { box-sizing: border-box; }
+.snav a { text-decoration: none; }
+.snav p { margin: 0; }
+.snav button { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.snav img { display: block; max-width: none; }
+.snav svg { display: block; flex: none; }
+.snav :focus-visible { outline: 3px solid color-mix(in srgb, var(--snav-brand) 45%, transparent); outline-offset: 3px; }
+
+.snav .snav-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1180px, 100% - 48px);
+  height: 84px;
+  margin: 0 auto;
+}
+.snav .snav-brand { display: flex; align-items: center; flex: none; }
+.snav .snav-logo { width: 165px; height: 40px; object-fit: contain; }
+
+.snav .snav-menu { display: flex; align-items: center; height: 100%; }
+.snav .snav-mhead, .snav .snav-mactions, .snav .snav-burger { display: none; }
+.snav .snav-links { display: flex; align-items: center; gap: 18px; height: 100%; }
+
+.snav .snav-link,
+.snav .snav-dd-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 84px;
+  font: 500 13px/20px var(--snav-font);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--snav-ink);
+  transition: color .2s ease;
+}
+.snav .snav-link:hover, .snav .snav-dd-toggle:hover { color: var(--snav-brand); }
+.snav .snav-link[aria-current="page"],
+.snav .snav-dd-toggle.is-current,
+.snav .snav-dd.is-open > .snav-dd-toggle { color: var(--snav-brand); }
+.snav .snav-link[aria-current="page"],
+.snav .snav-dd-toggle.is-current > span,
+.snav .snav-dd.is-open > .snav-dd-toggle > span {
+  text-decoration: underline 2px var(--snav-accent);
+  text-underline-offset: 10px;
+}
+.snav .snav-chev { color: var(--snav-ink-2); transition: transform .2s ease; }
+.snav .snav-dd.is-open .snav-chev { transform: rotate(180deg); color: var(--snav-brand); }
+
+/* Dropdowns. Services spans the full 1180px row; Resources hangs under its own label. */
+.snav .snav-dd { position: static; display: flex; align-items: center; height: 100%; }
+.snav .snav-dd--small { position: relative; }
+.snav .snav-panel {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: var(--snav-panel);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 24px 48px -16px rgba(16, 40, 60, .35);
+}
+.snav .snav-dd.is-open > .snav-panel { display: block; }
+.snav .snav-panel--small { left: -24px; right: auto; width: 340px; padding: 10px; }
+
+.snav .snav-cols { display: flex; gap: 40px; padding: 40px 40px 36px; }
+.snav .snav-col { display: flex; flex-direction: column; flex: 1 1 0; gap: 14px; min-width: 0; }
+.snav .snav-col-head {
+  margin-bottom: 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  font: 700 13px/16px var(--snav-font);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--snav-accent);
+}
+.snav .snav-plink { font: 400 15px/20px var(--snav-font); color: var(--snav-panel-text); transition: color .15s ease; }
+.snav .snav-plink:hover { color: #fff; text-decoration: underline; }
+
+.snav .snav-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 20px 40px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .03);
+}
+.snav .snav-foot-link { display: flex; align-items: center; gap: 8px; font: 600 15px/20px var(--snav-font); color: #fff; }
+.snav .snav-foot-link:hover { text-decoration: underline; }
+.snav .snav-foot-call { display: flex; align-items: center; gap: 12px; font: 400 15px/20px var(--snav-font); color: var(--snav-panel-muted); }
+.snav .snav-phone { display: flex; align-items: center; gap: 8px; font: 600 15px/20px var(--snav-font); color: #fff; white-space: nowrap; }
+.snav .snav-accent { color: var(--snav-accent); }
+
+.snav .snav-res { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 8px; transition: background-color .15s ease; }
+.snav .snav-res:hover { background: rgba(255, 255, 255, .06); }
+.snav .snav-res-icon { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; border-radius: 8px; background: rgba(102, 177, 67, .14); color: var(--snav-accent); }
+.snav .snav-res-text { display: flex; flex-direction: column; gap: 3px; }
+.snav .snav-res-title { font: 600 15px/20px var(--snav-font); color: #fff; }
+.snav .snav-res-desc { font: 400 13px/18px var(--snav-font); color: var(--snav-panel-muted); }
+
+.snav .snav-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--snav-brand);
+  font: 600 14px/20px var(--snav-font-button);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  transition: background-color .2s ease;
+}
+.snav .snav-cta:hover { background: var(--snav-brand-dk); color: #fff; }
+
+@media (min-width: 1280px) {
+  .snav .snav-logo { width: 181px; height: 44px; }
+  .snav .snav-links { gap: 30px; }
+  .snav .snav-link, .snav .snav-dd-toggle { font-size: 14px; letter-spacing: .04em; }
+  .snav .snav-cta--bar { padding: 0 26px; font-size: 15px; }
+}
+
+/* Phone and tablet: logo and menu button in the bar; the menu opens over the whole page. */
+@media (max-width: 991px) {
+  .snav .snav-container { height: 72px; width: min(1180px, 100% - 32px); }
+  .snav .snav-logo { width: 148px; height: 36px; }
+  .snav .snav-cta--bar { display: none; }
+  .snav .snav-iconbtn { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 6px; flex: none; }
+  .snav .snav-burger { border: 1px solid var(--snav-line); color: var(--snav-ink); background: #fff; }
+  .snav .snav-close { background: var(--snav-brand); color: #fff; }
+
+  .snav .snav-menu { display: none; }
+  .snav .snav-menu.is-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    height: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #fff;
+  }
+  .snav .snav-mhead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--snav-line);
+    background: #fff;
+  }
+  .snav .snav-links { flex-direction: column; align-items: stretch; gap: 0; height: auto; padding: 8px 16px 0; }
+  .snav .snav-link,
+  .snav .snav-dd-toggle {
+    justify-content: space-between;
+    width: 100%;
+    height: 56px;
+    font-size: 15px;
+    letter-spacing: .04em;
+    border-bottom: 1px solid var(--snav-line);
+  }
+  .snav .snav-link[aria-current="page"],
+  .snav .snav-dd-toggle.is-current > span,
+  .snav .snav-dd.is-open > .snav-dd-toggle > span { text-decoration: none; }
+  .snav .snav-chev { width: 18px; height: 18px; }
+  .snav .snav-dd, .snav .snav-dd--small { display: block; position: static; height: auto; }
+  .snav .snav-panel, .snav .snav-panel--small { position: static; width: auto; margin: 8px 0; border-radius: 12px; box-shadow: none; }
+  .snav .snav-cols { flex-direction: column; gap: 24px; padding: 22px 20px; }
+  .snav .snav-foot { flex-direction: column; align-items: flex-start; padding: 18px 20px; }
+  .snav .snav-foot-call { display: none; }
+  .snav .snav-mactions { display: flex; flex-direction: column; gap: 12px; padding: 28px 16px 32px; }
+  .snav .snav-cta--block { width: 100%; height: 52px; font-size: 15px; }
+  .snav .snav-mcall {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 52px;
+    border: 1.5px solid var(--snav-line);
+    border-radius: 999px;
+    font: 600 16px/20px var(--snav-font);
+    color: var(--snav-ink);
+  }
+}
+
+html.snav-lock { overflow: hidden; }

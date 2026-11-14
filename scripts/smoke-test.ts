@@ -94,11 +94,13 @@ async function testDocument(pathname: string, requiredText: string[]) {
   expect(response.status === 200, `${pathname} returned ${response.status}`)
   expect(!/This page couldn.t load|Application error|Internal Server Error/i.test(text), `${pathname} rendered an error page`)
   for (const value of requiredText) expect(text.includes(value), `${pathname} is missing ${JSON.stringify(value)}`)
-  // Every page header: "Services" is a plain link to the /services collection page, with no dropdown.
-  const primaryNav = text.match(/<nav class="(?:hc|ds)-nav-links" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]
+  // Every page header is the site-wide navbar: one copy, Services is marked current, and
+  // its dropdown ends with a link to the /services collection page.
+  const primaryNav = text.match(/<nav class="snav-links" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]
   if (primaryNav) {
-    expect(/<a [^>]*href="\/services"[^>]*>Services<\/a>/.test(primaryNav), `${pathname} header does not link Services to /services`)
-    expect(!/<svg|<details|<ul/.test(primaryNav), `${pathname} header still has a dropdown in the primary navigation`)
+    expect((text.match(/<header class="snav"/g) || []).length === 1, `${pathname} does not render exactly one site navbar`)
+    expect(/class="snav-dd-toggle is-current"[^>]*aria-controls="snav-services"/.test(primaryNav), `${pathname} navbar does not mark Services as the current section`)
+    expect(primaryNav.includes('href="https://www.highlightschicago.com/services"'), `${pathname} Services dropdown does not link to /services`)
   }
   return text
 }
@@ -233,8 +235,7 @@ async function run() {
     const text = await testDocument(pathname, [`${page.h1Prefix} in ${page.areaName}`, 'id="quote"'])
     expect(Boolean(group), `${pathname} has no service group: its Sanity cluster name "${page.parentName}" matches none in data/cluster-hierarchy.json`)
     if (group) expect(text.includes(`<a href="${clusterPagePath(group.slug)}">${group.name}</a>`), `${pathname} breadcrumb does not link to its ${group.name} group`)
-    expect(!text.includes('ds-nav-menu'), `${pathname} still renders the Services dropdown`)
-    expect(text.includes('<a class="ds-nav-current" href="/services">Services</a>'), `${pathname} navbar Services does not link to /services`)
+    expect(text.includes('<nav class="snav-links" aria-label="Primary navigation">'), `${pathname} does not render the site navbar`)
     // Option cards show their own photo, a diagram, or a matching stand-in photo.
     expect((text.match(/class="ds-photo ds-option-media"/g) || []).length >= (page.optionPhotoCount || 0), `${pathname} does not show every option photo set in Sanity`)
     const photoSources = [...text.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gi)].map((match) => match[1].replace(/&amp;/g, '&')).filter((src) => !/logo|\/brands\//i.test(src))
@@ -266,7 +267,7 @@ async function run() {
     expect(serviceImageAlts.every(Boolean), `${pathname} contains an image without alt text`)
     expect(!serviceImageAlts.some((alt) => /^[a-z0-9-]+ (?:project|work in [a-z0-9-]+) \d+$/i.test(alt)), `${pathname} still exposes imported placeholder alt text`)
     expect(text.includes('<figcaption>'), `${pathname} does not render captions for completed-work photos`)
-    expect((text.match(/class="hc-nav"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
+    expect((text.match(/<header class="snav"/g) || []).length === 1, `${pathname} does not render exactly one shared header`)
     expect((text.match(/class="hc hc-footer"/g) || []).length === 1, `${pathname} does not render exactly one shared footer`)
     expect((text.match(/class="hc-utility"/g) || []).length === 1, `${pathname} does not render exactly one utility bar`)
     const renderedText = visibleText(text)
