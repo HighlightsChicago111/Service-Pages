@@ -144,6 +144,16 @@
 }
 .snav .snav-cta:hover { background: var(--snav-brand-dk); color: #fff; }
 
+/* Desktop with a mouse: a dropdown also opens on hover, as on the Webflow site.
+   Click and keyboard still open it; a hovered dropdown hides one left open by a click. */
+@media (min-width: 992px) and (hover: hover) {
+  .snav .snav-dd:hover > .snav-panel { display: block; }
+  .snav .snav-links:has(.snav-dd:hover) .snav-dd.is-open:not(:hover) > .snav-panel { display: none; }
+  .snav .snav-dd:hover > .snav-dd-toggle { color: var(--snav-brand); }
+  .snav .snav-dd:hover > .snav-dd-toggle > span { text-decoration: underline 2px var(--snav-accent); text-underline-offset: 10px; }
+  .snav .snav-dd:hover .snav-chev { transform: rotate(180deg); color: var(--snav-brand); }
+}
+
 @media (min-width: 1280px) {
   .snav .snav-logo { width: 181px; height: 44px; }
   .snav .snav-links { gap: 30px; }

@@ -1014,3 +1014,36 @@
 @media (prefers-reduced-motion: reduce) {
   .ds *, .ds *::before, .ds *::after { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* --- Hero quote form colours ---------------------------------------------
+   Same colours as the main site's homepage forms (Webflow "Hero CTA Form"):
+   dark panel, see-through fields with a faint white border, lime button.
+   Colours only: the fields, steps and layout above are unchanged. */
+.ds-form-card { border: 1px solid #ffffff1a; background: #15202a; color: #fff; }
+.ds-form-card .ds-form-title,
+.ds-form-card .ds-form-group-title,
+.ds-form-card .ds-field label,
+.ds-form-card .ds-label { color: #fff; }
+.ds-form-card .ds-form-sub { border-bottom-color: #ffffff1f; color: #ffffffb8; }
+.ds-form-card .ds-form-group { border-bottom-color: #ffffff1f; }
+.ds-form-card .ds-step-dot { background: #9ec837; color: #181515; }
+.ds-form-card .ds-field input,
+.ds-form-card .ds-field select { border-color: #ffffff33; border-radius: 10px; background: transparent; color: #fff; }
+.ds-form-card .ds-field select option { background: #15202a; color: #fff; }
+.ds-form-card .ds-field input::placeholder { color: #ffffff8c; }
+.ds-form-card .ds-field input:focus,
+.ds-form-card .ds-field select:focus { outline: 2px solid #9ec837b3; border-color: #9ec837; }
+.ds-form-card .ds-input-icon .ds-icon,
+.ds-form-card .ds-select .ds-icon { color: #ffffffb3; }
+.ds-form-card .ds-field.is-inactive select { border-color: #ffffff1a; background: #ffffff0a; color: #ffffff73; }
+.ds-form-card .ds-field.is-inactive label,
+.ds-form-card .ds-field.is-inactive .ds-icon { color: #ffffff73; }
+.ds-form-card .ds-chip-option { border-color: #ffffff33; color: #fff; }
+.ds-form-card .ds-chip-option:hover { border-color: #9ec837; }
+.ds-form-card .ds-chip-option.is-selected { border-color: #9ec837; background: #9ec83724; color: #fff; }
+.ds-form-card .ds-chip-option.is-selected .ds-icon { color: #9ec837; }
+.ds-form-card .ds-chip-option:has(input:focus-visible) { outline-color: #9ec837; }
+.ds-form-card .ds-btn--primary { background: #9ec837; color: #181515; }
+.ds-form-card .ds-btn--primary:hover { background: #8cb52b; }
+.ds-form-card .ds-form-note { color: #ffffffb8; }
+.ds-form-card .ds-form-note .ds-icon { color: #9ec837; }
