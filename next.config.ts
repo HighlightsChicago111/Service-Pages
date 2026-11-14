@@ -164,11 +164,14 @@ const nextConfig: NextConfig = {
         destination: servicePath(service),
         permanent: true,
       })) : []),
-      {
+      // With nested URLs on, any other /<service>/chicago is left to the page
+      // (src/app/[slug]/[child]/page.tsx): a newer page's group is set in Sanity, not in
+      // cluster-hierarchy.json, so only the page can send it to its group URL in one hop.
+      ...(hierarchy.nestedServiceUrls === true ? [] : [{
         source: '/:service/chicago',
         destination: '/:service',
         permanent: true,
-      },
+      }]),
       // While service URLs are flat, a nested /<group>/<service> link goes to the flat page.
       ...(hierarchy.nestedServiceUrls === true ? [] : [...clusterOfService].map(([service, cluster]) => ({
         source: `/${cluster}/${service}`,
