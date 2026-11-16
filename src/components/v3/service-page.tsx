@@ -23,7 +23,9 @@ import {AreasBlock, hasAreas} from './blocks/areas'
 import {hasConfirm, vocabularyFrom, withoutEditorialNotes} from '@/lib/v3/content'
 import {visualsFor} from '@/lib/v3/visuals'
 import {clusterForService} from '@/lib/clusters'
-import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, servicePageUrl} from '@/lib/service-urls'
+import {PUBLIC_SITE_ORIGIN, clusterPagePath, servicePageUrl} from '@/lib/service-urls'
+import {BUSINESS_ID, HOME_CRUMB, SERVICES_CRUMB, absoluteImageUrl, breadcrumbList, firstText} from '@/lib/structured-data'
+import {JsonLdScript} from '../json-ld'
 import type {V2PageData} from '@/types/v2'
 import type {Band, BlockContext} from './types'
 
@@ -65,14 +67,17 @@ function withBands(blocks: BlockDef[]): Array<BlockDef & {band: Band}> {
 }
 
 function JsonLd({ctx}: {ctx: BlockContext}) {
-  const {page, area, settings} = ctx
+  const {page, area, settings, visuals} = ctx
   // Unconfirmed FAQs stay out of the schema until they are resolved.
   const answered = faqsOf(ctx).filter((faq) => !hasConfirm(faq.answer) && !hasConfirm(faq.question))
   const cluster = clusterForService(page.slug, page.parentName)
+  const canonicalUrl = servicePageUrl(page.slug, page.parentName)
+  // A text that still carries an editorial flag (draft or local preview) stays out, like the FAQs.
+  const confirmed = (value?: string) => (hasConfirm(value) ? undefined : value)
   const graph = [
     {
       '@type': settings.schemaBusinessType || 'Electrician',
-      '@id': `${PUBLIC_SITE_ORIGIN}/#business`,
+      '@id': BUSINESS_ID,
       name: settings.companyName,
       telephone: settings.phoneE164 || settings.phoneDisplay,
       url: PUBLIC_SITE_ORIGIN,
@@ -81,17 +86,27 @@ function JsonLd({ctx}: {ctx: BlockContext}) {
       geo: settings.shopLocation ? {'@type': 'GeoCoordinates', latitude: settings.shopLocation.lat, longitude: settings.shopLocation.lng} : undefined,
       aggregateRating: settings.google?.rating ? {'@type': 'AggregateRating', ratingValue: settings.google.rating, reviewCount: settings.google.reviewCount} : undefined,
     },
-    {'@type': 'Service', name: `${page.hero.h1Prefix} in ${area.name}`, serviceType: page.name, provider: {'@id': `${PUBLIC_SITE_ORIGIN}/#business`}, areaServed: {'@type': 'City', name: `${area.name}, ${area.state}`}},
-    {'@type': 'BreadcrumbList', itemListElement: [
-      {name: 'Home', item: PUBLIC_SITE_ORIGIN},
-      {name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
+    {
+      '@type': 'Service',
+      name: `${page.hero.h1Prefix} in ${area.name}`,
+      serviceType: page.name,
+      url: canonicalUrl,
+      // The meta description, else the hero lede.
+      description: firstText(confirmed(page.seo?.description), confirmed(page.hero.lede)),
+      // The photo the hero renders, when it has one.
+      image: absoluteImageUrl(visuals.hero?.src),
+      provider: {'@id': BUSINESS_ID},
+      areaServed: {'@type': 'City', name: `${area.name}, ${area.state}`},
+    },
+    breadcrumbList([
+      HOME_CRUMB,
+      SERVICES_CRUMB,
       ...(cluster ? [{name: cluster.name, item: `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`}] : []),
-      {name: `${page.name} in ${area.name}`, item: servicePageUrl(page.slug, page.parentName)},
-    ].map((crumb, index) => ({'@type': 'ListItem', position: index + 1, ...crumb}))},
+      {name: `${page.name} in ${area.name}`, item: canonicalUrl},
+    ]),
     ...(answered.length ? [{'@type': 'FAQPage', mainEntity: answered.map((faq) => ({'@type': 'Question', name: faq.question, acceptedAnswer: {'@type': 'Answer', text: faq.answer}}))}] : []),
   ]
-  const json = JSON.stringify({'@context': 'https://schema.org', '@graph': graph}).replace(/</g, '\\u003c')
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{__html: json}} />
+  return <JsonLdScript graph={graph} />
 }
 
 /**

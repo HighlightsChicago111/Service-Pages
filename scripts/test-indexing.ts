@@ -69,16 +69,73 @@ function headerMenuLinks(html: string): string[] {
 /** Pages in the new design (Design System v3) render inside a .ds wrapper. */
 const isNewDesign = (html: string) => /<div class="ds[ "]/.test(html)
 
-function breadcrumbLists(html: string): Array<{itemListElement?: Array<{position?: number; name?: string; item?: string}>}> {
+type ListItem = {position?: number; name?: string; item?: string; url?: string}
+type JsonLdNode = {
+  '@type'?: string
+  url?: string
+  name?: string
+  description?: string
+  image?: string
+  numberOfItems?: number
+  itemListElement?: ListItem[]
+  mainEntity?: JsonLdNode
+  about?: {'@id'?: string}
+  isPartOf?: {'@id'?: string}
+}
+
+/** Every node of every JSON-LD @graph on the page; a block that is not valid JSON fails the test. */
+function jsonLdNodes(html: string, pathname: string): JsonLdNode[] {
   return [...html.matchAll(/<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)]
     .flatMap((match) => {
+      let parsed: {'@graph'?: JsonLdNode[]}
       try {
-        const parsed = JSON.parse(match[1]) as {'@graph'?: Array<{'@type'?: string; itemListElement?: Array<{position?: number; name?: string; item?: string}>}>}
-        return (parsed['@graph'] || []).filter((entry) => entry['@type'] === 'BreadcrumbList')
+        parsed = JSON.parse(match[1]) as {'@graph'?: JsonLdNode[]}
       } catch {
-        return []
+        throw new Error(`${pathname} has a JSON-LD block that is not valid JSON`)
       }
+      return parsed['@graph'] || []
     })
+}
+
+function breadcrumbLists(html: string, pathname: string): JsonLdNode[] {
+  return jsonLdNodes(html, pathname).filter((entry) => entry['@type'] === 'BreadcrumbList')
+}
+
+/** Absolute URLs of the cards a hub page renders, in page order. */
+function cardUrls(html: string): string[] {
+  return [...html.matchAll(/<a\b[^>]*\bclass="collection-card"[^>]*>/gi)]
+    .map((match) => match[0].match(/\bhref="([^"]+)"/)?.[1] || '')
+    .map((href) => new URL(href.replace(/&amp;/g, '&'), PUBLIC_SITE_ORIGIN).href.replace(/\/$/, ''))
+}
+
+/**
+ * A hub page (/services or a service group) must describe itself as one CollectionPage whose
+ * ItemList is exactly the cards it renders, in order, plus a breadcrumb that ends on the page.
+ * Returns the listed URLs.
+ */
+function checkCollectionSchema(html: string, pathname: string, publicUrl: string, crumbNames: string[]): string[] {
+  const pages = jsonLdNodes(html, pathname).filter((node) => node['@type'] === 'CollectionPage')
+  assert.equal(pages.length, 1, `${pathname} must have one CollectionPage`)
+  const [page] = pages
+  assert.equal(page.url, publicUrl, `${pathname} CollectionPage url must equal its canonical`)
+  assert.ok(page.name?.trim(), `${pathname} CollectionPage must have a name`)
+  assert.equal(page.about?.['@id'], `${PUBLIC_SITE_ORIGIN}/#business`, `${pathname} CollectionPage must be about the business`)
+  assert.equal(page.isPartOf?.['@id'], `${PUBLIC_SITE_ORIGIN}/#website`, `${pathname} CollectionPage must be part of the website`)
+  const list = page.mainEntity
+  assert.equal(list?.['@type'], 'ItemList', `${pathname} CollectionPage mainEntity must be an ItemList`)
+  const items = list?.itemListElement || []
+  const cards = cardUrls(html)
+  assert.ok(cards.length > 0, `${pathname} must render at least one card`)
+  assert.deepEqual(items.map((item) => item.url), cards, `${pathname} ItemList must list exactly the cards the page renders, in order`)
+  assert.deepEqual(items.map((item) => item.position), items.map((_, index) => index + 1), `${pathname} ItemList positions must be sequential`)
+  assert.equal(list?.numberOfItems, items.length, `${pathname} ItemList numberOfItems must match its items`)
+  for (const item of items) assert.ok(item.name?.trim(), `${pathname} ItemList item ${item.url} must have a name`)
+  const breadcrumbs = breadcrumbLists(html, pathname)
+  assert.equal(breadcrumbs.length, 1, `${pathname} must have one BreadcrumbList`)
+  const crumbs = breadcrumbs[0].itemListElement || []
+  assert.deepEqual(crumbs.map((crumb) => crumb.name), crumbNames, `${pathname} breadcrumb schema must be ${crumbNames.join(' > ')}`)
+  assert.equal(crumbs.at(-1)?.item, publicUrl, `${pathname} final breadcrumb must equal its canonical`)
+  return cards
 }
 
 async function expectPermanentRedirect(pathname: string, destination: string) {
@@ -108,6 +165,13 @@ async function run() {
   assert.equal(lastModified.length, locations.length, 'Every sitemap URL must have a lastmod value')
   assert.ok(new Set(lastModified).size > 1, 'Sitemap lastmod values must come from document updates, not one build timestamp')
 
+  {
+    const response = await fetch(`${baseUrl}/services`, {redirect: 'manual'})
+    assert.equal(response.status, 200, '/services must return 200 without a redirect')
+    const listed = checkCollectionSchema(await response.text(), '/services', hubUrl, ['Home', 'Services'])
+    assert.deepEqual([...listed].sort(), [...clusterLocations].sort(), '/services ItemList must list every service group in the sitemap')
+  }
+
   for (const publicUrl of clusterLocations) {
     const pathname = new URL(publicUrl).pathname
     const response = await fetch(`${baseUrl}${pathname}`, {redirect: 'manual'})
@@ -116,6 +180,10 @@ async function run() {
     const html = await response.text()
     assert.equal(canonicalFrom(html), publicUrl, `${pathname} canonical must exactly match its sitemap URL`)
     assert.equal((titleFrom(html).match(/Highlights/gi) || []).length, 1, `${pathname} title must contain the brand once`)
+    const groupName = serviceClusters.find((cluster) => clusterPagePath(cluster.slug) === pathname)?.name || ''
+    for (const url of checkCollectionSchema(html, pathname, publicUrl, ['Home', 'Services', groupName])) {
+      assert.ok(serviceLocations.includes(url), `${pathname} ItemList lists ${url}, which is not a published service page`)
+    }
   }
 
   for (const publicUrl of serviceLocations) {
@@ -137,7 +205,13 @@ async function run() {
     assert.ok(!/(?:…|\.\.\.)/.test(pageTitle), `${pathname} title must not contain a truncation ellipsis`)
     assert.ok(!/\bInc\.\s*\|\s*Highlights Chicago$/i.test(pageTitle), `${pathname} title must not retain the old company suffix`)
 
-    const breadcrumbs = breadcrumbLists(html)
+    const services = jsonLdNodes(html, pathname).filter((node) => node['@type'] === 'Service')
+    assert.equal(services.length, 1, `${pathname} must have one Service`)
+    assert.equal(services[0].url, publicUrl, `${pathname} Service url must equal its canonical`)
+    if (services[0].description !== undefined) assert.ok(services[0].description.trim(), `${pathname} Service description must not be empty`)
+    if (services[0].image !== undefined) assert.match(services[0].image, /^https:\/\/\S+$/, `${pathname} Service image must be an absolute https URL`)
+
+    const breadcrumbs = breadcrumbLists(html, pathname)
     assert.equal(breadcrumbs.length, 1, `${pathname} must have one BreadcrumbList`)
     const items = breadcrumbs[0].itemListElement || []
     // A page the workbook lists always shows its group; a newer page shows the group its
