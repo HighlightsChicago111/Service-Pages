@@ -113,11 +113,11 @@ const PAGE_VISUALS: Record<string, PageVisuals> = {
       {value: '527', label: 'permits through the Express Permit Program'},
     ],
     gallery: [
-      {...P.rooftopPortrait, label: 'Illustrative photo of solar panel installation'},
-      {...P.battery, label: 'Illustrative photo of solar battery installation'},
-      {...P.thermal, label: 'Illustrative photo of home energy audit'},
-      {...P.heroRooftop, label: 'Illustrative photo of rooftop solar on a brick two-flat'},
-      {...P.courtyardArray, label: 'Illustrative photo of a flat-roof array on a courtyard building'},
+      {...P.rooftopPortrait, label: 'Solar panel installation'},
+      {...P.battery, label: 'Solar battery installation'},
+      {...P.thermal, label: 'Home energy audit'},
+      {...P.heroRooftop, label: 'Rooftop solar on a brick two-flat'},
+      {...P.courtyardArray, label: 'A flat-roof array on a courtyard building'},
     ],
     category: P.courtyardArray,
     drivers: P.roofAssessment,
@@ -148,7 +148,7 @@ export function fromImg(image: Img | undefined, fallbackAlt: string): Photo | un
   const src = image?.resolvedUrl || image?.externalUrl
   if (!src) return undefined
   const words = `${image?.caption || ''} ${image?.alt || ''}`
-  return {src, alt: image?.alt?.trim() || fallbackAlt, illustrative: isIllustrative(words), label: image?.caption || undefined, credit: image?.credit, position: focalPoint(src, image)}
+  return {src, alt: image?.alt?.trim() || fallbackAlt, illustrative: isIllustrative(words), label: photoLabel(image?.caption) || undefined, credit: image?.credit, position: focalPoint(src, image)}
 }
 
 const servicePhoto = (file: string) => `${SERVICES_PATH}/images/services/${file}`

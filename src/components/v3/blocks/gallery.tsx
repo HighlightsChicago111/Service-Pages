@@ -17,7 +17,7 @@ export function GalleryBlock({ctx}: {ctx: BlockContext}) {
       </div>
       <ul className={`ds-gallery ds-gallery--${photos.length}`}>
         {photos.map((photo, index) => {
-          const caption = photo.label || (photo.illustrative ? `Illustrative photo of ${page.name.toLowerCase()}` : photo.alt)
+          const caption = photo.label || photo.alt
           return (
             <li key={`${photo.src}-${index}`}>
               <PhotoFrame photo={photo} pill={false}>

@@ -51,9 +51,9 @@ export function listAfterColon(value: string, max = 4): string[] {
   return items.length >= 2 ? items.slice(0, max).map((item) => item[0].toUpperCase() + item.slice(1)) : []
 }
 
-/** Strip a leading "Illustrative photo of" so a caption reads as a label. */
+/** Strip a leading "Illustrative photo of" (or "Illustrative photo:") so a caption reads as a label. */
 export function photoLabel(caption?: string): string {
-  const label = (caption || '').replace(/^illustrative photos? of\s*/i, '').trim()
+  const label = (caption || '').replace(/^illustrative (?:photo|image)s?\s*(?:of\b|[:,-])?\s*/i, '').trim()
   return label ? label[0].toUpperCase() + label.slice(1) : ''
 }
 
