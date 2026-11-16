@@ -24,7 +24,6 @@ export function ClosingBlock({ctx}: {ctx: BlockContext}) {
       <div className="ds-closing-scrim" aria-hidden="true" />
       <div className="ds-wrap ds-closing">
         <img className="ds-closing-logo" src={LOGO_WHITE} alt="Highlights Chicago Electrical Services" width={170} height={50} loading="lazy" />
-        <Eyebrow>Your next step</Eyebrow>
         <h2 className="ds-h1 ds-closing-title" id="closing-title">{questionHeading(`${cta.heading || 'Planning this work'} in ${area.name}?`)}</h2>
         {cta.body && <p className="ds-lede">{cta.body}</p>}
         <div className="ds-cta-row">

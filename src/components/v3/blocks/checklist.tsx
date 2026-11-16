@@ -25,7 +25,7 @@ export function ChecklistBlock({ctx}: {ctx: BlockContext}) {
     <div className="ds-wrap">
       <div className="ds-checklist">
         <div className="ds-checklist-rail">
-          <SectionHead eyebrow="Site assessment" id="site-assessment-title" title={assessment.heading} lede={assessment.lede} editorial={editorial} />
+          <SectionHead id="site-assessment-title" title={assessment.heading} lede={assessment.lede} editorial={editorial} />
           {visuals.assessment && <div className="ds-checklist-photo">
             <PhotoFrame photo={visuals.assessment} pill={false} className="ds-photo--tall">
               <span className="ds-numeral-badge"><b>{checks.length}</b><span><i aria-hidden="true" />Checks</span></span>

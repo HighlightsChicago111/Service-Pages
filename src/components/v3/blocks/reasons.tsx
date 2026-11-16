@@ -1,4 +1,4 @@
-import {Copy, Eyebrow, IconBadge, PhotoFrame} from '../atoms'
+import {Copy, IconBadge, PhotoFrame} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
@@ -13,7 +13,6 @@ export function ReasonsBlock({ctx}: {ctx: BlockContext}) {
     <div className="ds-wrap">
       <div className="ds-reasons-top">
         <div>
-          <Eyebrow>Why Highlights</Eyebrow>
           <h2 className="ds-h2" id="why-us-title">{questionHeading(why.heading)}</h2>
           {why.lede && <p className="ds-lede">{why.lede}</p>}
           {visuals.reasonStats.length > 0 && <dl className="ds-green-stats">

@@ -1,5 +1,5 @@
 import type {CSSProperties} from 'react'
-import {ConfirmNotes, Eyebrow, IconBadge, PhotoFrame, SectionHead} from '../atoms'
+import {ConfirmNotes, IconBadge, PhotoFrame, SectionHead} from '../atoms'
 import {Icon, pickIcon, type IconName} from '../icon'
 import {NoteLine} from './equipment'
 import {parsePricing, permitTone, splitConfirm} from '@/lib/v3/content'
@@ -27,7 +27,7 @@ export function PricingBlock({ctx}: {ctx: BlockContext}) {
 
   return (
     <div className="ds-wrap">
-      <SectionHead eyebrow="Cost & permits" id="pricing-title" title={title} lede={pricing.lede} editorial={editorial} />
+      <SectionHead id="pricing-title" title={title} lede={pricing.lede} editorial={editorial} />
       {pricing.caption && <p className="ds-source"><IconBadge icon="cityStar" tone="blue" size={32} /><b>Data source</b><span>{pricing.caption}</span></p>}
 
       {stats.length > 0 && <ul className="ds-price-stats">
@@ -60,7 +60,6 @@ export function PricingBlock({ctx}: {ctx: BlockContext}) {
 
       {drivers.length > 0 && <div className="ds-sub ds-drivers">
         <div className="ds-drivers-rail">
-          <Eyebrow>{drivers.length} cost drivers</Eyebrow>
           <h3 className="ds-h3">{pricing.driversHeading}</h3>
           {visuals.drivers && <PhotoFrame photo={visuals.drivers} className="ds-photo--tall" />}
         </div>

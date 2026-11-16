@@ -3,6 +3,7 @@
 import {useId, useState} from 'react'
 import {useLeadSubmit} from '@/lib/use-lead-submit'
 import {Icon} from './icon'
+import {MultiSelect} from './multi-select'
 
 type ExtraField = {_key?: string; fieldName: string; label: string; options?: string[]}
 
@@ -25,12 +26,11 @@ const dependsOnExisting = (field: ExtraField) => field.fieldName === 'symptom'
 const saysNoExisting = (value: string) => /^no\b/i.test(value.trim())
 const NOT_APPLICABLE = 'Not applicable'
 
-/** D1 quote form: two numbered groups, job type as chips, dependent fields inactive until relevant. */
+/** D1 quote form: two numbered groups, job type as a multi-select dropdown, dependent fields inactive until relevant. */
 export function QuoteForm(props: Props) {
   const {status, submit} = useLeadSubmit()
   const id = useId()
   const issueOptions = props.issueOptions || []
-  const [issue, setIssue] = useState(issueOptions[0] || '')
   const existingField = props.extraFields?.find((field) => field.fieldName === 'existingSystem')
   const [existing, setExisting] = useState(existingField?.options?.[0] || '')
 
@@ -61,18 +61,7 @@ export function QuoteForm(props: Props) {
             <label htmlFor={`${id}-building`}>Building type</label>
             <span className="ds-select"><select id={`${id}-building`} name="buildingType">{props.buildingTypes?.map((item) => <option key={item}>{item}</option>)}</select><Icon name="chevronDown" size={18} /></span>
           </div>}
-          {issueOptions.length > 0 && <div className="ds-field" role="radiogroup" aria-labelledby={`${id}-issue`}>
-            <span className="ds-label" id={`${id}-issue`}>{props.issueQuestion || 'What do you need?'}</span>
-            <div className="ds-chip-options">
-              {issueOptions.map((option) => (
-                <label className={`ds-chip-option${issue === option ? ' is-selected' : ''}`} key={option}>
-                  <input type="radio" name="issue" value={option} checked={issue === option} onChange={() => setIssue(option)} />
-                  {issue === option && <Icon name="check" size={14} />}
-                  <span>{option}</span>
-                </label>
-              ))}
-            </div>
-          </div>}
+          {issueOptions.length > 0 && <MultiSelect name="issue" label={props.issueQuestion || 'What do you need?'} options={issueOptions} />}
           {props.extraFields?.map((field) => {
             const controlsOthers = field.fieldName === 'existingSystem'
             const inactive = dependsOnExisting(field) && Boolean(existingField) && saysNoExisting(existing)

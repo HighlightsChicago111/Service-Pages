@@ -1,6 +1,6 @@
 import {ConfirmNotes, IconBadge, PhotoFrame, SectionHead} from '../atoms'
 import {Icon, pickIcon, type IconName} from '../icon'
-import {jobNoun, listAfterColon, sentences, splitConfirm} from '@/lib/v3/content'
+import {listAfterColon, sentences, splitConfirm} from '@/lib/v3/content'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
 
@@ -13,7 +13,6 @@ export function SymptomsBlock({ctx}: {ctx: BlockContext}) {
   const {page, visuals, editorial} = ctx
   const diagnose = page.diagnose || {}
   const [seeing, causesLabel, startLabel] = diagnose.columns?.length === 3 ? diagnose.columns : ["What you're seeing", 'Common causes we check', 'Where we start']
-  const noun = jobNoun(page.jobPaths?.heading)
   const repair = splitConfirm(diagnose.repairBody)
   const [repairLead, ...repairRows] = sentences(repair.text)
   const orphan = splitConfirm(diagnose.orphanBody)
@@ -21,7 +20,7 @@ export function SymptomsBlock({ctx}: {ctx: BlockContext}) {
 
   return (
     <div className="ds-wrap">
-      <SectionHead eyebrow={noun ? `${noun} repair` : 'Repair'} id="diagnose-title" title={questionHeading(diagnose.heading)} lede={diagnose.lede} editorial={editorial} />
+      <SectionHead id="diagnose-title" title={questionHeading(diagnose.heading)} lede={diagnose.lede} editorial={editorial} />
       <div className="ds-symptoms">
         {visuals.diagnose && <div className="ds-symptoms-photo">
           <PhotoFrame photo={visuals.diagnose} pill={false} className="ds-photo--tall" />

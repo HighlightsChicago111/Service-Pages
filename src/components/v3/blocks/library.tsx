@@ -22,7 +22,7 @@ export function LibraryBlock({ctx}: {ctx: BlockContext}) {
   const guides: LibraryGuide[] = guidesOf(ctx).map((guide, index) => ({...structureGuide(guide), icon: guideIcon(guide.title), photo: visuals.library[index]}))
   return (
     <div className="ds-wrap">
-      <SectionHead eyebrow={`Library · ${guides.length} guides`} id="guides-title" title={questionHeading(area.libraryHeading)} lede={area.libraryLede} />
+      <SectionHead id="guides-title" title={questionHeading(area.libraryHeading)} lede={area.libraryLede} />
       <LibraryTabs guides={guides} />
     </div>
   )

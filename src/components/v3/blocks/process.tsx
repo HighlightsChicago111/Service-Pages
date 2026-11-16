@@ -1,4 +1,4 @@
-import {Copy, Eyebrow, keepHyphens} from '../atoms'
+import {Copy, keepHyphens} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {ProcessTrack, type OwnerTag, type TrackStep} from '../process-track'
 import {splitConfirm} from '@/lib/v3/content'
@@ -32,7 +32,6 @@ export function ProcessBlock({ctx}: {ctx: BlockContext}) {
   const head = (
     <div className="ds-head ds-head--aside">
       <div className="ds-head-main">
-        <Eyebrow>The process · {steps.length} steps</Eyebrow>
         <h2 className="ds-h2" id="process-title">{keepHyphens(questionHeading(process.heading))}</h2>
         <Copy value={process.lede} show={editorial} className="ds-lede" />
       </div>

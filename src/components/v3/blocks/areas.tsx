@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- Logo file from /public. */
-import {Button, Copy, Eyebrow, IconBadge} from '../atoms'
+import {Button, Copy, IconBadge} from '../atoms'
 import {AreaCarousel, type AreaCard} from '../area-carousel'
 import {Icon} from '../icon'
 import {jobNoun} from '@/lib/v3/content'
@@ -30,7 +30,7 @@ export function AreasBlock({ctx}: {ctx: BlockContext}) {
   return (
     <div className="ds-wrap">
       <div className="ds-head ds-head--aside ds-head--dark">
-        <div className="ds-head-main"><Eyebrow>Service area</Eyebrow><h2 className="ds-h2" id="areas-title">{questionHeading(area.areasHeading)}</h2>{area.areasLede && <p className="ds-lede">{area.areasLede}</p>}</div>
+        <div className="ds-head-main"><h2 className="ds-h2" id="areas-title">{questionHeading(area.areasHeading)}</h2>{area.areasLede && <p className="ds-lede">{area.areasLede}</p>}</div>
         <div className="ds-head-aside"><a className="ds-text-cta ds-text-cta--dark" href={openUrl}>Open in Google Maps<Icon name="arrowUpRight" size={18} /></a></div>
       </div>
 

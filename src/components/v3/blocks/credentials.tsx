@@ -1,4 +1,4 @@
-import {Eyebrow, GoogleG, IconBadge, PhotoFrame, Stars} from '../atoms'
+import {GoogleG, IconBadge, PhotoFrame, Stars} from '../atoms'
 import {Icon, pickIcon, type IconName} from '../icon'
 import {credentials} from '@/lib/v3/content'
 import {SHARED_PHOTOS} from '@/lib/v3/visuals'
@@ -18,7 +18,7 @@ export function CredentialsBlock({ctx}: {ctx: BlockContext}) {
   return (
     <div className="ds-wrap">
       <div className="ds-head ds-head--split ds-head--dark">
-        <div className="ds-head-main"><Eyebrow>About Highlights Chicago</Eyebrow><h2 className="ds-h2" id="trust-title">{questionHeading(settings.trustHeading)}</h2></div>
+        <div className="ds-head-main"><h2 className="ds-h2" id="trust-title">{questionHeading(settings.trustHeading)}</h2></div>
         {settings.trustLede && <p className="ds-lede ds-head-lede">{settings.trustLede}</p>}
       </div>
       <div className="ds-cred">

@@ -1,4 +1,4 @@
-import {Eyebrow, PhotoFrame} from '../atoms'
+import {PhotoFrame} from '../atoms'
 import {Icon} from '../icon'
 import {questionHeading} from '@/lib/headings'
 import type {BlockContext} from '../types'
@@ -12,7 +12,7 @@ export function GalleryBlock({ctx}: {ctx: BlockContext}) {
   return (
     <div className="ds-wrap">
       <div className="ds-head ds-head--aside">
-        <div className="ds-head-main"><Eyebrow>Our works</Eyebrow><h2 className="ds-h2" id="working-in-area-title">{questionHeading(`Our Works in ${area.name}`)}</h2>{area.workingLede && <p className="ds-lede">{area.workingLede}</p>}</div>
+        <div className="ds-head-main"><h2 className="ds-h2" id="working-in-area-title">{questionHeading(`Our Works in ${area.name}`)}</h2>{area.workingLede && <p className="ds-lede">{area.workingLede}</p>}</div>
         <div className="ds-head-aside"><a className="ds-text-cta" href="#quote">{page.hero.secondaryCta || 'Request service'}<Icon name="arrowRight" size={18} /></a></div>
       </div>
       <ul className={`ds-gallery ds-gallery--${photos.length}`}>
