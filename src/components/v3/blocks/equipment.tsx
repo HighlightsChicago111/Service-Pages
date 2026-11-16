@@ -17,8 +17,6 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
   const options = equipment.options
   const columns = comparison?.columns || []
   const rows = comparison?.rows || []
-  const illustrative = items.some((_, index) => visuals.equipment[index]?.illustrative)
-  const optionsIllustrative = visuals.options.some((photo) => photo?.illustrative)
 
   return (
     <div className="ds-wrap">
@@ -38,7 +36,6 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
             )
           })}
         </ul>
-        {illustrative && <p className="ds-meta ds-meta--end">Illustrative photos</p>}
       </>}
 
       {equipment.footnote && <div className="ds-banner">
@@ -94,7 +91,6 @@ export function EquipmentBlock({ctx}: {ctx: BlockContext}) {
             )
           })}
         </ul>
-        {optionsIllustrative && <p className="ds-meta ds-meta--end">Illustrative photos</p>}
         {options?.note && <NoteLine value={options.note} editorial={editorial} />}
       </div>}
     </div>

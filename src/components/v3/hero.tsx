@@ -17,7 +17,6 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
   const noun = jobNoun(page.jobPaths?.heading)
   const google = settings.google
   const chips = (settings.trustLines || []).slice(0, 3)
-  const crewIllustrative = visuals.crew.some((photo) => photo.illustrative)
   const cluster = clusterForService(page.slug, page.parentName)
 
   return (
@@ -47,7 +46,7 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
           </div>
           {visuals.crew.length > 0 && <div className="ds-crew">
             <div className="ds-crew-head">
-              <p>{area.galleryLabel || 'From the crews'}{crewIllustrative && <small>Illustrative photos</small>}</p>
+              <p>{area.galleryLabel || 'From the crews'}</p>
               <a href="#working-in-area">See more<Icon name="arrowRight" size={16} /></a>
             </div>
             <ul className="ds-crew-strip">
@@ -69,7 +68,6 @@ export function HeroQuote({ctx}: {ctx: BlockContext}) {
           addressPlaceholder={area.addressPlaceholder}
         />
       </div>
-      {hero?.illustrative && <span className="ds-pill-caption ds-hero-pill">Illustrative photo</span>}
     </header>
   )
 }

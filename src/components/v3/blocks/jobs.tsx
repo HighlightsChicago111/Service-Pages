@@ -18,7 +18,6 @@ export function JobsBlock({ctx}: {ctx: BlockContext}) {
     link: item.linkLabel && item.linkAnchor ? {label: item.linkLabel, href: `#${item.linkAnchor}`} : undefined,
     photo: visuals.jobs[index],
   }))
-  const illustrative = jobs.some((job) => job.photo?.illustrative)
 
   return (
     <div className="ds-wrap">
@@ -30,9 +29,8 @@ export function JobsBlock({ctx}: {ctx: BlockContext}) {
         aside={<p className="ds-hint"><IconBadge icon="pointer" tone="blue" size={32} />Select a job to see its scope &amp; first step</p>}
       />
       <JobSelector jobs={jobs} editorial={editorial} />
-      {(paths?.note || illustrative) && <div className="ds-note-row">
+      {paths?.note && <div className="ds-note-row">
         {paths?.note && <div className="ds-note-row-main"><IconBadge icon="help" tone="blue" size={32} /><Copy value={paths.note} show={editorial} /></div>}
-        {illustrative && <small className="ds-meta">Illustrative photos</small>}
       </div>}
     </div>
   )

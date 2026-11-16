@@ -35,7 +35,6 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
         {featured?.title && <article className="ds-category-card">
           {category && <img className="ds-category-bg" src={category.src} alt={category.alt} loading="lazy" decoding="async" style={focus(category)} />}
           <div className="ds-category-scrim" aria-hidden="true" />
-          {category?.illustrative && <span className="ds-pill-caption ds-category-pill">Illustrative photo</span>}
           <div className="ds-category-body">
             {featured.tag && <p className="ds-glass-chip"><i aria-hidden="true" />{featured.tag}</p>}
             <h3 className="ds-h3">{categoryTitle}</h3>

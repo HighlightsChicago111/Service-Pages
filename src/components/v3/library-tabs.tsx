@@ -66,7 +66,6 @@ export function LibraryTabs({guides}: {guides: LibraryGuide[]}) {
             <header className={guide.photo ? 'ds-guide-head' : 'ds-guide-head ds-guide-head--plain'}>
               {guide.photo && <img src={guide.photo.src} alt={guide.photo.alt} loading="lazy" decoding="async" style={focus(guide.photo)} />}
               {guide.photo?.credit && <span className="ds-credit-pill">Photo: {guide.photo.credit}</span>}
-              {guide.photo?.illustrative && !guide.photo.credit && <span className="ds-credit-pill">Illustrative photo</span>}
               <div><p className="ds-guide-kicker">Guide {pad(guideIndex + 1)} / {pad(guides.length)}</p><h3 className="ds-h3">{guide.heading || guide.title}</h3></div>
             </header>
             <div className="ds-guide-body">

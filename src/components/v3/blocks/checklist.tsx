@@ -30,7 +30,6 @@ export function ChecklistBlock({ctx}: {ctx: BlockContext}) {
             <PhotoFrame photo={visuals.assessment} pill={false} className="ds-photo--tall">
               <span className="ds-numeral-badge"><b>{checks.length}</b><span><i aria-hidden="true" />Checks</span></span>
             </PhotoFrame>
-            {visuals.assessment.illustrative && <p className="ds-meta">Illustrative photo</p>}
           </div>}
         </div>
         <ol className="ds-numbered">

@@ -24,7 +24,6 @@ export function SymptomsBlock({ctx}: {ctx: BlockContext}) {
       <div className="ds-symptoms">
         {visuals.diagnose && <div className="ds-symptoms-photo">
           <PhotoFrame photo={visuals.diagnose} pill={false} className="ds-photo--tall" />
-          {visuals.diagnose.illustrative && <p className="ds-meta">Illustrative photo</p>}
         </div>}
         <div className="ds-symptoms-list">
           <p className="ds-label-head ds-label-head--muted">{seeing}</p>
