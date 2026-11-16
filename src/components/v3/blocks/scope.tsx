@@ -1,4 +1,4 @@
-import {ConfirmNotes, Copy, Eyebrow, IconBadge, PhotoFrame, SectionHead} from '../atoms'
+import {ConfirmNotes, Copy, IconBadge, PhotoFrame, SectionHead} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {splitConfirm} from '@/lib/v3/content'
 import type {BlockContext} from '../types'
@@ -35,7 +35,7 @@ export function ScopeBlock({ctx}: {ctx: BlockContext}) {
   return (
     <>
       <div className="ds-wrap">
-        <SectionHead eyebrow="Scope & handover" id="whats-included-title" title={included.heading} lede={included.lede} editorial={editorial} />
+        <SectionHead id="whats-included-title" title={included.heading} lede={included.lede} editorial={editorial} />
         {(Boolean(included.inScope?.length) || Boolean(included.separate?.length)) && <div className="ds-scope">
           {Boolean(included.inScope?.length) && <ScopePanel tone="in" label="Included" heading={included.inScopeHeading} items={included.inScope || []} note={included.inScopeNote} editorial={editorial} />}
           {Boolean(included.separate?.length) && <ScopePanel tone="out" label="Separate quote" heading={included.separateHeading} items={included.separate || []} note={included.separateNote} editorial={editorial} />}
@@ -45,7 +45,7 @@ export function ScopeBlock({ctx}: {ctx: BlockContext}) {
       {handover.length > 0 && <div className="ds-handover">
         <div className="ds-wrap">
           <div className="ds-head ds-head--aside ds-head--dark">
-            <div className="ds-head-main"><Eyebrow>At handover</Eyebrow><h2 className="ds-h2">{included.handoverHeading}</h2></div>
+            <div className="ds-head-main"><h2 className="ds-h2">{included.handoverHeading}</h2></div>
             <div className="ds-head-aside"><p className="ds-glass-chip"><Icon name="fileText" size={16} />{handover.length} items to collect</p></div>
           </div>
           <ol className="ds-docs">
@@ -66,7 +66,6 @@ export function ScopeBlock({ctx}: {ctx: BlockContext}) {
 
       {warranty.length > 0 && <div className="ds-wrap ds-warranties">
         <div>
-          <Eyebrow>Warranties</Eyebrow>
           <h2 className="ds-h2">{included.warrantyHeading}</h2>
           <ul className="ds-legend-list">
             <li><i className="ds-ring ds-ring--green" aria-hidden="true" />Warranted by Highlights Chicago</li>

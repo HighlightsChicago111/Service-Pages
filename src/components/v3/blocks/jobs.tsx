@@ -23,7 +23,6 @@ export function JobsBlock({ctx}: {ctx: BlockContext}) {
   return (
     <div className="ds-wrap">
       <SectionHead
-        eyebrow="Start here"
         id="your-job-title"
         title={questionHeading(paths?.heading)}
         lede={paths?.lede}

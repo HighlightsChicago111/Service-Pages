@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- Card photos from /public. */
-import {Eyebrow, IconTile} from '../atoms'
+import {IconTile} from '../atoms'
 import {Icon, pickIcon} from '../icon'
 import {focus, relatedCardPhoto} from '@/lib/v3/visuals'
 import {questionHeading} from '@/lib/headings'
@@ -30,7 +30,7 @@ export function RelatedBlock({ctx}: {ctx: BlockContext}) {
 
   return (
     <div className="ds-wrap">
-      <div className="ds-head"><div className="ds-head-main"><Eyebrow>More from Highlights Chicago</Eyebrow><h2 className="ds-h2" id="other-services-title">{questionHeading(`Our other services in ${area.name}`)}</h2></div></div>
+      <div className="ds-head"><div className="ds-head-main"><h2 className="ds-h2" id="other-services-title">{questionHeading(`Our other services in ${area.name}`)}</h2></div></div>
       <div className="ds-related">
         {featured?.title && <article className="ds-category-card">
           {category && <img className="ds-category-bg" src={category.src} alt={category.alt} loading="lazy" decoding="async" style={focus(category)} />}
