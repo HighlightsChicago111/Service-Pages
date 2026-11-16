@@ -14,6 +14,8 @@ import {WorkingPhotoGrid} from './working-photo-grid'
 import {GalleryPhoto} from './gallery-photo'
 import {clusterForService} from '@/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, clusterPagePath, resolvePublishedServicePath, servicePageUrl} from '@/lib/service-urls'
+import {BUSINESS_ID, HOME_CRUMB, SERVICES_CRUMB, breadcrumbList, firstText} from '@/lib/structured-data'
+import {JsonLdScript} from './json-ld'
 
 type Props = {data: ServicePageData}
 
@@ -135,7 +137,7 @@ function JsonLd({data}: Props) {
   const graph = [
     {
       '@type': settings.schemaBusinessType || 'Electrician',
-      '@id': `${PUBLIC_SITE_ORIGIN}/#business`,
+      '@id': BUSINESS_ID,
       name: settings.companyName,
       telephone: settings.phoneE164 || settings.phoneDisplay,
       url: PUBLIC_SITE_ORIGIN,
@@ -144,17 +146,25 @@ function JsonLd({data}: Props) {
       geo: settings.shopLocation ? {'@type': 'GeoCoordinates', latitude: settings.shopLocation.lat, longitude: settings.shopLocation.lng} : undefined,
       aggregateRating: settings.google?.rating ? {'@type': 'AggregateRating', ratingValue: settings.google.rating, reviewCount: settings.google.reviewCount} : undefined,
     },
-    {'@type': 'Service', name: `${service.h1Prefix} in ${area.name}`, serviceType: service.name, provider: {'@id': `${PUBLIC_SITE_ORIGIN}/#business`}, areaServed: {'@type': 'City', name: `${area.name}, ${area.state}`}},
-    {'@type': 'BreadcrumbList', itemListElement: [
-      {name: 'Home', item: PUBLIC_SITE_ORIGIN},
-      {name: 'Services', item: `${PUBLIC_SITE_ORIGIN}${SERVICES_PATH}`},
+    {
+      '@type': 'Service',
+      name: `${service.h1Prefix} in ${area.name}`,
+      serviceType: service.name,
+      url: canonicalUrl,
+      // The meta description, else the hero lede. This design's hero has no photo.
+      description: firstText(page.seo?.description, service.heroLede),
+      provider: {'@id': BUSINESS_ID},
+      areaServed: {'@type': 'City', name: `${area.name}, ${area.state}`},
+    },
+    breadcrumbList([
+      HOME_CRUMB,
+      SERVICES_CRUMB,
       ...(cluster ? [{name: cluster.name, item: `${PUBLIC_SITE_ORIGIN}${clusterPagePath(cluster.slug)}`}] : []),
       {name: `${service.name} in ${area.name}`, item: canonicalUrl},
-    ].map((crumb, index) => ({'@type': 'ListItem', position: index + 1, ...crumb}))},
+    ]),
     ...(faqs.length ? [{'@type': 'FAQPage', mainEntity: faqs.map((faq) => ({'@type': 'Question', name: faq.question, acceptedAnswer: {'@type': 'Answer', text: faq.answer}}))}] : []),
   ]
-  const json = JSON.stringify({'@context': 'https://schema.org', '@graph': graph}).replace(/</g, '\\u003c')
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{__html: json}} />
+  return <JsonLdScript graph={graph} />
 }
 
 export function ServiceLandingPage({data}: Props) {

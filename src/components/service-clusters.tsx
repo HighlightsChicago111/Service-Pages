@@ -1,9 +1,11 @@
 /* eslint-disable @next/next/no-img-element -- Card covers can be local or Sanity-managed URLs and must remain crawlable, as on the collection page. */
 import Link from 'next/link'
 import {CollectionFooter, CollectionHeader} from './collection-chrome'
+import {JsonLdScript} from './json-ld'
 import {prepareCollectionItems, type CollectionItem, type PreparedCollectionItem} from '@/lib/collection-items'
 import {chooseServiceHeading, clusterForService, clusterTitle, formatServiceCount, serviceClusters, type ServiceCluster} from '@/lib/clusters'
 import {PUBLIC_SITE_ORIGIN, SERVICES_PATH, serviceRoutePath} from '@/lib/service-urls'
+import {serviceGroupGraph} from '@/lib/structured-data'
 
 export type ServiceCards = Map<string, PreparedCollectionItem>
 
@@ -22,6 +24,15 @@ export function publishedServices(cluster: ServiceCluster, cards: ServiceCards):
     .filter((card) => !cluster.services.includes(card.serviceSlug) && clusterForService(card.serviceSlug, card.parentName)?.slug === cluster.slug)
     .sort((left, right) => (right.monthlySearchVolume || 0) - (left.monthlySearchVolume || 0))
   return [...listed, ...added]
+}
+
+export type ServiceGroup = {cluster: ServiceCluster; services: PreparedCollectionItem[]}
+
+/** The service groups /services lists, in order: every group with at least one published service. */
+export function publishedGroups(cards: ServiceCards): ServiceGroup[] {
+  return serviceClusters
+    .map((cluster) => ({cluster, services: publishedServices(cluster, cards)}))
+    .filter((group) => group.services.length > 0)
 }
 
 type CardProps = {
@@ -57,10 +68,7 @@ function groupPanelNote(cluster: ServiceCluster, count: number): string {
 }
 
 /** "Choose a service" section on /services: one block per service group. */
-export function ClusterDirectory({cards}: {cards: ServiceCards}) {
-  const groups = serviceClusters
-    .map((cluster) => ({cluster, services: publishedServices(cluster, cards)}))
-    .filter((group) => group.services.length > 0)
+export function ClusterDirectory({groups}: {groups: ServiceGroup[]}) {
   return (
     <section className="collection-directory" aria-labelledby="service-directory-title">
       <div className="collection-wrap">
@@ -150,6 +158,7 @@ export function ClusterPage({cluster, cards}: {cluster: ServiceCluster; cards: S
         </section>
       </main>
       <CollectionFooter />
+      <JsonLdScript graph={serviceGroupGraph(cluster, services)} />
     </div>
   )
 }

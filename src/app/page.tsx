@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element -- Crawlable local imagery is intentionally rendered without Next's generated image wrapper. */
 import type {Metadata} from 'next'
 import {CollectionFooter, CollectionHeader} from '@/components/collection-chrome'
-import {ClusterDirectory, publishedServices, serviceCardsBySlug} from '@/components/service-clusters'
-import {serviceClusters} from '@/lib/clusters'
+import {JsonLdScript} from '@/components/json-ld'
+import {ClusterDirectory, publishedGroups, serviceCardsBySlug} from '@/components/service-clusters'
 import {fetchServiceIndex} from '@/lib/service-page'
+import {servicesIndexGraph} from '@/lib/structured-data'
 
 // Re-read Sanity at most a minute after a page is published or unpublished.
 export const revalidate = 60
@@ -13,12 +14,15 @@ export const metadata: Metadata = {
   alternates: {canonical: 'https://www.highlightschicago.com/services'},
 }
 
+const HEADING = 'Electrical services built around Chicago'
+
 export default async function HomePage() {
   // Both designs, one card per URL (a published new-design page wins). Not the live
   // fetcher: its cache only refreshes while <SanityLive> runs (draft mode), so
   // visitors would keep the pages from the last deploy.
   const cards = serviceCardsBySlug(await fetchServiceIndex())
-  const groupCount = serviceClusters.filter((cluster) => publishedServices(cluster, cards).length > 0).length
+  const groups = publishedGroups(cards)
+  const groupCount = groups.length
   return (
     <div className="collection-page">
       <CollectionHeader />
@@ -28,7 +32,7 @@ export default async function HomePage() {
           <div className="collection-wrap collection-hero-grid">
             <div>
               <p className="collection-hero-kicker">Licensed Chicago electricians</p>
-              <h1>Electrical services built around Chicago</h1>
+              <h1>{HEADING}</h1>
               <p>Explore service-specific guidance for safer installations, dependable repairs, and code-conscious electrical work across Chicago homes and businesses.</p>
               <div className="collection-hero-actions">
                 <a href="#service-directory-title">Explore services</a>
@@ -43,7 +47,7 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-        <ClusterDirectory cards={cards} />
+        <ClusterDirectory groups={groups} />
         <section className="collection-trust-band">
           <div className="collection-wrap">
             <p>Why Highlights Chicago</p>
@@ -55,6 +59,7 @@ export default async function HomePage() {
         </section>
       </main>
       <CollectionFooter />
+      <JsonLdScript graph={servicesIndexGraph(HEADING, groups.map((group) => group.cluster))} />
     </div>
   )
 }
